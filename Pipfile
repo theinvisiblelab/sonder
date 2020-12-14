@@ -1,17 +1,16 @@
 [[source]]
-name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
-
-[dev-packages]
+name = "pypi"
 
 [packages]
 streamlit = "*"
+pandas = "*"
+requests = "*"
 textblob = "*"
 jupyterlab = "*"
-pyyaml = "*"
-pathlib = "*"
-tabulate = "*"
+
+[dev-packages]
 
 [requires]
 python_version = "3.8"
