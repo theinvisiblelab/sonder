@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run sonder.py && python searx/searx/webapp.py
+web: sh setup.sh && python searx/searx/webapp.py && streamlit run sonder.py
