@@ -9,6 +9,7 @@ pandas = "*"
 requests = "*"
 textblob = "*"
 jupyterlab = "*"
+pyyaml = "*"
 
 [dev-packages]
 
