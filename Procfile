@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run sonder.py
+web: sh scripts/setup.sh && streamlit run scripts/sonder.py

@@ -14,7 +14,7 @@ url = 'http://searx.sonder.care/search'
 @st.cache(allow_output_mutation=True)
 def load_data(query):
     df = []
-    for page in range(1, 6):
+    for page in range(1, 4):
         querystring = {
             'q': query,
             'categories': 'news',
