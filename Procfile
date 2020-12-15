@@ -1,1 +1,1 @@
-web: sh setup.sh && python searx/searx/webapp.py
+web: python searx/searx/webapp.py
