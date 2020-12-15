@@ -6,10 +6,21 @@ name = "pypi"
 [packages]
 streamlit = "*"
 pandas = "*"
-requests = "*"
+requests = {version = "==2.24.0", extras = ["socks"]}
 textblob = "*"
 jupyterlab = "*"
-pyyaml = "*"
+certifi = "==2020.6.20"
+idna = "==2.10"
+lxml = "==4.6.1"
+python-dateutil = "==2.8.0"
+PyYAML = "==5.3.1"
+Werkzeug = "*"
+Flask = "==1.1.2"
+Babel = "==2.7.0"
+Flask-Babel = "==1.0.0"
+Jinja2 = "==2.11.1"
+pyOpenSSL = "==19.1.0"
+pygments = "*"
 
 [dev-packages]
 
