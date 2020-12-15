@@ -1,6 +1,7 @@
 # Sonder
 
 ![AGPL3 License](https://img.shields.io/github/license/saurabh-khanna/sonder)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/saurabh-khanna/sonder)
 
 > *sonder (n.)*
 > 

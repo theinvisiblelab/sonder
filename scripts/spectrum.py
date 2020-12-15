@@ -9,7 +9,7 @@ from textblob import TextBlob
 
 # The url below can be replaced with 'http://localhost/8888/search' if searx is locally setup.
 # See https://searx.github.io/searx/admin/installation.html for more details.
-url = 'http://searx.sonder.care/search'
+url = 'http://0.0.0.0:5000/search'
 
 @st.cache(allow_output_mutation=True)
 def load_data(query):
