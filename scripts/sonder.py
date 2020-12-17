@@ -20,8 +20,7 @@ st.sidebar.markdown('_An Open Knowledge Platform_')
 st.sidebar.markdown('---')
 
 # Sidebar
-navigate_sidebar = st.sidebar.empty()
-value = navigate_sidebar.radio('Go to', ['Home', 'Spectrum', 'Spacetime', 'Balance'], 0)
+navigate_sidebar = st.sidebar.radio('Go to', ['Home', 'Spectrum', 'Spacetime', 'Balance'], 0)
 
 st.sidebar.markdown('---')
 
@@ -33,36 +32,22 @@ st.sidebar.info("""I am a PhD candidate at Stanford studying how knowledge flows
 
 
 # Main page
-col_a, col_b, col_c, col_d = st.beta_columns([1,1,1,1])
-
-if col_a.button('Home'):
-    value = 'Home'
-
-if col_b.button('Spectrum'):
-    value = navigate_sidebar.radio('Go to', ['Home', 'Spectrum', 'Spacetime', 'Balance'], 1)
-
-if col_c.button('Spacetime'):
-    value = navigate_sidebar.radio('Go to', ['Home', 'Spectrum', 'Spacetime', 'Balance'], 2)
-
-if col_d.button('Balance'):
-    value = navigate_sidebar.radio('Go to', ['Home', 'Spectrum', 'Spacetime', 'Balance'], 3)
-
 
 # Home
-if value == 'Home':
+if navigate_sidebar == 'Home':
     st.markdown(Path("markdown/home_top.md").read_text(), unsafe_allow_html=True)
     st.markdown(Path("markdown/home_bottom.md").read_text(), unsafe_allow_html=True)
 
 # Spectrum
-if value == 'Spectrum':
+if navigate_sidebar == 'Spectrum':
     exec(open('scripts/spectrum.py').read())
 
 # Spacetime
-if value == 'Spacetime':
+if navigate_sidebar == 'Spacetime':
     exec(open('scripts/spacetime.py').read())
 
 # Balance
-if value == 'Balance':
+if navigate_sidebar == 'Balance':
     st.write('Still cooking!!')
 
 

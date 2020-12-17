@@ -5,13 +5,14 @@
 import requests
 import pandas as pd
 import io
+import yaml
 from textblob import TextBlob
 
 # The url below can be replaced with 'http://localhost/8888/search' if searx is locally setup.
 # See https://searx.github.io/searx/admin/installation.html for more details.
 url = 'http://searx.sonder.care/search'
 
-@st.cache(allow_output_mutation=True)
+@st.cache(allow_output_mutation=True, show_spinner=False)
 def load_data(query):
     df = []
     for page in range(1, 4):
@@ -19,17 +20,18 @@ def load_data(query):
             'q': query,
             'categories': 'news',
             'pageno': page,
-            'format': 'csv',
-            'language': "en-US" 
+            'format': 'json',
+            'language': "en-US"
         }
-        response = requests.request('GET', url, params=querystring).content
-        df_mini = pd.read_csv(io.StringIO(response.decode('utf-8')))
+        response = requests.request('GET', url, params=querystring)
+        text = yaml.safe_load(response.text)
+        df_mini = pd.DataFrame(text['results'])
         df.append(df_mini)
     df = pd.concat(df)
     return df
 
 
-@st.cache
+@st.cache(allow_output_mutation=True, show_spinner=False)
 def sentiment_calc(text):
     try:
         return TextBlob(text).sentiment
@@ -60,11 +62,13 @@ if query != '':
     if choose_metric == "Polarity":
         df['polarity'] = df.apply(lambda row: sentiment_calc(row['title'])[0], axis=1)
         df['polarity'] = df['polarity'].apply(lambda x: round(x, 2))
+        df['new_score'] = df['score'] + abs(df['polarity'])
+        #st.write(df.head(20))
         df_filtered = df[(df['polarity'] >= polarity[0]) & (df['polarity'] <= polarity[1])]
         df_low = df_filtered[(df_filtered['polarity'] < 0)]
-        df_low = df_low.sort_values(by=['polarity'], ascending=True).head(30)
+        df_low = df_low.sort_values(by=['new_score'], ascending=False).head(10)
         df_high = df_filtered[(df_filtered['polarity'] >= 0)]
-        df_high = df_high.sort_values(by=['polarity'], ascending=False).head(30)
+        df_high = df_high.sort_values(by=['new_score'], ascending=False).head(10)
         col3.subheader('Results with low polarity')
         col3.markdown("---")
         col4.subheader('Results with high polarity')
