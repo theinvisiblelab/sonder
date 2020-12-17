@@ -51,9 +51,9 @@ def map_result(ip_address):
 
 ## CONTENT ##
 
-st.header('Spacetime')
+st.header('Dimensions')
 
-st.write("Spacetime highlights spatial and temporal bias in search results.")
+st.write("Dimensions highlights temporal and spatial bias in our search results.")
 
 query = st.text_input('Type something you wish to know and hit return!').strip()
 
@@ -73,4 +73,4 @@ if query != '':
 	df['longitude'] = df.apply(lambda row: row['map_result_tuple'][2], axis=1)
 	df['cctld'] = df.apply(lambda row: row['domain'].split('.')[-1], axis=1)
 	#st.write(df)
-	st.balloons()
+	#st.balloons()

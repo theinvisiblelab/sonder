@@ -20,7 +20,7 @@ st.sidebar.markdown('_An Open Knowledge Platform_')
 st.sidebar.markdown('---')
 
 # Sidebar
-navigate_sidebar = st.sidebar.radio('Go to', ['Home', 'Spectrum', 'Spacetime', 'Balance'], 0)
+navigate_sidebar = st.sidebar.radio('Go to', ['Home', 'Spectrum', 'Dimensions', 'Balance'], 0)
 
 st.sidebar.markdown('---')
 
@@ -42,9 +42,9 @@ if navigate_sidebar == 'Home':
 if navigate_sidebar == 'Spectrum':
     exec(open('scripts/spectrum.py').read())
 
-# Spacetime
-if navigate_sidebar == 'Spacetime':
-    exec(open('scripts/spacetime.py').read())
+# Dimensions
+if navigate_sidebar == 'Dimensions':
+    exec(open('scripts/dimensions.py').read())
 
 # Balance
 if navigate_sidebar == 'Balance':
