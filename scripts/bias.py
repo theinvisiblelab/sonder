@@ -55,7 +55,8 @@ def get_ip(hostname):
         return None
 
 
-# you can get your own free maxmind geoip key if deploying your own sonder servers
+# You can get your own free maxmind geoip key and GeoLite2-City database if deploying your own sonder servers
+# Check https://dev.maxmind.com/geoip/geoip2/geolite2/ for more details.
 def map_result(ip_address):
     try:
         with geoip2.database.Reader(Path("data/geoip/GeoLite2-City.mmdb")) as reader:

@@ -1,15 +1,16 @@
-## Saurabh custom ##
+## Custom ##
+
 .env
-config.py
 __pycache__
 *.ipynb
 .ipynb_checkpoints/
 
-# Data folders
-data/
+# Maxmind data
+# You can get your own free maxmind geoip key and GeoLite2-City database if deploying your own Sonder instance
+# Check https://dev.maxmind.com/geoip/geoip2/geolite2/ for more details.
+geoip/
 
 # Data files
-*.csv
 *.xlsx
 *.docx
 *.doc
