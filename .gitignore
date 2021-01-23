@@ -24,12 +24,10 @@ geoip/
 *.stata
 *.tsv
 *.xpt
-.Rproj.user
-
 
 ## R ##
 
-# History files
+# History
 .Rhistory
 .Rapp.history
 
@@ -47,6 +45,7 @@ geoip/
 
 # RStudio files
 *.Rproj
+.Rproj.user
 .Rproj.user/
 
 # Produced vignettes

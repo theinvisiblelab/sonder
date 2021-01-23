@@ -3,7 +3,7 @@
 import streamlit as st
 from pathlib import Path
 
-st.set_page_config(page_title="Sonder", page_icon="data/favicon/favicon.png")
+st.set_page_config(page_title="Sonder", page_icon="favicon/favicon.png")
 
 """
 # Sonder
@@ -42,8 +42,7 @@ if navigate_sidebar == "Bias":
 
 # Balance
 if navigate_sidebar == "Balance":
-    st.markdown(Path("markdown/balance.md").read_text(), unsafe_allow_html=True)
-    st.balloons()
+    exec(open("scripts/balance.py").read())
 
 # Philosophy
 if navigate_sidebar == "Philosophy":

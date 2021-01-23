@@ -59,7 +59,7 @@ def get_ip(hostname):
 # Check https://dev.maxmind.com/geoip/geoip2/geolite2/ for more details.
 def map_result(ip_address):
     try:
-        with geoip2.database.Reader(Path("data/geoip/GeoLite2-City.mmdb")) as reader:
+        with geoip2.database.Reader(Path("geoip/GeoLite2-City.mmdb")) as reader:
             response = reader.city(ip_address)
             return (
                 response.country.iso_code,
@@ -166,9 +166,10 @@ if query != "":
             df["country_name"] = df.apply(lambda row: row["map_result_tuple"][4], axis=1)
             df["cctld"] = df.apply(lambda row: row["domain"].split(".")[-1], axis=1)
 
+            # correcting locations based on cctld
             df = pd.merge(
                 df,
-                pd.read_csv(Path("data/geoip/cctld_country/capitals.csv")),
+                pd.read_csv(Path("cctld/capitals.csv")),
                 on="cctld",
                 how="left",
             )
