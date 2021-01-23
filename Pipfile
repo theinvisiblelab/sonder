@@ -18,6 +18,11 @@ Flask-Babel = "==1.0.0"
 Jinja2 = "==2.11.1"
 pyOpenSSL = "==19.1.0"
 geoip2 = "*"
+folium = "*"
+streamlit-folium = "*"
+plotly = "*"
+scipy = "*"
+plotnine = "*"
 
 [dev-packages]
 
