@@ -83,7 +83,7 @@ st.markdown("&nbsp;")
 
 
 if query != "":
-    with st.spinner("Assessing search results..."):
+    with st.spinner("Finding what you seek..."):
         df = load_data(query)
 
     expander1 = st.beta_expander("Sentiment Bias", expanded=True)
@@ -94,7 +94,8 @@ if query != "":
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
             df["polarity"] = df.apply(
-                lambda row: sentiment_calc(row["title"] + " " + str(row["content"]))[0], axis=1
+                lambda row: sentiment_calc(row["title"] + " " + str(row["content"]))[0],
+                axis=1,
             )
             df["polarity"] = df["polarity"].apply(lambda x: round(x, 4))
             df["rank"] = df.reset_index().index + 1
@@ -112,34 +113,36 @@ if query != "":
             if sentiment_mean >= 0.1:
                 sentiment_text = "positive"
             st.write(
-            "The average sentiment in your top "
-            + str(df_size)
-            + " search results is "
-            + sentiment_text
-            + ", with a mean of "
-            + str(sentiment_mean)
-            + ". The distribution of sentiment in these results is shown below, with the red line highlighting the distribution median."
+                "The average sentiment in your top "
+                + str(df_size)
+                + " search results is "
+                + sentiment_text
+                + ", with a mean of "
+                + str(sentiment_mean)
+                + ". The distribution of sentiment in these results is shown below, with the red line highlighting the distribution median."
             )
             plot_dist = (
-            ggplot(df, aes("polarity"))
-            + geom_density(fill="blue", alpha=0.25, na_rm=True)
-            + geom_vline(xintercept=sentiment_median, linetype="dashed", color="red")
-            + theme_bw()
-            + xlim(sentiment_min, sentiment_max)
-            + labs(x="Sentiment", y="Density")
+                ggplot(df, aes("polarity"))
+                + geom_density(fill="blue", alpha=0.25, na_rm=True)
+                + geom_vline(
+                    xintercept=sentiment_median, linetype="dashed", color="red"
+                )
+                + theme_bw()
+                + xlim(sentiment_min, sentiment_max)
+                + labs(x="Sentiment", y="Density")
             )
             st.pyplot(ggplot.draw(plot_dist))
             correlation = round(df["rank"].corr(df["polarity"]), 4)
             st.write(
-            "The correlation between search result rank and its sentiment is "
-            + str(correlation)
-            + ". See the scatterplot below."
+                "The correlation between search result rank and its sentiment is "
+                + str(correlation)
+                + ". See the scatterplot below."
             )
             plot_corr = (
-            ggplot(df, aes("rank", "polarity"))
-            + geom_jitter(fill="blue", alpha=0.5, size=2.5)
-            + theme_bw()
-            + labs(x="Search Result Rank", y="Sentiment")
+                ggplot(df, aes("rank", "polarity"))
+                + geom_jitter(fill="blue", alpha=0.5, size=2.5)
+                + theme_bw()
+                + labs(x="Search Result Rank", y="Sentiment")
             )
             st.pyplot(ggplot.draw(plot_corr))
             st.markdown("&nbsp;")
@@ -163,7 +166,9 @@ if query != "":
             df["latitude"] = df.apply(lambda row: row["map_result_tuple"][1], axis=1)
             df["longitude"] = df.apply(lambda row: row["map_result_tuple"][2], axis=1)
             df["city"] = df.apply(lambda row: row["map_result_tuple"][3], axis=1)
-            df["country_name"] = df.apply(lambda row: row["map_result_tuple"][4], axis=1)
+            df["country_name"] = df.apply(
+                lambda row: row["map_result_tuple"][4], axis=1
+            )
             df["cctld"] = df.apply(lambda row: row["domain"].split(".")[-1], axis=1)
 
             # correcting locations based on cctld
@@ -239,7 +244,7 @@ if query != "":
                 + geom_bar(fill="blue", color="black", alpha=0.25, na_rm=True)
                 + theme_bw()
                 + coord_flip()
-                + labs(x="Country", y="Results", fill="Continent")
+                + labs(x="Country", y="Results")
             )
             st.pyplot(ggplot.draw(plot_country))
             st.markdown("&nbsp;")
@@ -253,7 +258,9 @@ if query != "":
     with expander3:
         st.write("Highlighting lingual bias in your search results.")
         st.markdown("&nbsp;")
-        st.markdown("_STILL COOKING!_ Watch our [github](https://github.com/saurabh-khanna/sonder) repository for updates.")
+        st.markdown(
+            "_STILL COOKING!_ Watch our [github](https://github.com/saurabh-khanna/sonder) repository for updates."
+        )
         st.markdown("&nbsp;")
 
 st.markdown("&nbsp;")
@@ -265,8 +272,8 @@ if query != "":
         # st.write(df)
         for index, row in df.iterrows():
             with st.beta_container():
-                st.write('Sentiment: ', row['polarity'])
-                st.write('Host Country: ', row['country_name'])
+                st.write("Sentiment: ", row["polarity"])
+                st.write("Host Country: ", row["country_name"])
                 # st.write('Search Rank: ', row['rank'])
                 if row["content"] == row["content"]:
                     st.write(row["content"])
