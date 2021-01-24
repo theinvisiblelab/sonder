@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 ## PARAMETERS ##
 import requests
 import numpy as np
@@ -22,11 +19,12 @@ st.markdown(Path("markdown/balance.md").read_text(), unsafe_allow_html=True)
 
 st.markdown("## Balance")
 
-st.write("Balance is affirmative action for knowledge search - an attempt towards fairer knowledge access.")
+st.write("`Balance` is an attempt to enable fairer knowledge access. Affirmative action for knowledge search per se.")
 
-query = st.text_input("Type something you wish to know and hit return!").strip()
-polarity = st.slider('Adjust balance metric', -1.0, 1.0, (-1.0, 1.0))
+query = st.text_input("Seek the unknown...").strip()
+st.slider('Adjust balance metric', -1.0, 1.0, (-1.0, 1.0))
 
-st.markdown("\n\n\n\n")
+st.markdown("&nbsp;")
+st.markdown("&nbsp;")
 
 st.markdown("_STILL COOKING!_ Watch our [github](https://github.com/saurabh-khanna/sonder) repository for updates.")

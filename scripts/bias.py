@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 ## PARAMETERS ##
 import requests
 import numpy as np
@@ -78,25 +75,26 @@ st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
 
 st.markdown("## Bias")
 
-st.write("Bias is an attempt to assess how fair our search for web knowledge is.")
+st.write("`Bias` is an attempt to understand how fair our search for web knowledge is.")
 
-query = st.text_input("Type something you wish to know and hit return!").strip()
+query = st.text_input("Seek the unknown...").strip()
 
-st.markdown("\n\n\n\n")
+st.markdown("&nbsp;")
+
 
 if query != "":
+    with st.spinner("Assessing search results..."):
+        df = load_data(query)
 
     expander1 = st.beta_expander("Sentiment Bias", expanded=True)
     expander2 = st.beta_expander("Spatial Bias", expanded=False)
     expander3 = st.beta_expander("Lingual Bias", expanded=False)
     expander4 = st.beta_expander("View Search Results", expanded=False)
 
-
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
-            df = load_data(query)
             df["polarity"] = df.apply(
-                lambda row: sentiment_calc(row["title"] + " " + row["content"])[0], axis=1
+                lambda row: sentiment_calc(row["title"] + " " + str(row["content"]))[0], axis=1
             )
             df["polarity"] = df["polarity"].apply(lambda x: round(x, 4))
             df["rank"] = df.reset_index().index + 1
@@ -144,14 +142,16 @@ if query != "":
             + labs(x="Search Result Rank", y="Sentiment")
             )
             st.pyplot(ggplot.draw(plot_corr))
+            st.markdown("&nbsp;")
 
-st.markdown("\n\n\n\n")
+
+st.markdown("&nbsp;")
+st.markdown("&nbsp;")
 
 if query != "":
     with expander2:
         st.write("Highlighting spatial bias in your search results.")
         with st.spinner("Geolocating your search results..."):
-            # df = load_data(query)
             df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
             df["ip_address"] = df.apply(lambda row: get_ip(row["domain"]), axis=1)
             df = df[df["ip_address"].notnull()]
@@ -239,21 +239,25 @@ if query != "":
                 + geom_bar(fill="blue", color="black", alpha=0.25, na_rm=True)
                 + theme_bw()
                 + coord_flip()
-                + labs(x="Country", y="Results")
+                + labs(x="Country", y="Results", fill="Continent")
             )
             st.pyplot(ggplot.draw(plot_country))
+            st.markdown("&nbsp;")
 
             # IDEA: Add average rank per country plot.
 
-st.markdown("\n\n\n\n")
+st.markdown("&nbsp;")
+st.markdown("&nbsp;")
 
 if query != "":
     with expander3:
         st.write("Highlighting lingual bias in your search results.")
-        st.markdown("\n\n\n\n")
+        st.markdown("&nbsp;")
         st.markdown("_STILL COOKING!_ Watch our [github](https://github.com/saurabh-khanna/sonder) repository for updates.")
+        st.markdown("&nbsp;")
 
-st.markdown("\n\n\n\n")
+st.markdown("&nbsp;")
+st.markdown("&nbsp;")
 
 if query != "":
     with expander4:

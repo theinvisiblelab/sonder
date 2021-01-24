@@ -6,4 +6,4 @@
 
 &nbsp;
 
-Our access to knowledge is biased by algorithms trained to feed us what we ~~need~~ are predicted to consume. This robs us of the _choice_ to understand those who know, think, and grow differently. Sonder is an attempt to make this _choice_ explicit. To at least be conscious of our knowledge bubbles, if not break them.
+Our access to knowledge carries biases inherent in algorithms _trained_ to ~~promote understanding~~ maximize consumption. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` is an attempt to make this choice explicit. To at least be conscious of our knowledge bubbles, if not break them.
