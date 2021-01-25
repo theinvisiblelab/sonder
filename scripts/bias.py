@@ -34,6 +34,8 @@ def load_data(query):
         df.append(df_mini)
     df = pd.concat(df)
     df = df.sort_values(by=["score"], ascending=False)
+    df["title"] = df["title"].str.encode("utf-8", "ignore").str.decode("utf-8")
+    df["content"] = df["content"].str.encode("utf-8", "ignore").str.decode("utf-8")
     return df
 
 
@@ -136,7 +138,7 @@ if query != "":
             st.write(
                 "The correlation between search result rank and its sentiment is "
                 + str(correlation)
-                + ". See the scatterplot below."
+                + ". The scatterplot is shown below."
             )
             plot_corr = (
                 ggplot(df, aes("rank", "polarity"))

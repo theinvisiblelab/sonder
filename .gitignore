@@ -5,10 +5,8 @@ __pycache__
 *.ipynb
 .ipynb_checkpoints/
 
-# Maxmind data
-# You can get your own free maxmind geoip key and GeoLite2-City database if deploying your own Sonder instance
-# Check https://dev.maxmind.com/geoip/geoip2/geolite2/ for more details.
-geoip/
+# GeoIP script
+geoip_download.sh
 
 # Data files
 *.xlsx
