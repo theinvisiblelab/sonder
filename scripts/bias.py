@@ -1,12 +1,12 @@
 ## PARAMETERS ##
 import requests
-import numpy as np
-import pandas as pd
 import io
 import yaml
 import socket
-from textblob import TextBlob
+import numpy as np
+import pandas as pd
 import scipy
+from textblob import TextBlob
 import geoip2.database
 import folium
 from streamlit_folium import folium_static
@@ -125,7 +125,7 @@ if query != "":
             )
             plot_dist = (
                 ggplot(df, aes("polarity"))
-                + geom_density(fill="blue", alpha=0.25, na_rm=True)
+                + geom_density(fill="blue", alpha=0.25, na_rm=True) # Idea: fill by sentiment
                 + geom_vline(
                     xintercept=sentiment_median, linetype="dashed", color="red"
                 )

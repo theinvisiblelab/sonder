@@ -8,7 +8,6 @@ streamlit = "*"
 pandas = "*"
 requests = {version = "==2.24.0", extras = ["socks"]}
 textblob = "*"
-jupyterlab = "*"
 certifi = "==2020.6.20"
 idna = "==2.10"
 lxml = "==4.6.1"
@@ -20,9 +19,8 @@ pyOpenSSL = "==19.1.0"
 geoip2 = "*"
 folium = "*"
 streamlit-folium = "*"
-plotly = "*"
-scipy = "*"
 plotnine = "*"
+scipy = "*"
 
 [dev-packages]
 
