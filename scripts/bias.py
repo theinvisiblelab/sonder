@@ -42,7 +42,7 @@ def load_data(query):
 @st.cache(allow_output_mutation=True, show_spinner=False)
 def sentiment_calc(text):
     try:
-        return TextBlob(text).sentiment
+        return TextBlob(text).sentiment.polarity
     except:
         return None
 
@@ -95,19 +95,19 @@ if query != "":
 
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
-            df["polarity"] = df.apply(
-                lambda row: sentiment_calc(row["title"] + " " + str(row["content"]))[0],
-                axis=1,
-            )
-            df["polarity"] = df["polarity"].apply(lambda x: round(x, 4))
             df["rank"] = df.reset_index().index + 1
+            df["pol_title"] = df.apply(lambda row: sentiment_calc(row["title"]), axis=1)
+            df["pol_content"] = df.apply(
+                lambda row: sentiment_calc(row["content"]), axis=1
+            )
+            df["polarity"] = ((2 * df["pol_title"]) + df["pol_content"]) / 3
+            df["polarity"] = df["polarity"].apply(lambda x: round(x, 4))
             sentiment_mean = round(df["polarity"].mean(), 4)
             sentiment_median = round(df["polarity"].median(), 4)
             sentiment_min = df["polarity"].min()
             sentiment_max = df["polarity"].max()
             df_size = len(df.index)
             # df['new_score'] = df['score'] + abs(df['polarity'])
-            # st.write(df.head(20))
             if sentiment_mean <= -0.1:
                 sentiment_text = "negative"
             if sentiment_mean > -0.1 and sentiment_mean < 0.1:
@@ -125,7 +125,9 @@ if query != "":
             )
             plot_dist = (
                 ggplot(df, aes("polarity"))
-                + geom_density(fill="blue", alpha=0.25, na_rm=True) # Idea: fill by sentiment
+                + geom_density(
+                    fill="blue", alpha=0.25, na_rm=True
+                )  # Idea: fill by sentiment
                 + geom_vline(
                     xintercept=sentiment_median, linetype="dashed", color="red"
                 )
@@ -142,6 +144,25 @@ if query != "":
             )
             plot_corr = (
                 ggplot(df, aes("rank", "polarity"))
+                + geom_hline(yintercept=0, linetype="dashed")
+                + annotate(
+                    "rect",
+                    xmin=-np.Inf,
+                    xmax=np.Inf,
+                    ymin=0,
+                    ymax=np.Inf,
+                    alpha=0.1,
+                    fill="green",
+                )
+                + annotate(
+                    "rect",
+                    xmin=-np.Inf,
+                    xmax=np.Inf,
+                    ymin=-np.Inf,
+                    ymax=0,
+                    alpha=0.1,
+                    fill="red",
+                )
                 + geom_jitter(fill="blue", alpha=0.5, size=2.5)
                 + theme_bw()
                 + labs(x="Search Result Rank", y="Sentiment")
@@ -272,7 +293,7 @@ if query != "":
     with expander4:
         st.markdown("\n\n")
         # st.write(df)
-        for index, row in df.iterrows():
+        for index, row in df.head(20).iterrows():
             with st.beta_container():
                 st.write("Sentiment: ", row["polarity"])
                 st.write("Host Country: ", row["country_name"])
