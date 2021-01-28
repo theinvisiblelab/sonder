@@ -107,7 +107,21 @@ if query != "":
             sentiment_min = df["polarity"].min()
             sentiment_max = df["polarity"].max()
             df_size = len(df.index)
+            correlation = round(df["rank"].corr(df["polarity"]), 4)
+            sentiment_bias = abs(correlation * 100)
+            st.write("_Bias magnitude (0-100):", sentiment_bias, "_")
+            if correlation < 0:
+                st.write(
+                    "_Bias direction: Results with `positive` sentiment are likely to be seen first._"
+                )
+            elif correlation > 0:
+                st.write(
+                    "_Bias direction: Results with `negative` sentiment are likely to be seen first._"
+                )
+            else:
+                st.write("_Bias direction: No sentiment in bias in results!_")
             # df['new_score'] = df['score'] + abs(df['polarity'])
+            st.write("\n")
             if sentiment_mean <= -0.1:
                 sentiment_text = "negative"
             if sentiment_mean > -0.1 and sentiment_mean < 0.1:
@@ -115,32 +129,9 @@ if query != "":
             if sentiment_mean >= 0.1:
                 sentiment_text = "positive"
             st.write(
-                "The average sentiment in your top "
+                "Here's a scatter plot of search result rank versus sentiment for your top "
                 + str(df_size)
-                + " search results is "
-                + sentiment_text
-                + ", with a mean of "
-                + str(sentiment_mean)
-                + ". The distribution of sentiment in these results is shown below, with the red line highlighting the distribution median."
-            )
-            plot_dist = (
-                ggplot(df, aes("polarity"))
-                + geom_density(
-                    fill="blue", alpha=0.25, na_rm=True
-                )  # Idea: fill by sentiment
-                + geom_vline(
-                    xintercept=sentiment_median, linetype="dashed", color="red"
-                )
-                + theme_bw()
-                + xlim(sentiment_min, sentiment_max)
-                + labs(x="Sentiment", y="Density")
-            )
-            st.pyplot(ggplot.draw(plot_dist))
-            correlation = round(df["rank"].corr(df["polarity"]), 4)
-            st.write(
-                "The correlation between search result rank and its sentiment is "
-                + str(correlation)
-                + ". The scatterplot is shown below."
+                + " search results."
             )
             plot_corr = (
                 ggplot(df, aes("rank", "polarity"))
@@ -168,6 +159,26 @@ if query != "":
                 + labs(x="Search Result Rank", y="Sentiment")
             )
             st.pyplot(ggplot.draw(plot_corr))
+            st.write(
+                "The overall sentiment in your search results is "
+                + sentiment_text
+                + ", with a mean sentiment score of "
+                + str(sentiment_mean)
+                + ". The distribution of sentiment in these results is shown below, with the red line highlighting the distribution median."
+            )
+            plot_dist = (
+                ggplot(df, aes("polarity"))
+                + geom_density(
+                    fill="blue", alpha=0.25, na_rm=True
+                )  # Idea: fill by sentiment
+                + geom_vline(
+                    xintercept=sentiment_median, linetype="dashed", color="red"
+                )
+                + theme_bw()
+                + xlim(sentiment_min, sentiment_max)
+                + labs(x="Sentiment", y="Density")
+            )
+            st.pyplot(ggplot.draw(plot_dist))
             st.markdown("&nbsp;")
 
 
@@ -297,8 +308,9 @@ if query != "":
             with st.beta_container():
                 st.write("Sentiment: ", row["polarity"])
                 st.write("Host Country: ", row["country_name"])
-                # st.write('Search Rank: ', row['rank'])
                 if row["content"] == row["content"]:
-                    st.write(row["content"])
+                    st.write(row["title"] + ". " + row["content"])
+                else:
+                    st.write(row["title"])
                 st.write("Read it all [here](" + row["url"] + ")")
                 st.markdown("---")
