@@ -71,6 +71,17 @@ def map_result(ip_address):
         return None
 
 
+# Calculate Gini coefficient
+def gini(x):
+    # Mean absolute difference
+    mad = np.abs(np.subtract.outer(x, x)).mean()
+    # Relative mean absolute difference
+    rmad = mad / np.mean(x)
+    # Gini coefficient
+    gini = 0.5 * rmad
+    return gini
+
+
 ## CONTENT ##
 
 st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
@@ -88,7 +99,7 @@ if query != "":
     with st.spinner("Finding what you seek..."):
         df = load_data(query)
 
-    expander1 = st.beta_expander("Sentiment Bias", expanded=True)
+    expander1 = st.beta_expander("Sentiment Bias", expanded=False)
     expander2 = st.beta_expander("Spatial Bias", expanded=False)
     expander3 = st.beta_expander("Lingual Bias", expanded=False)
     expander4 = st.beta_expander("View Search Results", expanded=False)
@@ -107,9 +118,9 @@ if query != "":
             sentiment_min = df["polarity"].min()
             sentiment_max = df["polarity"].max()
             df_size = len(df.index)
-            correlation = round(df["rank"].corr(df["polarity"]), 4)
-            sentiment_bias = abs(correlation * 100)
-            st.write("_Bias magnitude (0-100):", sentiment_bias, "_")
+            correlation = df["rank"].corr(df["polarity"])
+            sentiment_bias = round(abs(correlation * 100), 2)
+            st.write("_Bias magnitude:", sentiment_bias, "/100_")
             if correlation < 0:
                 st.write(
                     "_Bias direction: Results with `positive` sentiment are likely to be seen first._"
@@ -187,7 +198,6 @@ st.markdown("&nbsp;")
 
 if query != "":
     with expander2:
-        st.write("Highlighting spatial bias in your search results.")
         with st.spinner("Geolocating your search results..."):
             df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
             df["ip_address"] = df.apply(lambda row: get_ip(row["domain"]), axis=1)
@@ -257,6 +267,37 @@ if query != "":
                 "country_cctld",
             ]
 
+            counts = (
+                df.groupby("country_name")
+                .count()[["url"]]
+                .reset_index()
+                .rename(columns={"url": "count"})
+            )
+            ranks = df.groupby("country_name").mean()[["rank"]].reset_index()
+            df_tabulated = counts.merge(ranks)
+            df_tabulated["spatial_score"] = df_tabulated["count"] / df_tabulated["rank"]
+            spatial_bias_full = round(
+                gini(df_tabulated[["spatial_score"]].values) * 100, 2
+            )
+            # Replace sonder_host_country with appropriate value if your Sonder server is hosted in another country
+            sonder_host_country = "United States"
+            spatial_bias_adjusted = round(
+                gini(
+                    df_tabulated[df_tabulated["country_name"] != sonder_host_country][
+                        ["spatial_score"]
+                    ].values
+                )
+                * 100,
+                2,
+            )
+            st.write("_Bias magnitude (Unadjusted):", spatial_bias_full, "/100_")
+            st.write(
+                "_Bias magnitude (excluding country where `Sonder` is hosted):",
+                spatial_bias_adjusted,
+                "/100_",
+            )
+            st.write("\n")
+            st.write("You can zoom in to see where your search results come from.")
             map = folium.Map(location=[0, 0], zoom_start=1.49, tiles="cartodb positron")
             for i in range(0, len(df)):
                 folium.Marker(
@@ -264,19 +305,24 @@ if query != "":
                     popup=df.iloc[i]["city"],
                 ).add_to(map)
             folium_static(map)
-
+            st.write("\n")
             st.write(
                 "Your top "
                 + str(df_size)
                 + " search results come from websites hosted in "
                 + str(df["country_name"].nunique())
-                + " countries."
+                + " countries. The host country for `Sonder` is highlighted in a separate color."
             )
-
+            country_list = df["country_name"].value_counts().index.tolist()[::-1]
+            df["country_cat"] = pd.Categorical(df["country_name"], categories=country_list)
+            df["sonder_host_country"] = "True"
+            df.loc[df["country_name"] != "United States", "sonder_host_country"] = "False"
             plot_country = (
-                ggplot(df, aes("country_name"))
-                + geom_bar(fill="blue", color="black", alpha=0.25, na_rm=True)
+                ggplot(df, aes("country_cat"))
+                + geom_bar(aes(fill="sonder_host_country"), color="black", alpha=0.25, na_rm=True)
+                + scale_fill_manual(values = ['blue', 'red'])
                 + theme_bw()
+                + theme(legend_position = "none")
                 + coord_flip()
                 + labs(x="Country", y="Results")
             )
@@ -303,14 +349,14 @@ st.markdown("&nbsp;")
 if query != "":
     with expander4:
         st.markdown("\n\n")
-        # st.write(df)
+        # presently printing out top 20 search results
         for index, row in df.head(20).iterrows():
             with st.beta_container():
                 st.write("Sentiment: ", row["polarity"])
-                st.write("Host Country: ", row["country_name"])
+                # st.write("Host Country: `", row["country_name"], "`")
                 if row["content"] == row["content"]:
                     st.write(row["title"] + ". " + row["content"])
                 else:
                     st.write(row["title"])
-                st.write("Read it all [here](" + row["url"] + ")")
+                st.write("_Learn more [here](" + row["url"] + ")_")
                 st.markdown("---")
