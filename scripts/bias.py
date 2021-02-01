@@ -71,6 +71,24 @@ def map_result(ip_address):
         return None
 
 
+@st.cache(allow_output_mutation=True, show_spinner=False)
+def load_lang_data(query):
+    count_list = []
+    for lang in language_codes:
+        querystring = {
+            "q": query,
+            "categories": "general",
+            "engines": ["google", "bing", "duckduckgo"],
+            "format": "json",
+            "language": lang[0],
+        }
+        response = requests.request("GET", url, params=querystring)
+        text = yaml.safe_load(response.text)
+        count = int(text["number_of_results"])
+        count_list.append((lang[3], count))
+    return count_list
+
+
 # Calculate Gini coefficient
 def gini(x):
     # Mean absolute difference
@@ -81,6 +99,20 @@ def gini(x):
     gini = 0.5 * rmad
     return gini
 
+
+# Language codes
+language_codes = (
+    ("ar-EG", "العربية", "", "Arabic"),
+    ("de", "Deutsch", "", "German"),
+    ("en", "English", "", "English"),
+    ("es", "Español", "", "Spanish"),
+    ("fr", "Français", "", "French"),
+    ("id-ID", "Indonesia", "", "Indonesian"),
+    ("ja-JP", "日本語", "", "Japanese"),
+    ("pt", "Português", "", "Portuguese"),
+    ("ru-RU", "Русский", "", "Russian"),
+    ("zh", "中文", "", "Chinese"),
+)
 
 ## CONTENT ##
 
@@ -94,15 +126,28 @@ query = st.text_input("Seek the unknown...").strip()
 
 st.markdown("&nbsp;")
 
-
 if query != "":
     with st.spinner("Finding what you seek..."):
         df = load_data(query)
 
-    expander1 = st.beta_expander("Sentiment Bias", expanded=False)
+    expander1 = st.beta_expander("Sentiment Bias", expanded=True)
     expander2 = st.beta_expander("Spatial Bias", expanded=False)
     expander3 = st.beta_expander("Lingual Bias", expanded=False)
     expander4 = st.beta_expander("View Search Results", expanded=False)
+
+    with expander4:
+        st.markdown("\n\n")
+        # presently printing out top 20 search results
+        for index, row in df.head(20).iterrows():
+            with st.beta_container():
+                # st.write("Sentiment: ", row["polarity"])
+                # st.write("Host Country: `", row["country_name"], "`")
+                if row["content"] == row["content"]:
+                    st.write(row["title"] + ". " + row["content"])
+                else:
+                    st.write(row["title"])
+                st.write("_Learn more [here](" + row["url"] + ")_")
+                st.markdown("---")
 
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
@@ -120,18 +165,15 @@ if query != "":
             df_size = len(df.index)
             correlation = df["rank"].corr(df["polarity"])
             sentiment_bias = round(abs(correlation * 100), 2)
-            st.write("_Bias magnitude:", sentiment_bias, "/100_")
+            line1 = "Bias magnitude: _" + str(sentiment_bias) + " /100_"
             if correlation < 0:
-                st.write(
-                    "_Bias direction: Results with `positive` sentiment are likely to be seen first._"
-                )
+                line2 = "Bias direction: Results with _positive_ sentiment are likely to be seen _first_."
             elif correlation > 0:
-                st.write(
-                    "_Bias direction: Results with `negative` sentiment are likely to be seen first._"
-                )
+                line2 = "Bias direction: Results with _negative_ sentiment are likely to be seen _first_."
             else:
-                st.write("_Bias direction: No sentiment in bias in results!_")
+                line2 = "Bias direction: No sentiment in bias in results!"
             # df['new_score'] = df['score'] + abs(df['polarity'])
+            st.success(line1 + "  \n" + line2)
             st.write("\n")
             if sentiment_mean <= -0.1:
                 sentiment_text = "negative"
@@ -290,11 +332,14 @@ if query != "":
                 * 100,
                 2,
             )
-            st.write("_Bias magnitude (Unadjusted):", spatial_bias_full, "/100_")
-            st.write(
-                "_Bias magnitude (excluding country where `Sonder` is hosted):",
-                spatial_bias_adjusted,
-                "/100_",
+            st.success(
+                "Bias magnitude (Unadjusted): _"
+                + str(spatial_bias_full)
+                + "/100_"
+                + "  \n"
+                + "Bias magnitude (excluding country where `Sonder` is hosted): _"
+                + str(spatial_bias_adjusted)
+                + "/100_"
             )
             st.write("\n")
             st.write("You can zoom in to see where your search results come from.")
@@ -314,15 +359,24 @@ if query != "":
                 + " countries. The host country for `Sonder` is highlighted in a separate color."
             )
             country_list = df["country_name"].value_counts().index.tolist()[::-1]
-            df["country_cat"] = pd.Categorical(df["country_name"], categories=country_list)
+            df["country_cat"] = pd.Categorical(
+                df["country_name"], categories=country_list
+            )
             df["sonder_host_country"] = "True"
-            df.loc[df["country_name"] != "United States", "sonder_host_country"] = "False"
+            df.loc[
+                df["country_name"] != "United States", "sonder_host_country"
+            ] = "False"
             plot_country = (
                 ggplot(df, aes("country_cat"))
-                + geom_bar(aes(fill="sonder_host_country"), color="black", alpha=0.25, na_rm=True)
-                + scale_fill_manual(values = ['blue', 'red'])
+                + geom_bar(
+                    aes(fill="sonder_host_country"),
+                    color="black",
+                    alpha=0.25,
+                    na_rm=True,
+                )
+                + scale_fill_manual(values=["blue", "red"])
                 + theme_bw()
-                + theme(legend_position = "none")
+                + theme(legend_position="none")
                 + coord_flip()
                 + labs(x="Country", y="Results")
             )
@@ -336,27 +390,20 @@ st.markdown("&nbsp;")
 
 if query != "":
     with expander3:
-        st.write("Highlighting lingual bias in your search results.")
-        st.markdown("&nbsp;")
-        st.markdown(
-            "_STILL COOKING!_ Watch our [github](https://github.com/saurabh-khanna/sonder) repository for updates."
-        )
-        st.markdown("&nbsp;")
-
-st.markdown("&nbsp;")
-st.markdown("&nbsp;")
-
-if query != "":
-    with expander4:
-        st.markdown("\n\n")
-        # presently printing out top 20 search results
-        for index, row in df.head(20).iterrows():
-            with st.beta_container():
-                st.write("Sentiment: ", row["polarity"])
-                # st.write("Host Country: `", row["country_name"], "`")
-                if row["content"] == row["content"]:
-                    st.write(row["title"] + ". " + row["content"])
-                else:
-                    st.write(row["title"])
-                st.write("_Learn more [here](" + row["url"] + ")_")
-                st.markdown("---")
+        with st.spinner("Assessing lingual bias in your search results..."):
+            df_lang = pd.DataFrame(load_lang_data(query))
+            df_lang.columns = ["language", "count"]
+            df_lang.sort_values(by=["count"], ascending=False)
+            lang_list = df_lang["language"].value_counts().index.tolist()[::-1]
+            df_lang["language_cat"] = pd.Categorical(
+                df_lang["language"], categories=lang_list
+            )
+            plot_lang = (
+                ggplot(df_lang, aes("language", "count"))
+                + geom_col(fill="blue", color="black", alpha=0.25, na_rm=True)
+                + theme_bw()
+                + coord_flip()
+                + labs(x="Language", y="Results")
+            )
+            st.pyplot(ggplot.draw(plot_lang))
+            st.markdown("&nbsp;")
