@@ -393,20 +393,37 @@ if query != "":
         with st.spinner("Assessing lingual bias in your search results..."):
             df_lang = pd.DataFrame(load_lang_data(query))
             df_lang.columns = ["language", "count"]
-            df_lang.sort_values(by=["count"], ascending=False)
+            df_lang = df_lang.sort_values(by=["language"])
+            df_lang["web_usage"] = [1.1, 1.4, 60.5, 2.7, 2.3, 0.7, 2.1, 1.1, 8.5, 3.9]
+            df_lang["lingual_score"] = df_lang["count"] / df_lang["web_usage"]
+
+            lingual_bias_full = round(gini(df_lang[["count"]].values) * 100, 2)
+            lingual_bias_adjusted = round(
+                gini(df_lang[["lingual_score"]].values) * 100, 2
+            )
+
+            df_lang = df_lang.sort_values(by=["count"], ascending=False)
             lang_list = df_lang["language"].value_counts().index.tolist()[::-1]
             df_lang["language_cat"] = pd.Categorical(
                 df_lang["language"], categories=lang_list
             )
-            lingual_bias_full = round(gini(df_lang[["count"]].values) * 100, 2)
-            st.success("Bias magnitude: _" + str(lingual_bias_full) + "/100_")
+            st.success(
+                "Bias magnitude (Unadjusted): _"
+                + str(lingual_bias_full)
+                + "/100_"
+                + "  \n"
+                + "Bias magnitude (adjusted for language distribution on the internet): _"
+                + str(lingual_bias_adjusted)
+                + "/100_"
+            )
             st.write("\n")
+            st.write("The distribution of your _total search results_ among the top 10 internet languages (based on number of users) can be seen below.")
             plot_lang = (
-                ggplot(df_lang, aes("language", "count"))
+                ggplot(df_lang, aes("language_cat", "count"))
                 + geom_col(fill="blue", color="black", alpha=0.25, na_rm=True)
                 + theme_bw()
                 + coord_flip()
-                + labs(x="Language", y="Results")
+                + labs(x="Language", y="Total Results")
             )
             st.pyplot(ggplot.draw(plot_lang))
             st.markdown("&nbsp;")
