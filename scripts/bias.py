@@ -398,6 +398,9 @@ if query != "":
             df_lang["language_cat"] = pd.Categorical(
                 df_lang["language"], categories=lang_list
             )
+            lingual_bias_full = round(gini(df_lang[["count"]].values) * 100, 2)
+            st.success("Bias magnitude: _" + str(lingual_bias_full) + "/100_")
+            st.write("\n")
             plot_lang = (
                 ggplot(df_lang, aes("language", "count"))
                 + geom_col(fill="blue", color="black", alpha=0.25, na_rm=True)
