@@ -402,11 +402,6 @@ if query != "":
                 gini(df_lang[["lingual_score"]].values) * 100, 2
             )
 
-            df_lang = df_lang.sort_values(by=["count"], ascending=False)
-            lang_list = df_lang["language"].value_counts().index.tolist()[::-1]
-            df_lang["language_cat"] = pd.Categorical(
-                df_lang["language"], categories=lang_list
-            )
             st.success(
                 "Bias magnitude (Unadjusted): _"
                 + str(lingual_bias_full)
@@ -417,7 +412,14 @@ if query != "":
                 + "/100_"
             )
             st.write("\n")
-            st.write("The distribution of your _total search results_ among the top 10 internet languages (based on number of users) can be seen below.")
+            st.write(
+                "The distribution of your _total search results_ among the top 10 internet languages (based on number of users) can be seen below."
+            )
+            df_lang = df_lang.sort_values(by=["count"], ascending=False)
+            lang_list = df_lang["language"].value_counts().index.tolist()[::-1]
+            df_lang["language_cat"] = pd.Categorical(
+                df_lang["language"], categories=lang_list
+            )
             plot_lang = (
                 ggplot(df_lang, aes("language_cat", "count"))
                 + geom_col(fill="blue", color="black", alpha=0.25, na_rm=True)
