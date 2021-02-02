@@ -127,6 +127,9 @@ query = st.text_input("Seek the unknown...").strip()
 st.markdown("&nbsp;")
 
 if query != "":
+
+    summary_chart = st.empty()
+
     with st.spinner("Finding what you seek..."):
         df = load_data(query)
 
@@ -415,8 +418,8 @@ if query != "":
             st.write(
                 "The distribution of your _total search results_ among the top 10 internet languages (based on number of users) can be seen below."
             )
-            df_lang = df_lang.sort_values(by=["count"], ascending=False)
-            lang_list = df_lang["language"].value_counts().index.tolist()[::-1]
+            df_lang = df_lang.sort_values(by=["count"])
+            lang_list = df_lang["language"].tolist()
             df_lang["language_cat"] = pd.Categorical(
                 df_lang["language"], categories=lang_list
             )
@@ -428,4 +431,28 @@ if query != "":
                 + labs(x="Language", y="Total Results")
             )
             st.pyplot(ggplot.draw(plot_lang))
+
+            df_summary = pd.DataFrame(
+                [lingual_bias_adjusted, spatial_bias_adjusted, sentiment_bias],
+                columns=["value"],
+            )
+            df_summary["label"] = ["Lingual Bias", "Spatial Bias", "Sentiment Bias"]
+            df_summary["label_cat"] = pd.Categorical(
+                df_summary["label"], categories=df_summary["label"].tolist()
+            )
+            plot_summary = (
+                ggplot(df_summary, aes("label_cat", "value"))
+                + geom_col(
+                    aes(fill="label"),
+                    alpha=0.60,
+                    na_rm=True,
+                )
+                + scale_y_continuous(labels=lambda l: ["%d%%" % v for v in l])
+                + theme_538()
+                + theme(legend_position="none", legend_title_align="left")
+                + coord_flip()
+                + ggtitle("Summary - Search Result Bias")
+                + labs(x="", y="")
+            )
+            summary_chart.pyplot(ggplot.draw(plot_summary))
             st.markdown("&nbsp;")
