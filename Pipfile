@@ -21,6 +21,7 @@ folium = "*"
 streamlit-folium = "*"
 plotnine = "*"
 scipy = "*"
+pyarrow = "==2.0.0"
 
 [dev-packages]
 
