@@ -444,11 +444,11 @@ if query != "":
                 ggplot(df_summary, aes("label_cat", "value"))
                 + geom_col(
                     aes(fill="label"),
-                    alpha=0.60,
+                    alpha=0.75,
                     na_rm=True,
                 )
                 + scale_y_continuous(labels=lambda l: ["%d%%" % v for v in l])
-                + theme_538()
+                + theme_linedraw()
                 + theme(legend_position="none", legend_title_align="left")
                 + coord_flip()
                 + ggtitle("Summary - Search Result Bias")

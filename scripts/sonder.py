@@ -7,14 +7,14 @@ st.set_page_config(page_title="Sonder", page_icon="favicon/favicon.png")
 
 """
 # Sonder
-_An Open Knowledge Platform_
+_An Open-source Knowledge Platform_
 
 ---
 """
 
 # Main
 st.sidebar.title("Sonder")
-st.sidebar.markdown("_An Open Knowledge Platform_")
+st.sidebar.markdown("_An Open-source Knowledge Platform_")
 
 st.sidebar.markdown("---")
 

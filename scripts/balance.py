@@ -29,6 +29,7 @@ st.slider("Adjust balance metric", -1.0, 1.0, (-1.0, 1.0))
 st.markdown("&nbsp;")
 st.markdown("&nbsp;")
 
+st.markdown("_STILL COOKING!_ :spaghetti:")
 st.markdown(
-    "_STILL COOKING!_ Watch our [github](https://github.com/saurabh-khanna/sonder) repository for updates."
+    "Watch our [github](https://github.com/saurabh-khanna/sonder) repository for updates."
 )
