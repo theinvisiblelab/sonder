@@ -34,7 +34,10 @@ The internet accounts for a large proportion of our access to knowledge, with ef
 
 * __Sentiment Bias__: As a first step, Sonder evaluates the sentiment of search results using the polarity metric implemented in [TextBlob](https://github.com/sloria/TextBlob) &ndash; a Python library for processing textual data. As a second step, sentiment bias ($bias_{sent}$) is assessed as the scaled absolute magnitude of the correlation between search result sentiment $sent_i$ and search result rank $rank_i$, where $i$ is an index corresponds to $n$ search results obtained from first ten meta-search web pages. The correlation sign is used to define the direction of the bias. A positive correlation indicates that results with negative sentiment are seen first (and vice versa for a negative correlation).
 
-![equation_sentiment](images/equation_sentiment.svg)
+<p align="center">
+  <img src="images/equation_sentiment.svg" />
+</p>
+
 
 * __Spatial Bias__: As a first step, Sonder geolocates search results obtained from the first ten meta-search web pages using free [GeoLite2](https://github.com/maxmind/GeoIP2-python) databases. As a second step, for each country, we divide the search result count ($total_{country}$) by the mean result rank ($\overline{rank}_{country}$) to obtain a country level spatial score ($cscore$). As a third step, we calculate the spatial bias as the relative mean absolute difference and scale it to a value between 0 and 100. Further, in order to differentiate out spatial bias arising out of the location initiating a web search, an adjusted spatial bias is also calculated by excluding the country in which Sonder is hosted from the relative mean absolute difference.
 
