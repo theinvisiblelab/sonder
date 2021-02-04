@@ -32,7 +32,7 @@ The internet accounts for a large proportion of our access to knowledge, with ef
 
 `Sonder` curates meta-search results from a locally hosted [Searx](https://github.com/searx/searx) instance. Bias is calculated on three dimensions:
 
-* __Sentiment Bias__: As a first step, Sonder evaluates the sentiment of search results using the polarity metric implemented in [TextBlob](https://github.com/sloria/TextBlob) &ndash; a Python library for processing textual data. As a second step, sentiment bias ($bias_{sent}$) is assessed as the scaled absolute magnitude of the correlation between search result sentiment $sent_i$ and search result rank $rank_i$, where $i$ is an index corresponds to $n$ search results obtained from first ten meta-search web pages. The correlation sign is used to define the direction of the bias. A positive correlation indicates that results with negative sentiment are seen first (and vice versa for a negative correlation).
+* __Sentiment Bias__: As a first step, Sonder evaluates the sentiment of search results using the polarity metric implemented in [TextBlob](https://github.com/sloria/TextBlob) &ndash; a Python library for processing textual data. As a second step, sentiment bias (_bias<sub>sent</sub>_) is assessed as the scaled absolute magnitude of the correlation between search result sentiment _sent<sub>i</sub>_ and search result rank _rank<sub>i</sub>_, where _i_ is an index corresponds to _n_ search results obtained from first ten meta-search web pages. The correlation sign is used to define the direction of the bias. A positive correlation indicates that results with negative sentiment are seen first (and vice versa for a negative correlation).
 
 <p align="center">
   <img src="images/equation_sentiment.svg" />
@@ -41,25 +41,12 @@ The internet accounts for a large proportion of our access to knowledge, with ef
 
 * __Spatial Bias__: As a first step, Sonder geolocates search results obtained from the first ten meta-search web pages using free [GeoLite2](https://github.com/maxmind/GeoIP2-python) databases. As a second step, for each country, we divide the search result count ($total_{country}$) by the mean result rank ($\overline{rank}_{country}$) to obtain a country level spatial score ($cscore$). As a third step, we calculate the spatial bias as the relative mean absolute difference and scale it to a value between 0 and 100. Further, in order to differentiate out spatial bias arising out of the location initiating a web search, an adjusted spatial bias is also calculated by excluding the country in which Sonder is hosted from the relative mean absolute difference.
 
-$$
-cscore = total_{country} \div \overline{rank}_{country}
-$$
-
-$$
-bias_{spatial} = \frac{\sum_{i=1}^{n}\sum_{j=1}^{n} \left\|cscore_i - cscore_j\right\|}
-  {2n^2 \overline{cscore}}
-$$
+<p align="center">
+  <img src="images/equation_spatial.svg" />
+</p>
 
 * __Lingual Bias__: As a first step, Sonder processes the search query to calculate the total count of results ($total_{lang}$) obtained for the top ten languages by the number of internet users ([ref](https://en.wikipedia.org/wiki/Languages_used_on_the_Internet#Internet_users_by_language)). Then, the unadjusted lingual bias ($lscore$) is calculated as the relative mean absolute difference in these counts scaled to a value between 0 and 100. An adjusted lingual bias ($lscore_{adj}$) is also calculated by using weights inversely proportional to content language distribution ($usage_{lang}$) on the internet ([ref](https://en.wikipedia.org/wiki/Languages_used_on_the_Internet#Content_languages_for_websites)).
 
-$$
-lscore = total_{lang}
-$$
-$$
-lscore_{adj} = total_{lang} \div usage_{lang}
-$$
-
-$$
-bias_{lingual} = \frac{\sum_{i=1}^{n}\sum_{j=1}^{n} \left\|lscore_i - lscore_j\right\|}
-  {2n^2 \overline{lscore}}
-$$
+<p align="center">
+  <img src="images/equation_lingual.svg" />
+</p>
