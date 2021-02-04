@@ -3,7 +3,7 @@
 import streamlit as st
 from pathlib import Path
 
-st.set_page_config(page_title="Sonder", page_icon="favicon/favicon.png")
+st.set_page_config(page_title="Sonder", page_icon="images/favicon.png")
 
 """
 # Sonder
