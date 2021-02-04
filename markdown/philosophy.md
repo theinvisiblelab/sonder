@@ -26,7 +26,7 @@ The internet accounts for a large proportion of our access to knowledge, with ef
 
 `Sonder` curates meta-search results from a locally hosted [Searx](https://github.com/searx/searx) instance. Bias is calculated on three dimensions:
 
-* __Sentiment Bias__: As a first step, Sonder evaluates the sentiment of search results using the polarity metric implemented in [TextBlob](https://github.com/sloria/TextBlob) &ndash; a Python library for processing textual data. As a second step, sentiment bias ($bias_{sent}$) is assessed as the scaled absolute magnitude of the correlation between search result sentiment $sent_i$ and search result rank $rank_i$, where $i$ is an index corresponds to $n$ search results obtained from first ten meta-search web pages. The correlation sign is used to define the direction of the bias. A positive correlation indicates that results with negative sentiment are seen first (and vice versa for a negative correlation).
+* __Sentiment Bias__: As a first step, Sonder evaluates the sentiment of search results using the polarity metric implemented in [TextBlob](https://github.com/sloria/TextBlob) &ndash; a Python library for processing textual data. As a second step, sentiment bias ($bias_{sent}$) is assessed as the scaled absolute magnitude of the correlation between search result sentiment $sent_i$ and search result rank $rank_i$, where $i$ is an index corresponding to $n$ search results obtained from first ten meta-search web pages. The correlation sign is used to define the direction of the bias. A positive correlation indicates that results with negative sentiment are seen first (and vice versa for a negative correlation).
 
 $$
 bias_{sent} = \left\|\frac{{}\sum_{i=1}^{n} (sent_i - \overline{sent})(rank_i - \overline{rank})}
