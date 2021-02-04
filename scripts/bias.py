@@ -39,7 +39,6 @@ def load_data(query):
     return df
 
 
-@st.cache(allow_output_mutation=True, show_spinner=False)
 def sentiment_calc(text):
     try:
         return TextBlob(text).sentiment.polarity
@@ -78,7 +77,7 @@ def load_lang_data(query):
         querystring = {
             "q": query,
             "categories": "general",
-            "engines": ["google", "bing", "duckduckgo"],
+            "engines": ["google"],
             "format": "json",
             "language": lang[0],
         }
@@ -120,7 +119,9 @@ st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
 
 st.markdown("## Bias")
 
-st.write("`Bias` is an attempt to understand how fair our search for web knowledge is.")
+st.write(
+    "`Bias` is an attempt to understand how fair our search for web knowledge is (algorithmic details [here](https://github.com/saurabh-khanna/sonder#algorithms))."
+)
 
 query = st.text_input("Seek the unknown...").strip()
 
@@ -151,6 +152,10 @@ if query != "":
                     st.write(row["title"])
                 st.write("_Learn more [here](" + row["url"] + ")_")
                 st.markdown("---")
+        st.markdown(
+            "<span style='color:gray'>_Top 20 search results shown here_</span>",
+            unsafe_allow_html=True,
+        )
 
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
@@ -345,7 +350,9 @@ if query != "":
                 + "/100_"
             )
             st.write("\n")
-            st.write("You can zoom in to see where your search results come from.")
+            st.write(
+                "You can zoom in to see where your search results come from. :telescope:"
+            )
             map = folium.Map(location=[0, 0], zoom_start=1.49, tiles="cartodb positron")
             for i in range(0, len(df)):
                 folium.Marker(
