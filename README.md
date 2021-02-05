@@ -75,7 +75,7 @@ pipenv install
 pip3 install -r requirements.txt
 ```
 
-3. [_Optional_] Set up your own [Searx](https://searx.github.io/searx/admin/installation.html) instance and [GeoLite2](https://dev.maxmind.com/geoip/geoip2/geolite2/) data account
+3. [Optional] Set up your own [Searx](https://searx.github.io/searx/admin/installation.html) instance and [GeoLite2](https://dev.maxmind.com/geoip/geoip2/geolite2/) data account
 
 4. Run `Sonder`
 
