@@ -52,28 +52,32 @@ The internet accounts for a large proportion of our access to knowledge, with ef
 </p>
 
 
-## Set up your own `Sonder` instance
+### Setting up your own `Sonder` instance
 
-1. Clone the git repo to your local machine
+1. Clone this git repo to your local machine
 
 ```
 git clone https://github.com/saurabh-khanna/sonder.git
 cd sonder
 ```
 
-2. Install dependencies from Pipfile or requirements.txt
+2. Install dependencies
+
+If `pipenv` is installed (recommended for dependency management):
 
 ```
 pipenv install # assuming pipenv is installed locally
 ```
 
-or
+If `pipenv` is not installed:
 
 ```
 pip3 install -r requirements.txt
 ```
 
-3. Run `Sonder`
+3. [Optional] Set up your own [Searx](https://searx.github.io/searx/admin/installation.html) instance and [GeoLite2](https://dev.maxmind.com/geoip/geoip2/geolite2/) data accounts
+
+4. Run `Sonder`
 
 ```
 streamlit run scripts/sonder.py
