@@ -50,3 +50,31 @@ The internet accounts for a large proportion of our access to knowledge, with ef
 <p align="center">
   <img src="images/equation_lingual.svg" />
 </p>
+
+
+## Set up your own `Sonder` instance
+
+1. Clone the git repo to your local machine
+
+```
+git clone https://github.com/saurabh-khanna/sonder.git
+cd sonder
+```
+
+2. Install dependencies from Pipfile or requirements.txt
+
+```
+pipenv install # assuming pipenv is installed locally
+```
+
+or
+
+```
+pip3 install -r requirements.txt
+```
+
+3. Run `Sonder`
+
+```
+streamlit run scripts/sonder.py
+```
