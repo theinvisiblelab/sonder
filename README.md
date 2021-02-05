@@ -63,13 +63,13 @@ cd sonder
 
 2. Install dependencies
 
-If `pipenv` is installed (recommended for dependency management):
+  * If `pipenv` is installed (recommended for dependency management):
 
 ```
-pipenv install # assuming pipenv is installed locally
+pipenv install
 ```
 
-If `pipenv` is not installed:
+  * If `pipenv` is not installed:
 
 ```
 pip3 install -r requirements.txt
