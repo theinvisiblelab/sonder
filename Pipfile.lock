@@ -1222,19 +1222,19 @@
         },
         "streamlit": {
             "hashes": [
-                "sha256:18802290e506251cf477897c8e0a045b1d66c4cb98a7d5bfabe242ba93325341",
-                "sha256:3cc77f59a8f544e932841629cdd5869b5f9553a3e9259dbfe7d4c658f54e2036"
+                "sha256:0c358fbfc4973b4008df4a77193323154d27673024c8ef4601b778785be6e86f",
+                "sha256:e2209a878417a2416bb4a1bca37306490d15380f9d46b06ae8ef79e3dfd7308a"
             ],
             "index": "pypi",
-            "version": "==0.75.0"
+            "version": "==0.76.0"
         },
         "streamlit-folium": {
             "hashes": [
-                "sha256:2677d620ddfd2c700ed5798a324aec318c1ddf6832bfb1aeace11bb9bb6024ae",
-                "sha256:6dd0ec535f3ba23b9f415bfb464e62bb156f9c490eb19e1139511a4f575e58ef"
+                "sha256:5506769d3a14bb6c3ddb1451566a61fe3146ec55ec7908f53d91cf331b658a21",
+                "sha256:c22b3f8043a0492e0753eba76d79dca650e64109c8850374a04f685502ac67b9"
             ],
             "index": "pypi",
-            "version": "==0.1.0"
+            "version": "==0.1.1"
         },
         "terminado": {
             "hashes": [

@@ -159,7 +159,7 @@ if query != "":
 
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
-            df["rank"] = df.reset_index().index + 1
+            df["search_rank"] = df.reset_index().index + 1
             df["pol_title"] = df.apply(lambda row: sentiment_calc(row["title"]), axis=1)
             df["pol_content"] = df.apply(
                 lambda row: sentiment_calc(row["content"]), axis=1
@@ -171,8 +171,10 @@ if query != "":
             sentiment_min = df["polarity"].min()
             sentiment_max = df["polarity"].max()
             df_size = len(df.index)
-            correlation = df["rank"].corr(df["polarity"])
+
+            correlation = df["search_rank"].corr(df["polarity"])
             sentiment_bias = round(abs(correlation * 100), 2)
+
             line1 = "Bias magnitude: _" + str(sentiment_bias) + " /100_"
             if correlation < 0:
                 line2 = "Bias direction: Results with _positive_ sentiment are likely to be seen _first_."
@@ -189,13 +191,36 @@ if query != "":
                 sentiment_text = "neutral"
             if sentiment_mean >= 0.1:
                 sentiment_text = "positive"
+
+            st.write(
+                "The overall sentiment in your search results is "
+                + sentiment_text
+                + ", with a mean sentiment score of "
+                + str(sentiment_mean)
+                + ". The distribution of sentiment in these results is shown below, with the red line highlighting the distribution median."
+            )
+            plot_dist = (
+                ggplot(df, aes("polarity"))
+                + geom_density(
+                    fill="blue", alpha=0.25, na_rm=True
+                )  # Idea: fill by sentiment
+                + geom_vline(
+                    xintercept=sentiment_median, linetype="dashed", color="red"
+                )
+                + theme_bw()
+                + xlim(sentiment_min, sentiment_max)
+                + labs(x="Sentiment", y="Density")
+            )
+            st.pyplot(ggplot.draw(plot_dist))
+            st.markdown("\n")
+
             st.write(
                 "Here's a scatter plot of search result rank versus sentiment for your top "
                 + str(df_size)
                 + " search results."
             )
             plot_corr = (
-                ggplot(df, aes("rank", "polarity"))
+                ggplot(df, aes("search_rank", "polarity"))
                 + geom_hline(yintercept=0, linetype="dashed")
                 + annotate(
                     "rect",
@@ -220,26 +245,7 @@ if query != "":
                 + labs(x="Search Result Rank", y="Sentiment")
             )
             st.pyplot(ggplot.draw(plot_corr))
-            st.write(
-                "The overall sentiment in your search results is "
-                + sentiment_text
-                + ", with a mean sentiment score of "
-                + str(sentiment_mean)
-                + ". The distribution of sentiment in these results is shown below, with the red line highlighting the distribution median."
-            )
-            plot_dist = (
-                ggplot(df, aes("polarity"))
-                + geom_density(
-                    fill="blue", alpha=0.25, na_rm=True
-                )  # Idea: fill by sentiment
-                + geom_vline(
-                    xintercept=sentiment_median, linetype="dashed", color="red"
-                )
-                + theme_bw()
-                + xlim(sentiment_min, sentiment_max)
-                + labs(x="Sentiment", y="Density")
-            )
-            st.pyplot(ggplot.draw(plot_dist))
+
             st.markdown("&nbsp;")
 
 
@@ -323,9 +329,11 @@ if query != "":
                 .reset_index()
                 .rename(columns={"url": "count"})
             )
-            ranks = df.groupby("country_name").mean()[["rank"]].reset_index()
+            ranks = df.groupby("country_name").mean()[["search_rank"]].reset_index()
             df_tabulated = counts.merge(ranks)
-            df_tabulated["spatial_score"] = df_tabulated["count"] / df_tabulated["rank"]
+            df_tabulated["spatial_score"] = (
+                df_tabulated["count"] / df_tabulated["search_rank"]
+            )
             spatial_bias_full = round(
                 gini(df_tabulated[["spatial_score"]].values) * 100, 2
             )
