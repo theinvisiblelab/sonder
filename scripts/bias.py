@@ -119,9 +119,7 @@ st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
 
 st.markdown("## Bias")
 
-st.write(
-    "`Bias` is an attempt to understand how fair our search for web knowledge is (algorithmic details [here](https://github.com/saurabh-khanna/sonder#algorithms))."
-)
+st.write("`Bias` is an attempt to understand how fair our search for web knowledge is.")
 
 query = st.text_input("Seek the unknown...").strip()
 
@@ -248,9 +246,6 @@ if query != "":
 
             st.markdown("&nbsp;")
 
-
-st.markdown("&nbsp;")
-st.markdown("&nbsp;")
 
 if query != "":
     with expander2:
@@ -400,11 +395,7 @@ if query != "":
             )
             st.pyplot(ggplot.draw(plot_country))
             st.markdown("&nbsp;")
-
             # IDEA: Add average rank per country plot.
-
-st.markdown("&nbsp;")
-st.markdown("&nbsp;")
 
 if query != "":
     with expander3:
@@ -471,3 +462,9 @@ if query != "":
             )
             summary_chart.pyplot(ggplot.draw(plot_summary))
             st.markdown("&nbsp;")
+
+st.markdown("&nbsp;")
+st.markdown(
+    "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/saurabh-khanna/sonder#algorithms)_</span>",
+    unsafe_allow_html=True,
+)
