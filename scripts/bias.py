@@ -88,15 +88,14 @@ def load_lang_data(query):
     return count_list
 
 
-# Calculate Gini coefficient
-def gini(x):
+# Calculate RMAD coefficient
+def rmad(x):
     # Mean absolute difference
     mad = np.abs(np.subtract.outer(x, x)).mean()
-    # Relative mean absolute difference
+    # RMAD (Relative mean absolute difference)
     rmad = mad / np.mean(x)
-    # Gini coefficient
-    gini = 0.5 * rmad
-    return gini
+    # Scaling
+    return (0.5 * rmad)
 
 
 # Language codes
@@ -330,12 +329,12 @@ if query != "":
                 df_tabulated["count"] / df_tabulated["search_rank"]
             )
             spatial_bias_full = round(
-                gini(df_tabulated[["spatial_score"]].values) * 100, 2
+                rmad(df_tabulated[["spatial_score"]].values) * 100, 2
             )
             # Replace sonder_host_country with appropriate value if your Sonder server is hosted in another country
             sonder_host_country = "United States"
             spatial_bias_adjusted = round(
-                gini(
+                rmad(
                     df_tabulated[df_tabulated["country_name"] != sonder_host_country][
                         ["spatial_score"]
                     ].values
@@ -406,9 +405,9 @@ if query != "":
             df_lang["web_usage"] = [1.1, 1.4, 60.5, 2.7, 2.3, 0.7, 2.1, 1.1, 8.5, 3.9]
             df_lang["lingual_score"] = df_lang["count"] / df_lang["web_usage"]
 
-            lingual_bias_full = round(gini(df_lang[["count"]].values) * 100, 2)
+            lingual_bias_full = round(rmad(df_lang[["count"]].values) * 100, 2)
             lingual_bias_adjusted = round(
-                gini(df_lang[["lingual_score"]].values) * 100, 2
+                rmad(df_lang[["lingual_score"]].values) * 100, 2
             )
 
             st.success(
