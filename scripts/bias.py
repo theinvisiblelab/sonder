@@ -449,7 +449,7 @@ if query != "":
                 ggplot(df_summary, aes("label_cat", "value"))
                 + geom_col(
                     aes(fill="label"),
-                    alpha=0.76,
+                    alpha=0.75,
                     na_rm=True,
                 )
                 + scale_y_continuous(labels=lambda l: ["%d%%" % v for v in l])
