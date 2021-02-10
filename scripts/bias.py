@@ -95,7 +95,7 @@ def rmad(x):
     # RMAD (Relative mean absolute difference)
     rmad = mad / np.mean(x)
     # Scaling
-    return (0.5 * rmad)
+    return 0.5 * rmad
 
 
 # Language codes
