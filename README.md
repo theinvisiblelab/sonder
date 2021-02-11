@@ -3,6 +3,8 @@
 ![AGPL3 License](https://img.shields.io/github/license/saurabh-khanna/sonder)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/saurabh-khanna/sonder)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4536014.svg)](https://doi.org/10.5281/zenodo.4536014)
+
 
 > *sonder (n.)*
 >
