@@ -33,7 +33,6 @@ st.sidebar.info(
     """I am a PhD candidate at Stanford studying how knowledge flows through networks. You can learn more about me [here](https://saurabh-khanna.github.io)."""
 )
 
-
 # Main page
 
 # Bias
