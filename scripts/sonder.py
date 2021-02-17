@@ -3,17 +3,17 @@
 import streamlit as st
 from pathlib import Path
 
-st.set_page_config(page_title="Sonder", page_icon="images/favicon.png")
+st.set_page_config(page_title="S🎈nder", page_icon="images/favicon.png")
 
 """
-# Sonder
+# S🎈nder
 _An Open-source Knowledge Platform_
 
 ---
 """
 
 # Main
-st.sidebar.title("Sonder")
+st.sidebar.title("S🎈nder")
 st.sidebar.markdown("_An Open-source Knowledge Platform_")
 
 st.sidebar.markdown("---")
