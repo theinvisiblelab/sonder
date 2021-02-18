@@ -25,7 +25,7 @@ st.sidebar.markdown("---")
 
 st.sidebar.markdown("**Contribute**")
 st.sidebar.info(
-    "Sonder is an open-source project enabling access to diverse knowledge. Please contribute any comments, questions, code changes, and resources as [issues](https://github.com/saurabh-khanna/sonder/issues) of or [pull requests](https://github.com/saurabh-khanna/sonder/pulls) to the [source code](https://github.com/saurabh-khanna/sonder)."
+    "S🎈nder is an open-source project enabling access to diverse knowledge. Please contribute any comments, questions, code changes, and resources as [issues](https://github.com/saurabh-khanna/sonder/issues) of or [pull requests](https://github.com/saurabh-khanna/sonder/pulls) to the [source code](https://github.com/saurabh-khanna/sonder)."
 )
 
 st.sidebar.markdown("**About me**")
