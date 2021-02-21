@@ -368,7 +368,7 @@ if query != "":
                 + str(df_size)
                 + " search results come from websites hosted in "
                 + str(df["country_name"].nunique())
-                + " countries. The host country for `S🎈nder` is highlighted in a separate color."
+                + " countries. The host country for `Sonder` is highlighted in a separate color."
             )
             country_list = df["country_name"].value_counts().index.tolist()[::-1]
             df["country_cat"] = pd.Categorical(

@@ -7,14 +7,14 @@ st.set_page_config(page_title="S🎈nder", page_icon="images/favicon.png")
 
 """
 # S🎈nder
-_An Open-source Knowledge Platform_
+_Enabling fairer knowledge search_
 
 ---
 """
 
 # Main
 st.sidebar.title("S🎈nder")
-st.sidebar.markdown("_An Open-source Knowledge Platform_")
+st.sidebar.markdown("_Enabling fairer knowledge search_")
 
 st.sidebar.markdown("---")
 
@@ -25,12 +25,7 @@ st.sidebar.markdown("---")
 
 st.sidebar.markdown("**Contribute**")
 st.sidebar.info(
-    "S🎈nder is an open-source project enabling access to diverse knowledge. Please contribute any comments, questions, code changes, and resources as [issues](https://github.com/saurabh-khanna/sonder/issues) of or [pull requests](https://github.com/saurabh-khanna/sonder/pulls) to the [source code](https://github.com/saurabh-khanna/sonder)."
-)
-
-st.sidebar.markdown("**About me**")
-st.sidebar.info(
-    """I am a PhD candidate at Stanford studying how knowledge flows through networks. You can learn more about me [here](https://saurabh-khanna.github.io)."""
+    "S🎈nder is an open-source project enabling fairer access to human knowledge. Please contribute any comments, questions, code changes, and resources as [issues](https://github.com/saurabh-khanna/sonder/issues) of or [pull requests](https://github.com/saurabh-khanna/sonder/pulls) to the [source code](https://github.com/saurabh-khanna/sonder)."
 )
 
 # Main page
