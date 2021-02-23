@@ -116,7 +116,7 @@ language_codes = (
 
 st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
 
-st.markdown("## Bias")
+st.markdown("## 📣 Bias")
 
 st.write("`Bias` is an attempt to understand how fair our search for web knowledge is.")
 
@@ -124,22 +124,21 @@ query = st.text_input("Seek the unknown...").strip()
 
 st.markdown("&nbsp;")
 
+col1, col2 = st.beta_columns(2)
+
 if query != "":
 
-    summary_chart = st.empty()
+    summary_chart = col2.empty()
 
     with st.spinner("Finding what you seek..."):
         df = load_data(query)
 
-    expander1 = st.beta_expander("Sentiment Bias", expanded=True)
-    expander2 = st.beta_expander("Spatial Bias", expanded=False)
-    expander3 = st.beta_expander("Lingual Bias", expanded=False)
-    expander4 = st.beta_expander("View Search Results", expanded=False)
-
-    with expander4:
-        st.markdown("\n\n")
+    with col1:
+        st.markdown("### Search Results")
+        st.markdown("---")
+        #st.markdown("\n\n")
         # presently printing out top 20 search results
-        for index, row in df.head(20).iterrows():
+        for index, row in df.iterrows():
             with st.beta_container():
                 # st.write("Sentiment: ", row["polarity"])
                 # st.write("Host Country: `", row["country_name"], "`")
@@ -149,10 +148,10 @@ if query != "":
                     st.write(row["title"])
                 st.write("_Learn more [here](" + row["url"] + ")_")
                 st.markdown("---")
-        st.markdown(
-            "<span style='color:gray'>_Top 20 search results shown here_</span>",
-            unsafe_allow_html=True,
-        )
+
+    expander1 = col2.beta_expander("Sentiment Bias", expanded=True)
+    expander2 = col2.beta_expander("Spatial Bias", expanded=False)
+    expander3 = col2.beta_expander("Lingual Bias", expanded=False)
 
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
@@ -449,14 +448,14 @@ if query != "":
                 ggplot(df_summary, aes("label_cat", "value"))
                 + geom_col(
                     aes(fill="label"),
-                    alpha=0.75,
+                    alpha=0.5,
                     na_rm=True,
                 )
                 + scale_y_continuous(labels=lambda l: ["%d%%" % v for v in l])
-                + theme_linedraw()
+                + theme_light()
                 + theme(legend_position="none", legend_title_align="left")
                 + coord_flip()
-                + ggtitle("Summary - Search Result Bias")
+                # + ggtitle("Summary - Search Result Bias")
                 + labs(x="", y="")
             )
             summary_chart.pyplot(ggplot.draw(plot_summary))

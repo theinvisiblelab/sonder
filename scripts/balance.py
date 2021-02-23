@@ -17,7 +17,7 @@ from plotnine import *
 
 st.markdown(Path("markdown/balance.md").read_text(), unsafe_allow_html=True)
 
-st.markdown("## Balance")
+st.markdown("## ⚖️ Balance")
 
 st.write(
     "`Balance` is an attempt to enable fairer knowledge access. Affirmative action for knowledge search per se."

@@ -6,7 +6,7 @@
 
 &nbsp;
 
-## Vision
+## 💡️Vision
 
 Our access to knowledge on the internet carries biases inherent in algorithms trained to maximize consumption, rather than to promote understanding. This robs us of the _choice_ to understand those who learn, think, and grow differently. `S🎈nder` &ndash; an open-source platform enabling access to diverse knowledge &ndash; is an attempt to make this choice explicit. To at least be conscious of our knowledge bubbles, if not break them.
 
@@ -16,7 +16,7 @@ As an open-source knowledge platform, Sonder is bound to be a community owned wo
 
 The internet accounts for a large proportion of our access to knowledge, with effects bolstered further due to minimal in-person interaction in the current pandemic. Understanding the dynamics of modern knowledge access bears strong implications for sustaining inclusive learning environments built on top of a diverse knowledge base, and consequently an equitable evolution of society.
 
-## Algorithms
+## 🧮 Algorithms
 
 `S🎈nder` curates meta-search results from a locally hosted [Searx](https://github.com/searx/searx) instance. Bias is calculated on three dimensions:
 

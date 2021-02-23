@@ -22,7 +22,7 @@ We are working on two projects:
 + `Balance`: An attempt to enable fairer knowledge access. Affirmative action for knowledge search per se.
 
 
-## Vision
+## 💡Vision
 
 _`S🎈nder` is an open-source metasearch engine dynamically assessing bias in our internet search results_. `Sonder` assesses search result `bias` along three dimensions. First, `Sonder` assesses _sentiment bias_ to understand if a particular sentiment or viewpoint occurs higher up or lower down our search results. Second, we assess _spatial bias_ to spotlight variance in coordinates for websites hosting our search results. Third, we assess _lingual bias_ to see linguistic representation in the entire internet knowledge base triggered by our search results. The code for `Sonder` is fully open-sourced and available under the GNU Affero General Public License.
 
@@ -30,7 +30,7 @@ As an open-source knowledge platform, `Sonder` is bound to be a community owned 
 
 The internet accounts for a large proportion of our access to knowledge, with effects bolstered further due to minimal in-person interaction in the current pandemic. Understanding the dynamics of modern knowledge access bears strong implications for sustaining inclusive learning environments built on top of a diverse knowledge base, and consequently an equitable evolution of society.
 
-## Algorithms
+## 🧮 Algorithms
 
 `S🎈nder` curates meta-search results from a locally hosted [Searx](https://github.com/searx/searx) instance. Bias is calculated on three dimensions:
 
