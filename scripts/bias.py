@@ -136,7 +136,7 @@ if query != "":
     with col1:
         st.markdown("### Search Results")
         st.markdown("---")
-        #st.markdown("\n\n")
+        # st.markdown("\n\n")
         # presently printing out top 20 search results
         for index, row in df.iterrows():
             with st.beta_container():
@@ -149,7 +149,8 @@ if query != "":
                 st.write("_Learn more [here](" + row["url"] + ")_")
                 st.markdown("---")
 
-    expander1 = col2.beta_expander("Sentiment Bias", expanded=True)
+    col2.markdown("### Bias in your results")
+    expander1 = col2.beta_expander("Sentiment Bias", expanded=False)
     expander2 = col2.beta_expander("Spatial Bias", expanded=False)
     expander3 = col2.beta_expander("Lingual Bias", expanded=False)
 
@@ -346,7 +347,7 @@ if query != "":
                 + str(spatial_bias_full)
                 + "/100_"
                 + "  \n"
-                + "Bias magnitude (excluding country where `S🎈nder` is hosted): _"
+                + "Bias magnitude (excluding country where `Sonder` is hosted): _"
                 + str(spatial_bias_adjusted)
                 + "/100_"
             )
@@ -436,6 +437,7 @@ if query != "":
             )
             st.pyplot(ggplot.draw(plot_lang))
 
+            # Summary data frame
             df_summary = pd.DataFrame(
                 [lingual_bias_adjusted, spatial_bias_adjusted, sentiment_bias],
                 columns=["value"],
@@ -444,14 +446,23 @@ if query != "":
             df_summary["label_cat"] = pd.Categorical(
                 df_summary["label"], categories=df_summary["label"].tolist()
             )
+            df_summary.loc[df_summary["value"] <= 33, 'bias_level'] = "1"
+            df_summary.loc[df_summary["value"] > 33, 'bias_level'] = "2"
+            df_summary.loc[df_summary["value"] > 66, 'bias_level'] = "3"
+            df_summary = df_summary.sort_values(by = ['value'])
+            # st.dataframe(df_summary)
+            # Summary plot
             plot_summary = (
                 ggplot(df_summary, aes("label_cat", "value"))
                 + geom_col(
-                    aes(fill="label"),
-                    alpha=0.5,
+                    aes(fill="bias_level"),
+                    alpha=0.75,
                     na_rm=True,
                 )
-                + scale_y_continuous(labels=lambda l: ["%d%%" % v for v in l])
+                + geom_hline(yintercept = 33, linetype = "dashed")
+                + geom_hline(yintercept = 66, linetype = "dashed")
+                + scale_y_continuous(labels=lambda l: ["%d%%" % v for v in l], limits = [0, 100])
+                + scale_fill_manual(values = ["#0ec956", "#ffbf00", "#ff1717"])
                 + theme_light()
                 + theme(legend_position="none", legend_title_align="left")
                 + coord_flip()
