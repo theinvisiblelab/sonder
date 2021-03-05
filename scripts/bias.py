@@ -128,13 +128,11 @@ col1, col2 = st.beta_columns(2)
 
 if query != "":
 
-    summary_chart = col2.empty()
-
     with st.spinner("Finding what you seek..."):
         df = load_data(query)
 
     with col1:
-        st.markdown("### Search Results")
+        st.markdown("### Search results")
         st.markdown("---")
         # st.markdown("\n\n")
         # presently printing out top 20 search results
@@ -149,10 +147,13 @@ if query != "":
                 st.write("_Learn more [here](" + row["url"] + ")_")
                 st.markdown("---")
 
-    col2.markdown("### Bias in your results")
+    col2.markdown("### Bias in search results")
+    col2.markdown("---")
+    #col2.write("\n\n")
+    summary_chart = col2.empty()
     expander1 = col2.beta_expander("Sentiment Bias", expanded=True)
-    expander2 = col2.beta_expander("Spatial Bias", expanded=False)
-    expander3 = col2.beta_expander("Lingual Bias", expanded=False)
+    expander2 = col2.beta_expander("Spatial Bias", expanded=True)
+    expander3 = col2.beta_expander("Lingual Bias", expanded=True)
 
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
@@ -436,6 +437,12 @@ if query != "":
                 + labs(x="Language", y="Total Results")
             )
             st.pyplot(ggplot.draw(plot_lang))
+            st.markdown("&nbsp;")
+            st.markdown("---")
+            st.markdown(
+                "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/sonder-labs/sonder#-algorithms)_</span>",
+                unsafe_allow_html=True,
+            )
 
             # Summary data frame
             df_summary = pd.DataFrame(

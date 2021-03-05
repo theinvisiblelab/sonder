@@ -31,5 +31,5 @@ st.markdown("&nbsp;")
 
 st.markdown("_STILL COOKING!_ :spaghetti:")
 st.markdown(
-    "Watch our [github](https://github.com/sonder-labs/sonder) repository for updates."
+    "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates."
 )
