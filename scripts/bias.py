@@ -150,7 +150,7 @@ if query != "":
                 st.markdown("---")
 
     col2.markdown("### Bias in your results")
-    expander1 = col2.beta_expander("Sentiment Bias", expanded=False)
+    expander1 = col2.beta_expander("Sentiment Bias", expanded=True)
     expander2 = col2.beta_expander("Spatial Bias", expanded=False)
     expander3 = col2.beta_expander("Lingual Bias", expanded=False)
 
@@ -446,11 +446,10 @@ if query != "":
             df_summary["label_cat"] = pd.Categorical(
                 df_summary["label"], categories=df_summary["label"].tolist()
             )
-            df_summary.loc[df_summary["value"] <= 33, 'bias_level'] = "1"
-            df_summary.loc[df_summary["value"] > 33, 'bias_level'] = "2"
-            df_summary.loc[df_summary["value"] > 66, 'bias_level'] = "3"
-            df_summary = df_summary.sort_values(by = ['value'])
-            # st.dataframe(df_summary)
+            df_summary.loc[df_summary["value"] <= 33, "bias_level"] = "1"
+            df_summary.loc[df_summary["value"] > 33, "bias_level"] = "2"
+            df_summary.loc[df_summary["value"] > 66, "bias_level"] = "3"
+            df_summary = df_summary.sort_values(by=["value"])
             # Summary plot
             plot_summary = (
                 ggplot(df_summary, aes("label_cat", "value"))
@@ -459,10 +458,12 @@ if query != "":
                     alpha=0.75,
                     na_rm=True,
                 )
-                + geom_hline(yintercept = 33, linetype = "dashed")
-                + geom_hline(yintercept = 66, linetype = "dashed")
-                + scale_y_continuous(labels=lambda l: ["%d%%" % v for v in l], limits = [0, 100])
-                + scale_fill_manual(values = ["#0ec956", "#ffbf00", "#ff1717"])
+                + geom_hline(yintercept=33, linetype="dashed")
+                + geom_hline(yintercept=66, linetype="dashed")
+                + scale_y_continuous(
+                    labels=lambda l: ["%d%%" % v for v in l], limits=[0, 100]
+                )
+                + scale_fill_manual(values=["#0ec956", "#ffbf00", "#ff1717"])
                 + theme_light()
                 + theme(legend_position="none", legend_title_align="left")
                 + coord_flip()
@@ -474,6 +475,6 @@ if query != "":
 
 st.markdown("&nbsp;")
 st.markdown(
-    "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/saurabh-khanna/sonder#algorithms)_</span>",
+    "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/sonder-labs/sonder#-algorithms)_</span>",
     unsafe_allow_html=True,
 )
