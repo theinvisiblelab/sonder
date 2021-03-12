@@ -141,10 +141,9 @@ if query != "":
                 # st.write("Sentiment: ", row["polarity"])
                 # st.write("Host Country: `", row["country_name"], "`")
                 if row["content"] == row["content"]:
-                    st.write(row["title"] + ". " + row["content"])
+                    st.markdown("> " + row["url"] + "<br/><br/>" + row["title"] + ". " + row["content"], unsafe_allow_html=True)
                 else:
-                    st.write(row["title"])
-                st.write("_Learn more [here](" + row["url"] + ")_")
+                    st.markdown("> " + row["url"] + "<br/><br/>" + row["title"], unsafe_allow_html=True)
                 st.markdown("---")
 
     col2.markdown("### Bias in search results")
