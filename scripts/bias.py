@@ -20,7 +20,7 @@ url = "http://searx.sonder.care/search"
 @st.cache(allow_output_mutation=True, show_spinner=False)
 def load_data(query):
     df = []
-    for page in range(1, 11):
+    for page in range(1, 3):
         querystring = {
             "q": query,
             "categories": "general",
@@ -128,7 +128,7 @@ col1, col2 = st.beta_columns(2)
 
 if query != "":
 
-    with st.spinner("Finding what you seek..."):
+    with st.spinner("Assessing bias in your search..."):
         df = load_data(query)
 
     with col1:
@@ -437,11 +437,11 @@ if query != "":
             )
             st.pyplot(ggplot.draw(plot_lang))
             st.markdown("&nbsp;")
-            st.markdown("---")
-            st.markdown(
-                "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/sonder-labs/sonder#-algorithms)_</span>",
-                unsafe_allow_html=True,
-            )
+            # st.markdown("---")
+            # st.markdown(
+            #     "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/sonder-labs/sonder#-algorithms)_</span>",
+            #     unsafe_allow_html=True,
+            # )
 
             # Summary data frame
             df_summary = pd.DataFrame(
@@ -478,6 +478,10 @@ if query != "":
             )
             summary_chart.pyplot(ggplot.draw(plot_summary))
             st.markdown("&nbsp;")
+
+if query != "":
+    if st.button('Add more results to analysis'):
+        st.write('Still cooking! :spaghetti:')
 
 st.markdown("&nbsp;")
 st.markdown(
