@@ -6,9 +6,18 @@
 
 &nbsp;
 
-## 💡️Vision
+## :rocket: TL;DR
 
-Our access to knowledge on the internet carries biases inherent in algorithms trained to maximize consumption, rather than to promote understanding. This robs us of the _choice_ to understand those who learn, think, and grow differently. `S🎈nder` &ndash; an open-source platform enabling access to diverse knowledge &ndash; is an attempt to make this choice explicit. To at least be conscious of our knowledge bubbles, if not break them.
+Our access to knowledge is biased by algorithms trained to maximize ~~understanding~~ consumption. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` is an attempt to make this _choice_ explicit. To at least be conscious of our knowledge bubbles, if not break them.
+
+We are working on two projects:
++ `Bias`: An attempt to understand how fair our search for web knowledge is. At present, we assess sentiment bias, spatial bias, and lingual bias in web search results.
++ `Balance`: An attempt to enable fairer knowledge access. Affirmative action for knowledge search per se.
+
+
+## 💡 ️Vision
+
+Our access to knowledge on the internet carries biases inherent in algorithms trained to maximize consumption, rather than to promote understanding. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` &ndash; an open-source platform enabling access to diverse knowledge &ndash; is an attempt to make this choice explicit. To at least be conscious of our knowledge bubbles, if not break them.
 
 _Sonder is an open-source metasearch engine dynamically assessing bias in our internet search results_. Sonder assesses search result `bias` along three dimensions. First, Sonder assesses _sentiment bias_ to understand if a particular sentiment or viewpoint occurs higher up or lower down our search results. Second, we assess _spatial bias_ to spotlight variance in coordinates for websites hosting our search results. Third, we assess _lingual bias_ to see linguistic representation in the entire internet knowledge base triggered by our search results. The code for Sonder is fully open-sourced and available under the GNU Affero General Public License on [GitHub](https://github.com/sonder-labs/sonder).
 
@@ -18,7 +27,7 @@ The internet accounts for a large proportion of our access to knowledge, with ef
 
 ## 🧮 Algorithms
 
-`S🎈nder` curates meta-search results from a locally hosted [Searx](https://github.com/searx/searx) instance. Bias is calculated on three dimensions:
+`Sonder` curates meta-search results from a locally hosted [Searx](https://github.com/searx/searx) instance. Bias is calculated on three dimensions:
 
 * __Sentiment Bias__: As a first step, Sonder evaluates the sentiment of search results using the polarity metric implemented in [TextBlob](https://github.com/sloria/TextBlob) &ndash; a Python library for processing textual data. As a second step, sentiment bias ($bias_{sent}$) is assessed as the scaled absolute magnitude of the correlation between search result sentiment $sent_i$ and search result rank $rank_i$, where $i$ is an index corresponding to $n$ search results obtained from first ten meta-search web pages. The correlation sign is used to define the direction of the bias. A positive correlation indicates that results with negative sentiment are seen first (and vice versa for a negative correlation).
 

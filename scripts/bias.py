@@ -114,7 +114,7 @@ language_codes = (
 
 ## CONTENT ##
 
-st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
+# st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
 
 st.markdown("## 📣 Bias")
 
@@ -130,6 +130,7 @@ if query != "":
 
     with st.spinner("Assessing bias in your search..."):
         df = load_data(query)
+        green_list = pd.read_csv(Path("green/greendomain.txt"))['url'].tolist()
 
     with col1:
         st.markdown("### Search results")
@@ -148,11 +149,43 @@ if query != "":
 
     col2.markdown("### Bias in search results")
     col2.markdown("---")
-    #col2.write("\n\n")
     summary_chart = col2.empty()
+
+    expander4 = col2.beta_expander("Eco Hazard", expanded=True)
     expander1 = col2.beta_expander("Sentiment Bias", expanded=True)
     expander2 = col2.beta_expander("Spatial Bias", expanded=True)
     expander3 = col2.beta_expander("Lingual Bias", expanded=True)
+
+    with expander4:
+        df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
+        df['is_green'] = np.where(df['domain'].isin(green_list), "Green", "Red")
+        green_count = len(df[df['is_green'] == "Green"])
+        eco_hazard = round((1 - (green_count / len(df))) * 100, 2)
+
+        st.success(str(eco_hazard) + "% of your search results come from domains using _non-renewable_ sources of energy.")
+
+        df_eco = pd.DataFrame(
+            [eco_hazard, 100 - eco_hazard],
+            columns=["value"],
+        )
+        df_eco["label"] = ["Red", "Green"]
+        df_eco["Energy"] = ["Energy", "Energy"] # dummy column for plot
+        # Summary plot
+        plot_eco = (
+            ggplot(df_eco, aes("Energy", "value", fill = "label"))
+            + geom_col(alpha=0.75, color = "black")
+            + scale_y_continuous(
+                labels=lambda l: ["%d%%" % v for v in l], limits=[0, 100]
+            )
+            + scale_fill_manual(values=["#0ec956", "#ff1717"])
+            + theme_minimal()
+            + theme(legend_position="none", figure_size = (8, 2))
+            + coord_flip()
+            + labs(x="", y="")
+        )
+        st.pyplot(ggplot.draw(plot_eco))
+        st.markdown("&nbsp;")
+
 
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
@@ -237,7 +270,7 @@ if query != "":
                     alpha=0.1,
                     fill="red",
                 )
-                + geom_jitter(fill="blue", alpha=0.5, size=2.5)
+                + geom_jitter(fill="blue", alpha=0.5, size=3)
                 + theme_bw()
                 + labs(x="Search Result Rank", y="Sentiment")
             )
@@ -245,8 +278,6 @@ if query != "":
 
             st.markdown("&nbsp;")
 
-
-if query != "":
     with expander2:
         with st.spinner("Geolocating your search results..."):
             df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
@@ -396,7 +427,6 @@ if query != "":
             st.markdown("&nbsp;")
             # IDEA: Add average rank per country plot.
 
-if query != "":
     with expander3:
         with st.spinner("Assessing lingual bias in your search results..."):
             df_lang = pd.DataFrame(load_lang_data(query))
@@ -445,10 +475,10 @@ if query != "":
 
             # Summary data frame
             df_summary = pd.DataFrame(
-                [lingual_bias_adjusted, spatial_bias_adjusted, sentiment_bias],
+                [lingual_bias_adjusted, spatial_bias_full, sentiment_bias, eco_hazard],
                 columns=["value"],
             )
-            df_summary["label"] = ["Lingual Bias", "Spatial Bias", "Sentiment Bias"]
+            df_summary["label"] = ["Lingual Bias", "Spatial Bias", "Sentiment Bias", "Eco Hazard"]
             df_summary["label_cat"] = pd.Categorical(
                 df_summary["label"], categories=df_summary["label"].tolist()
             )
@@ -473,16 +503,18 @@ if query != "":
                 + theme_light()
                 + theme(legend_position="none", legend_title_align="left")
                 + coord_flip()
-                # + ggtitle("Summary - Search Result Bias")
                 + labs(x="", y="")
             )
             summary_chart.pyplot(ggplot.draw(plot_summary))
             st.markdown("&nbsp;")
 
-if query != "":
     if st.button('Add more results to analysis'):
-        st.write('Still cooking! :spaghetti:')
+        st.markdown("_STILL COOKING!_ :spaghetti:")
+        st.markdown(
+            "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates."
+        )
 
+# text below is always shown
 st.markdown("&nbsp;")
 st.markdown(
     "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/sonder-labs/sonder#-algorithms)_</span>",
