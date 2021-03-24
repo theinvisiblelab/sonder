@@ -118,13 +118,13 @@ language_codes = (
 
 st.markdown("## 📣 Bias")
 
-st.write("`Bias` is an attempt to understand how fair our search for web knowledge is.")
+st.write("Bias is an attempt to understand how fair our search for web knowledge is.")
 
 query = st.text_input("Seek the unknown...").strip()
 
 st.markdown("&nbsp;")
 
-col1, col2 = st.beta_columns(2)
+col2, col1 = st.beta_columns(2)
 
 if query != "":
 
@@ -151,10 +151,10 @@ if query != "":
     col2.markdown("---")
     summary_chart = col2.empty()
 
-    expander4 = col2.beta_expander("Eco Hazard", expanded=True)
-    expander1 = col2.beta_expander("Sentiment Bias", expanded=True)
-    expander2 = col2.beta_expander("Spatial Bias", expanded=True)
-    expander3 = col2.beta_expander("Lingual Bias", expanded=True)
+    expander4 = col2.beta_expander("🔥 Eco Hazard", expanded=True)
+    expander1 = col2.beta_expander("🗣️ Sentiment Bias", expanded=True)
+    expander2 = col2.beta_expander("🌍 Spatial Bias", expanded=True)
+    expander3 = col2.beta_expander("🦜 Lingual Bias", expanded=True)
 
     with expander4:
         df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
@@ -392,7 +392,7 @@ if query != "":
                     location=[df.iloc[i]["latitude"], df.iloc[i]["longitude"]],
                     popup=df.iloc[i]["city"],
                 ).add_to(map)
-            folium_static(map)
+            folium_static(map, width=665, height=500)
             st.write("\n")
             st.write(
                 "Your top "
@@ -466,7 +466,6 @@ if query != "":
                 + labs(x="Language", y="Total Results")
             )
             st.pyplot(ggplot.draw(plot_lang))
-            st.markdown("&nbsp;")
             # st.markdown("---")
             # st.markdown(
             #     "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/sonder-labs/sonder#-algorithms)_</span>",
@@ -491,7 +490,7 @@ if query != "":
                 ggplot(df_summary, aes("label_cat", "value"))
                 + geom_col(
                     aes(fill="bias_level"),
-                    alpha=0.75,
+                    alpha=0.70,
                     na_rm=True,
                 )
                 + geom_hline(yintercept=33, linetype="dashed")
@@ -508,7 +507,8 @@ if query != "":
             summary_chart.pyplot(ggplot.draw(plot_summary))
             st.markdown("&nbsp;")
 
-    if st.button('Add more results to analysis'):
+    st.markdown("&nbsp;")
+    if st.button('Add more search results to analysis'):
         st.markdown("_STILL COOKING!_ :spaghetti:")
         st.markdown(
             "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates."

@@ -23,9 +23,19 @@ navigate_sidebar = st.sidebar.radio("Go to", ["Bias", "Balance", "Philosophy"], 
 
 st.sidebar.markdown("---")
 
-st.sidebar.markdown("**Contribute**")
+st.sidebar.markdown("**📖 About**")
 st.sidebar.info(
-    "S🎈nder is an open-source project enabling fairer access to human knowledge. Please contribute any comments, questions, code changes, and resources as [issues](https://github.com/sonder-labs/sonder/issues) of or [pull requests](https://github.com/sonder-labs/sonder/pulls) to the [source code](https://github.com/sonder-labs/sonder)."
+    "Sonder is an open-source search platform enabling fairer access to human knowledge. We welcome contributions through comments, questions, issues, and pull requests to our [source code](https://github.com/sonder-labs/sonder)."
+)
+
+st.sidebar.markdown("**🏆 Awards**")
+st.sidebar.info(
+    "Digital Learning Design Challenge Winter Grant, March 2021 [Stanford University and StartX]"
+)
+
+st.sidebar.markdown("**🎋 Contributors**")
+st.sidebar.info(
+    "[Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)  \n[Shruti Jain](mailto:shruti_jain@berkeley.edu)  \n\nWrite to us to join forces!"
 )
 
 # Main page

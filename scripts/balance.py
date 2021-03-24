@@ -20,7 +20,7 @@ from plotnine import *
 st.markdown("## ⚖️ Balance")
 
 st.write(
-    "`Balance` enables fairer knowledge search by valuing relevance and diversity. Affirmative action for knowledge search per se."
+    "Balance enables fairer knowledge search by valuing relevance and diversity. Affirmative action for knowledge search per se."
 )
 
 query = st.text_input("Seek the unknown...").strip()
