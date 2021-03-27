@@ -1,5 +1,5 @@
 ## Custom ##
-
+*.pem
 .env
 __pycache__
 *.ipynb
