@@ -61,7 +61,7 @@ if navigate_sidebar == "Bias trends":
 if navigate_sidebar == "Unsung":
     st.markdown("## 📻 Unsung")
     st.markdown("\n\n")
-    st.info(":heart: Please [write to us](mailto:saurabhkhanna@stanford.edu) to contribute an untold story that needs to be heard. Our existing story archive is hosted [here](https://github.com/sonder-labs/sonder/unsung).")
+    st.info(":heart: Please [write to us](mailto:saurabhkhanna@stanford.edu) to contribute an untold story that needs to be heard. Our existing story archive is hosted [here](https://github.com/sonder-labs/sonder/tree/main/unsung).")
     st.markdown(Path("unsung/unsung-sotw.md").read_text(), unsafe_allow_html=True)
 
 # Philosophy
