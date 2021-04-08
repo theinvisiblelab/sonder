@@ -11,11 +11,12 @@
 Our access to knowledge is biased by algorithms trained to maximize ~~understanding~~ consumption. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` is an attempt to make this _choice_ explicit. To at least be conscious of our knowledge bubbles, if not break them.
 
 We are working on two projects:
-+ `Bias`: An attempt to understand how fair our search for web knowledge is. At present, we assess sentiment bias, spatial bias, and lingual bias in web search results.
-+ `Balance`: An attempt to enable fairer knowledge access. Affirmative action for knowledge search per se.
++ `Balance`: Enabling fairer knowledge access. Affirmative action for knowledge search per se.
++ `Bias trends`: Spotlighting global trends around fairness of web search. At present, we assess sentiment bias, spatial bias, and ecological hazard in web search results.
 
+<br/>
 
-## 💡 ️Vision
+## 🧭 ️Mission
 
 Our access to knowledge on the internet carries biases inherent in algorithms trained to maximize consumption, rather than to promote understanding. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` &ndash; an open-source platform enabling access to diverse knowledge &ndash; is an attempt to make this choice explicit. To at least be conscious of our knowledge bubbles, if not break them.
 
@@ -24,6 +25,16 @@ _Sonder is an open-source metasearch engine dynamically assessing bias in our in
 As an open-source knowledge platform, Sonder is bound to be a community owned work-in-progress. We have three clear next steps towards which we need feedback and support. First, Sonder is currently hosted on a Heroku hobby dyno I have access to as a graduate student. Support in the form of grants or sponsorships will help us move the platform to a stronger server, hence increasing the platform performance. Second, we intend to add to the dimensions of assessing bias (e.g. bias by gender, ranking algorithm), as well as use more robust algorithms to assess this bias. Third, as a long-term goal, we intend to implement `Balance` &ndash; an attempt at fairer knowledge access by minimizing bias along different dimensions (affirmative action for knowledge search per se). Of course, we rely heavily on support from the open-source community towards achieving these goals.
 
 The internet accounts for a large proportion of our access to knowledge, with effects bolstered further due to minimal in-person interaction in the current pandemic. Understanding the dynamics of modern knowledge access bears strong implications for sustaining inclusive learning environments built on top of a diverse knowledge base, and consequently an equitable evolution of society.
+
+<br/>
+
+## 🎯 Impact
+
+_STILL COOKING!_ :spaghetti:
+
+Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates.
+
+<br/>
 
 ## 🧮 Algorithms
 
