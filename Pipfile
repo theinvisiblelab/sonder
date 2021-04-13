@@ -22,6 +22,7 @@ streamlit-folium = "*"
 plotnine = "*"
 scipy = "*"
 pyarrow = "==2.0.0"
+altair = "*"
 
 [dev-packages]
 

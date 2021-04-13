@@ -126,14 +126,18 @@ def rmad(x):
 
 st.markdown("## ⚖️ Balance")
 
-# st.write("Bias is an attempt to understand how fair our search for web knowledge is.")
+st.write("Balance relevance and diversity as you search the web.")
+
+st.markdown("&nbsp;")
 
 query = st.text_input("Seek fairer human knowledge...").strip()
 
 st.markdown("&nbsp;")
 
 if query != "":
-    search_type = st.radio("", ["Balanced results [Under development]", "Unbalanced results"], 1)
+    search_type = st.radio(
+        "", ["Balanced results [Under development]", "Unbalanced results"], 1
+    )
 
     if search_type == "Balanced results [Under development]":
         st.markdown("&nbsp;")
@@ -149,6 +153,8 @@ if query != "":
 
         with st.spinner("Assessing bias in your search..."):
             df = load_searx_data(query)
+            df["search_rank"] = df.reset_index().index + 1
+            df_size = len(df.index)
             green_list = pd.read_csv(Path("green/greendomain.txt"))["url"].tolist()
 
         with col1:
@@ -177,52 +183,30 @@ if query != "":
                         )
                     st.markdown("---")
 
-        col2.markdown("### Bias in search results")
+        col2.markdown("### Bias in " + str(df_size) + " search results")
         col2.markdown("---")
         summary_chart = col2.empty()
 
-        expander1 = col2.beta_expander("🔥 Eco Hazard: Are my results coming from eco-friendly domains?", expanded=True)
-        expander2 = col2.beta_expander("🗣️ Sentiment Bias: Do I see more positive (or more negative) sentiment in my results?", expanded=True)
-        expander3 = col2.beta_expander("🌍 Spatial Bias: Are my results hosted in geographically diverse locations?", expanded=True)
+        expander1 = col2.beta_expander(
+            "🗣️ Sentiment Bias: Do I see more positive (or more negative) sentiment in my results?",
+            expanded=True,
+        )
+        expander2 = col2.beta_expander(
+            "🌍 Spatial Bias: Are my results hosted in geographically diverse locations?",
+            expanded=True,
+        )
+        expander3 = col2.beta_expander(
+            "🔥 Environmental Bias: Are my results coming from eco-friendly domains?",
+            expanded=True,
+        )
         # expander3 = col2.beta_expander("🦜 Lingual Bias", expanded=True)
 
         with expander1:
-            df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
-            df["is_green"] = np.where(df["domain"].isin(green_list), "Green", "Red")
-            green_count = len(df[df["is_green"] == "Green"])
-            eco_hazard = round((1 - (green_count / len(df))) * 100, 2)
-
-            st.success(
-                str(eco_hazard)
-                + "% of your search results come from domains using _non-renewable_ sources of energy."
-            )
-
-            df_eco = pd.DataFrame(
-                [eco_hazard, 100 - eco_hazard],
-                columns=["value"],
-            )
-            df_eco["label"] = ["Red", "Green"]
-            df_eco["Energy"] = ["Energy", "Energy"]  # dummy column for plot
-            # Summary plot
-            plot_eco = (
-                ggplot(df_eco, aes("Energy", "value", fill="label"))
-                + geom_col(alpha=0.75, color="black")
-                + scale_y_continuous(
-                    labels=lambda l: ["%d%%" % v for v in l], limits=[0, 100]
-                )
-                + scale_fill_manual(values=["#0ec956", "#ff1717"])
-                + theme_minimal()
-                + theme(legend_position="none", figure_size=(8, 2))
-                + coord_flip()
-                + labs(x="", y="")
-            )
-            st.pyplot(ggplot.draw(plot_eco))
-            st.markdown("&nbsp;")
-
-        with expander2:
             with st.spinner("Assessing sentiment in your search results..."):
-                df["search_rank"] = df.reset_index().index + 1
-                df["pol_title"] = df.apply(lambda row: sentiment_calc(row["title"]), axis=1)
+
+                df["pol_title"] = df.apply(
+                    lambda row: sentiment_calc(row["title"]), axis=1
+                )
                 df["pol_content"] = df.apply(
                     lambda row: sentiment_calc(row["content"]), axis=1
                 )
@@ -232,7 +216,6 @@ if query != "":
                 sentiment_median = round(df["polarity"].median(), 4)
                 sentiment_min = df["polarity"].min()
                 sentiment_max = df["polarity"].max()
-                df_size = len(df.index)
 
                 correlation = df["search_rank"].corr(df["polarity"])
                 sentiment_bias = round(abs(correlation * 100), 2)
@@ -310,7 +293,7 @@ if query != "":
 
                 st.markdown("&nbsp;")
 
-        with expander3:
+        with expander2:
             with st.spinner("Geolocating your search results..."):
                 df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
                 df["ip_address"] = df.apply(lambda row: get_ip(row["domain"]), axis=1)
@@ -320,8 +303,12 @@ if query != "":
                 )
                 df = df[df["map_result_tuple"].notnull()]
                 df["country"] = df.apply(lambda row: row["map_result_tuple"][0], axis=1)
-                df["latitude"] = df.apply(lambda row: row["map_result_tuple"][1], axis=1)
-                df["longitude"] = df.apply(lambda row: row["map_result_tuple"][2], axis=1)
+                df["latitude"] = df.apply(
+                    lambda row: row["map_result_tuple"][1], axis=1
+                )
+                df["longitude"] = df.apply(
+                    lambda row: row["map_result_tuple"][2], axis=1
+                )
                 df["city"] = df.apply(lambda row: row["map_result_tuple"][3], axis=1)
                 df["country_name"] = df.apply(
                     lambda row: row["map_result_tuple"][4], axis=1
@@ -398,9 +385,9 @@ if query != "":
                 sonder_host_country = "United States"
                 spatial_bias_adjusted = round(
                     rmad(
-                        df_tabulated[df_tabulated["country_name"] != sonder_host_country][
-                            ["spatial_score"]
-                        ].values
+                        df_tabulated[
+                            df_tabulated["country_name"] != sonder_host_country
+                        ][["spatial_score"]].values
                     )
                     * 100,
                     2,
@@ -418,7 +405,9 @@ if query != "":
                 st.write(
                     "You can zoom in to see where your search results come from. :telescope:"
                 )
-                map = folium.Map(location=[0, 0], zoom_start=1.49, tiles="cartodb positron")
+                map = folium.Map(
+                    location=[0, 0], zoom_start=1.49, tiles="cartodb positron"
+                )
                 for i in range(0, len(df)):
                     folium.Marker(
                         location=[df.iloc[i]["latitude"], df.iloc[i]["longitude"]],
@@ -458,11 +447,45 @@ if query != "":
                 st.pyplot(ggplot.draw(plot_country))
                 st.markdown("&nbsp;")
                 # IDEA: Add average rank per country plot.
-                st.markdown("---")
-                st.markdown(
-                    "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/sonder-labs/sonder#-algorithms)_</span>",
-                    unsafe_allow_html=True,
+
+        with expander3:
+            df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
+            df["is_green"] = np.where(df["domain"].isin(green_list), "Green", "Red")
+            green_count = len(df[df["is_green"] == "Green"])
+            eco_hazard = round((1 - (green_count / len(df))) * 100, 2)
+
+            st.success(
+                str(eco_hazard)
+                + "% of your search results come from domains using _non-renewable_ sources of energy."
+            )
+
+            df_eco = pd.DataFrame(
+                [eco_hazard, 100 - eco_hazard],
+                columns=["value"],
+            )
+            df_eco["label"] = ["Red", "Green"]
+            df_eco["Energy"] = ["Energy", "Energy"]  # dummy column for plot
+            # Summary plot
+            plot_eco = (
+                ggplot(df_eco, aes("Energy", "value", fill="label"))
+                + geom_col(alpha=0.75, color="black")
+                + scale_y_continuous(
+                    labels=lambda l: ["%d%%" % v for v in l], limits=[0, 100]
                 )
+                + scale_fill_manual(values=["#0ec956", "#ff1717"])
+                + theme_minimal()
+                + theme(legend_position="none", figure_size=(8, 2))
+                + coord_flip()
+                + labs(x="", y="")
+            )
+            st.pyplot(ggplot.draw(plot_eco))
+            st.markdown("&nbsp;")
+            st.markdown("---")
+            st.markdown(
+                "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/sonder-labs/sonder#-algorithms)_</span>",
+                unsafe_allow_html=True,
+            )
+
         # with expander3:
         #     with st.spinner("Assessing lingual bias in your search results..."):
         #         df_lang = pd.DataFrame(load_lang_data(query))
@@ -505,10 +528,10 @@ if query != "":
 
         # Summary data frame
         df_summary = pd.DataFrame(
-            [spatial_bias_full, sentiment_bias, eco_hazard],
+            [eco_hazard, spatial_bias_full, sentiment_bias],
             columns=["value"],
         )
-        df_summary["label"] = ["Spatial Bias", "Sentiment Bias", "Eco Hazard"]
+        df_summary["label"] = ["Environmental Bias", "Spatial Bias", "Sentiment Bias"]
         df_summary["label_cat"] = pd.Categorical(
             df_summary["label"], categories=df_summary["label"].tolist()
         )
@@ -526,7 +549,9 @@ if query != "":
             )
             + geom_hline(yintercept=33, linetype="dashed")
             + geom_hline(yintercept=66, linetype="dashed")
-            + scale_y_continuous(labels=lambda l: ["%d%%" % v for v in l], limits=[0, 100])
+            + scale_y_continuous(
+                labels=lambda l: ["%d%%" % v for v in l], limits=[0, 100]
+            )
             + scale_fill_manual(values=["#0ec956", "#ffbf00", "#ff1717"])
             + theme_light()
             + theme(legend_position="none", legend_title_align="left")

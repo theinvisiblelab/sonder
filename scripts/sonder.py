@@ -29,12 +29,14 @@ st.sidebar.markdown("_Enabling fairer knowledge search_")
 st.sidebar.markdown("---")
 
 # Sidebar
-navigate_sidebar = st.sidebar.radio("Go to", ["Balance", "Bias trends", "Unsung", "About us"], 0)
+navigate_sidebar = st.sidebar.radio(
+    "Go to", ["Balance", "Bias trends", "Unsung", "About us"], 0
+)
 
 st.sidebar.markdown("---")
 
 st.sidebar.info(
-    "Sonder is an open-source search platform enabling fairer access to human knowledge. We welcome contributions through comments, questions, issues, and pull requests to our [source code](https://github.com/sonder-labs/sonder)."
+    "Sonder is a nonprofit search platform enabling fairer access to human knowledge. We welcome contributions through comments, questions, issues, and pull requests to our [open-source code](https://github.com/sonder-labs/sonder)."
 )
 
 st.sidebar.markdown("**🏆 Awards**")
@@ -61,7 +63,9 @@ if navigate_sidebar == "Bias trends":
 if navigate_sidebar == "Unsung":
     st.markdown("## 📻 Unsung")
     st.markdown("\n\n")
-    st.info(":heart: Please [write to us](mailto:saurabhkhanna@stanford.edu) to contribute an untold story that needs to be heard. Our existing story archive is hosted [here](https://github.com/sonder-labs/sonder/tree/main/unsung).")
+    st.info(
+        ":heart: Please [write to us](mailto:saurabhkhanna@stanford.edu) to contribute an untold story that needs to be heard. Our existing story archive is hosted [here](https://github.com/sonder-labs/sonder/tree/main/unsung)."
+    )
     st.markdown(Path("unsung/unsung-sotw.md").read_text(), unsafe_allow_html=True)
 
 # Philosophy
