@@ -59,7 +59,7 @@ bias_{spatial} = \frac{\sum_{i=1}^{n}\sum_{j=1}^{n} \left\|cscore_i - cscore_j\r
   {2n^2 \overline{cscore}}
 $$
 
-* __Environmental Bias__: We query the public database of green domains hosted by the The Green Web Foundation to flag is a given search result is hosted on a domain running on renewable sources of energy. Environmental bias is reflected in the proportion of overall search results hosted on domains running on non-renewable sources of energy.
+* __Environmental Bias__: We query the public database of green domains hosted by the The Green Web Foundation to flag if a given search result is hosted on a domain running on renewable sources of energy. Environmental bias is reflected in the proportion of overall search results hosted on domains running on non-renewable sources of energy.
 
 
 

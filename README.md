@@ -48,17 +48,17 @@ Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates
 
 `Sonder` curates meta-search results from a locally hosted Searx instance. Bias is calculated on three dimensions:
 
-* __Sentiment Bias__: As a first step, `Sonder` evaluates the sentiment of search results using the polarity metric implemented in TextBlob &ndash; a Python library for processing textual data. As a second step, sentiment bias (_bias<sub>sent</sub>_) is assessed as the scaled absolute magnitude of the correlation between search result sentiment _sent<sub>i</sub>_ and search result rank _rank<sub>i</sub>_, where _i_ is an index corresponding to _n_ search results obtained from first ten meta-search web pages. The correlation sign is used to define the direction of the bias. A positive correlation indicates that results with negative sentiment are seen first (and vice versa for a negative correlation).
+* __Sentiment Bias__: As a first step, Sonder evaluates the sentiment of search results using the polarity metric implemented in TextBlob &ndash; a Python library for processing textual data. As a second step, sentiment bias (_bias<sub>sent</sub>_) is assessed as the scaled absolute magnitude of the correlation between search result sentiment _sent<sub>i</sub>_ and search result rank _rank<sub>i</sub>_, where _i_ is an index corresponding to _n_ search results obtained from first ten meta-search web pages. The correlation sign is used to define the direction of the bias. A positive correlation indicates that results with negative sentiment are seen first (and vice versa for a negative correlation).
 
 <p align="center">
   <img src="images/equation_sentiment.svg" />
 </p>
 
 
-* __Spatial Bias__: As a first step, `Sonder` geolocates search results obtained from the first ten meta-search web pages using public GeoLite2 databases. As a second step, for each country, we divide the search result count (_total<sub>country</sub>_) by the mean result rank to obtain a country level spatial score (_cscore_). As a third step, we calculate the spatial bias as the relative mean absolute difference and scale it to a value between 0 and 100. Further, in order to differentiate out spatial bias arising out of the location initiating a web search, an adjusted spatial bias is also calculated by excluding the country in which `Sonder` is hosted from the relative mean absolute difference.
+* __Spatial Bias__: As a first step, Sonder geolocates search results obtained from the first ten meta-search web pages using public GeoLite2 databases. As a second step, for each country, we divide the search result count (_total<sub>country</sub>_) by the mean result rank to obtain a country level spatial score (_cscore_). As a third step, we calculate the spatial bias as the relative mean absolute difference and scale it to a value between 0 and 100. Further, in order to differentiate out spatial bias arising out of the location initiating a web search, an adjusted spatial bias is also calculated by excluding the country in which `Sonder` is hosted from the relative mean absolute difference.
 
 <p align="center">
   <img src="images/equation_spatial.svg" />
 </p>
 
-* __Environmental Bias__: We query the public database of green domains hosted by the The Green Web Foundation to flag is a given search result is hosted on a domain running on renewable sources of energy. Environmental bias is reflected in the proportion of overall search results hosted on domains running on non-renewable sources of energy.
+* __Environmental Bias__: Sonder queries the public database of green domains hosted by the The Green Web Foundation to flag if a given search result is hosted on a domain running on renewable sources of energy. Environmental bias is reflected in the proportion of overall search results hosted on domains running on non-renewable sources of energy.
