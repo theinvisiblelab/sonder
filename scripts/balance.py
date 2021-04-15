@@ -11,6 +11,7 @@ import geoip2.database
 import folium
 from streamlit_folium import folium_static
 from plotnine import *
+import altair as alt
 
 # The url below can be replaced with 'http://localhost/8888/search' if searx is locally setup.
 # See https://searx.github.io/searx/admin/installation.html for more details.
@@ -125,12 +126,11 @@ def rmad(x):
 # st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
 
 st.markdown("## ⚖️ Balance")
-
-st.write("Balance relevance and diversity as you search the web.")
+st.write("Tackle bias as you search the web. Balance relevance with diversity.")
 
 st.markdown("&nbsp;")
 
-query = st.text_input("Seek fairer human knowledge...").strip()
+query = st.text_input("Seek fairer human knowledge...").lower().strip()
 
 st.markdown("&nbsp;")
 
@@ -183,7 +183,7 @@ if query != "":
                         )
                     st.markdown("---")
 
-        col2.markdown("### Bias in " + str(df_size) + " search results")
+        col2.markdown("### Bias in search results")
         col2.markdown("---")
         summary_chart = col2.empty()
 
@@ -238,58 +238,66 @@ if query != "":
                     sentiment_text = "positive"
 
                 st.write(
-                    "The overall sentiment in your search results is "
+                    "The overall sentiment in your search results is _"
                     + sentiment_text
-                    + ", with a mean sentiment score of "
+                    + "_, with an average sentiment score of "
                     + str(sentiment_mean)
                     + ". The distribution of sentiment in these results is shown below, with the red line highlighting the distribution median."
                 )
+
                 plot_dist = (
-                    ggplot(df, aes("polarity"))
-                    + geom_density(
-                        fill="blue", alpha=0.25, na_rm=True
-                    )  # Idea: fill by sentiment
-                    + geom_vline(
-                        xintercept=sentiment_median, linetype="dashed", color="red"
+                    alt.Chart(df[df["polarity"].notna()])
+                    .transform_density(
+                        "polarity",
+                        as_=["polarity", "density"],
                     )
-                    + theme_bw()
-                    + xlim(sentiment_min, sentiment_max)
-                    + labs(x="Sentiment", y="Density")
+                    .mark_area(opacity=0.75)
+                    .encode(
+                        x="polarity:Q",
+                        y="density:Q",
+                        tooltip=["polarity"],
+                    )
+                    .encode(
+                        x=alt.X("polarity:Q", title="Sentiment"),
+                        y=alt.Y("density:Q", title=""),
+                    )
+                    .properties(height=450)
                 )
-                st.pyplot(ggplot.draw(plot_dist))
+                rule_dist = (
+                    alt.Chart(df[df["polarity"].notna()])
+                    .mark_rule(color="red", strokeDash=[10, 10], size=2)
+                    .encode(x="median(polarity):Q")
+                )
+                st.altair_chart(plot_dist + rule_dist, use_container_width=True)
                 st.markdown("\n")
 
                 st.write(
                     "Here's a scatter plot of search result rank versus sentiment for your top "
                     + str(df_size)
-                    + " search results."
+                    + " search results. Results with positive and negative sentiment are highlighted in green and red respectively."
                 )
+
                 plot_corr = (
-                    ggplot(df, aes("search_rank", "polarity"))
-                    + geom_hline(yintercept=0, linetype="dashed")
-                    + annotate(
-                        "rect",
-                        xmin=-np.Inf,
-                        xmax=np.Inf,
-                        ymin=0,
-                        ymax=np.Inf,
-                        alpha=0.1,
-                        fill="green",
+                    alt.Chart(df[df["polarity"].notna()])
+                    .mark_circle(size=300)
+                    .encode(
+                        x=alt.X("search_rank:Q", title="Search result rank"),
+                        y=alt.Y("polarity:Q", title="Sentiment"),
+                        tooltip=["title", "search_rank", "polarity"],
+                        color=alt.condition(
+                            alt.datum.polarity >= 0,
+                            alt.value("#0ec956"),  # The positive color
+                            alt.value("#ff1717"),  # The negative color
+                        ),
                     )
-                    + annotate(
-                        "rect",
-                        xmin=-np.Inf,
-                        xmax=np.Inf,
-                        ymin=-np.Inf,
-                        ymax=0,
-                        alpha=0.1,
-                        fill="red",
-                    )
-                    + geom_jitter(fill="blue", alpha=0.5, size=3)
-                    + theme_bw()
-                    + labs(x="Search Result Rank", y="Sentiment")
+                    .properties(height=450)
                 )
-                st.pyplot(ggplot.draw(plot_corr))
+                rule_corr = (
+                    alt.Chart(pd.DataFrame({"y": [0]}))
+                    .mark_rule(strokeDash=[10, 10], size=1.5)
+                    .encode(y="y")
+                )
+                st.altair_chart(rule_corr + plot_corr, use_container_width=True)
 
                 st.markdown("&nbsp;")
 
@@ -430,6 +438,7 @@ if query != "":
                 df.loc[
                     df["country_name"] != "United States", "sonder_host_country"
                 ] = "False"
+
                 plot_country = (
                     ggplot(df, aes("country_cat"))
                     + geom_bar(
@@ -445,6 +454,8 @@ if query != "":
                     + labs(x="Country", y="Results")
                 )
                 st.pyplot(ggplot.draw(plot_country))
+
+
                 st.markdown("&nbsp;")
                 # IDEA: Add average rank per country plot.
 
@@ -532,33 +543,54 @@ if query != "":
             columns=["value"],
         )
         df_summary["label"] = ["Environmental Bias", "Spatial Bias", "Sentiment Bias"]
-        df_summary["label_cat"] = pd.Categorical(
-            df_summary["label"], categories=df_summary["label"].tolist()
-        )
-        df_summary.loc[df_summary["value"] <= 33, "bias_level"] = "1"
-        df_summary.loc[df_summary["value"] > 33, "bias_level"] = "2"
-        df_summary.loc[df_summary["value"] > 66, "bias_level"] = "3"
-        df_summary = df_summary.sort_values(by=["value"])
-        # Summary plot
+        # df_summary["label_cat"] = pd.Categorical(
+        #     df_summary["label"], categories=df_summary["label"].tolist()
+        # )
+        # df_summary.loc[df_summary["value"] <= 33, "bias_level"] = "1"
+        # df_summary.loc[df_summary["value"] > 33, "bias_level"] = "2"
+        # df_summary.loc[df_summary["value"] > 66, "bias_level"] = "3"
+        # df_summary = df_summary.sort_values(by=["value"])
+        # # Summary plot
+        # plot_summary = (
+        #     ggplot(df_summary, aes("label_cat", "value"))
+        #     + geom_col(
+        #         aes(fill="bias_level"),
+        #         alpha=0.70,
+        #         na_rm=True,
+        #     )
+        #     + geom_hline(yintercept=33, linetype="dashed")
+        #     + geom_hline(yintercept=66, linetype="dashed")
+        #     + scale_y_continuous(
+        #         labels=lambda l: ["%d%%" % v for v in l], limits=[0, 100]
+        #     )
+        #     + scale_fill_manual(values=["#0ec956", "#ffbf00", "#ff1717"])
+        #     + theme_light()
+        #     + theme(legend_position="none", legend_title_align="left")
+        #     + coord_flip()
+        #     + labs(x="", y="")
+        # )
         plot_summary = (
-            ggplot(df_summary, aes("label_cat", "value"))
-            + geom_col(
-                aes(fill="bias_level"),
-                alpha=0.70,
-                na_rm=True,
+            alt.Chart(df_summary)
+            .mark_bar(cornerRadiusBottomRight=10, cornerRadiusTopRight=10, opacity=0.80)
+            .encode(
+                x=alt.X("value", title="Bias magnitude"),
+                y=alt.Y("label", title="", sort="-x"),
+                tooltip=["value"],
+                color=alt.condition(
+                    alt.datum.value < 50,
+                    alt.value("#0ec956"),  # The positive color
+                    alt.value("#ff1717"),  # The negative color
+                ),
             )
-            + geom_hline(yintercept=33, linetype="dashed")
-            + geom_hline(yintercept=66, linetype="dashed")
-            + scale_y_continuous(
-                labels=lambda l: ["%d%%" % v for v in l], limits=[0, 100]
+            .properties(
+                height=300,
+                title="Bias Overview for " + str(df_size) + " search results",
             )
-            + scale_fill_manual(values=["#0ec956", "#ffbf00", "#ff1717"])
-            + theme_light()
-            + theme(legend_position="none", legend_title_align="left")
-            + coord_flip()
-            + labs(x="", y="")
+            .configure_title(fontSize=18)
+            .configure_axis(labelFontSize=15, titleFontSize=15)
         )
-        summary_chart.pyplot(ggplot.draw(plot_summary))
+
+        summary_chart.altair_chart(plot_summary, use_container_width=True)
         st.markdown("&nbsp;")
 
         st.markdown("&nbsp;")
