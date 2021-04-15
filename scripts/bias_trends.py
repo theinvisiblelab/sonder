@@ -18,7 +18,7 @@ from PIL import Image
 ## CONTENT ##
 
 st.markdown("## 📣 Trends")
-st.write("Understand global trends around fairness of knowledge access on the internet.")
+st.write("View fairness in internet trends across the globe.")
 
 st.markdown("&nbsp;")
 
