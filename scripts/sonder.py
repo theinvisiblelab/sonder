@@ -30,7 +30,7 @@ st.sidebar.markdown("---")
 
 # Sidebar
 navigate_sidebar = st.sidebar.radio(
-    "Go to", ["Balance", "Trends", "Unsung", "About us"], 0
+    "Go to", ["Home", "Balance", "Trends", "Unsung"], 0
 )
 
 st.sidebar.markdown("---")
@@ -51,11 +51,15 @@ st.sidebar.info(
 
 # Main page
 
-# Bias
+# Philosophy
+if navigate_sidebar == "Home":
+    exec(open("scripts/about_us.py").read())
+
+# Balance
 if navigate_sidebar == "Balance":
     exec(open("scripts/balance.py").read())
 
-# Balance
+# Bias trends
 if navigate_sidebar == "Trends":
     exec(open("scripts/bias_trends.py").read())
 
@@ -67,7 +71,3 @@ if navigate_sidebar == "Unsung":
         ":heart: Do [write to us](mailto:saurabhkhanna@stanford.edu) to contribute an untold story that needs to be heard. Our story archive is hosted [here](https://github.com/sonder-labs/sonder/tree/main/unsung)."
     )
     st.markdown(Path("unsung/unsung-sotw.md").read_text(), unsafe_allow_html=True)
-
-# Philosophy
-if navigate_sidebar == "About us":
-    st.markdown(Path("markdown/philosophy.md").read_text(), unsafe_allow_html=True)
