@@ -17,14 +17,14 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 """
 # S🎈nder
-_Empowering fairer access to human knowledge_
+_Empowering humans with fairer knowledge access_
 
 ---
 """
 
 # Main
 st.sidebar.title("S🎈nder")
-st.sidebar.markdown("_Enabling fairer knowledge search_")
+st.sidebar.markdown("_Empowering humans with fairer knowledge access_")
 
 st.sidebar.markdown("---")
 
