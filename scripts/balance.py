@@ -136,10 +136,10 @@ st.markdown("&nbsp;")
 
 if query != "":
     search_type = st.radio(
-        "", ["Balanced results [Under development]", "Unbalanced results"], 1
+        "", ["Balanced results [🚧 Under development]", "Unbalanced results"], 1
     )
 
-    if search_type == "Balanced results [Under development]":
+    if search_type == "Balanced results [🚧 Under development]":
         st.markdown("&nbsp;")
         st.markdown("&nbsp;")
         st.markdown("_STILL COOKING!_ :spaghetti:")
@@ -147,7 +147,7 @@ if query != "":
             "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates."
         )
 
-    col1, col2 = st.beta_columns(2)
+    col2, col1 = st.beta_columns(2)
 
     if search_type == "Unbalanced results":
 
@@ -455,7 +455,6 @@ if query != "":
                 )
                 st.pyplot(ggplot.draw(plot_country))
 
-
                 st.markdown("&nbsp;")
                 # IDEA: Add average rank per country plot.
 
@@ -573,7 +572,7 @@ if query != "":
             alt.Chart(df_summary)
             .mark_bar(cornerRadiusBottomRight=10, cornerRadiusTopRight=10, opacity=0.80)
             .encode(
-                x=alt.X("value", title="Bias magnitude"),
+                x=alt.X("value", title="Bias magnitude (0-100)"),
                 y=alt.Y("label", title="", sort="-x"),
                 tooltip=["value"],
                 color=alt.condition(
@@ -589,7 +588,11 @@ if query != "":
             .configure_title(fontSize=18)
             .configure_axis(labelFontSize=15, titleFontSize=15)
         )
-
+        # threshold_line = (
+        #     alt.Chart(pd.DataFrame({"x": [50]}))
+        #     .mark_rule(strokeDash=[10, 10], size=1.5)
+        #     .encode(x="x")
+        # )
         summary_chart.altair_chart(plot_summary, use_container_width=True)
         st.markdown("&nbsp;")
 

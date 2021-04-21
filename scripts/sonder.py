@@ -17,7 +17,7 @@ st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 """
 # S🎈nder
-_Enabling fairer knowledge search_
+_Empowering fairer access to human knowledge_
 
 ---
 """
@@ -29,9 +29,7 @@ st.sidebar.markdown("_Enabling fairer knowledge search_")
 st.sidebar.markdown("---")
 
 # Sidebar
-navigate_sidebar = st.sidebar.radio(
-    "Go to", ["Home", "Balance", "Trends", "Unsung"], 0
-)
+navigate_sidebar = st.sidebar.radio("Go to", ["Home", "Balance", "Trends", "Unsung"], 0)
 
 st.sidebar.markdown("---")
 
