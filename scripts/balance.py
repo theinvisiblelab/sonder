@@ -187,18 +187,14 @@ if query != "":
         summary_chart = col2.empty()
 
         expander1 = col2.beta_expander(
-            "🗣️ Sentiment Bias: Do I see more positive (or more negative) sentiment in my results?",
-            # expanded=True,
+            "🗣️ Sentiment Bias: Do I see more positive (or more negative) sentiment in my results?"
         )
         expander2 = col2.beta_expander(
-            "🌍 Spatial Bias: Are my results hosted in geographically diverse locations?",
-            # expanded=True,
+            "🌍 Spatial Bias: Are my results hosted in geographically diverse locations?"
         )
         expander3 = col2.beta_expander(
-            "🔥 Environmental Bias: Are my results coming from eco-friendly domains?",
-            # expanded=True,
+            "🔥 Environmental Bias: Are my results coming from eco-friendly domains?"
         )
-        # expander3 = col2.beta_expander("🦜 Lingual Bias", expanded=True)
 
         with expander1:
             with st.spinner("Assessing sentiment in your search results..."):
@@ -417,7 +413,7 @@ if query != "":
                 for i in range(0, len(df)):
                     folium.Marker(
                         location=[df.iloc[i]["latitude"], df.iloc[i]["longitude"]],
-                        popup=df.iloc[i]["title"],
+                        tooltip=df.iloc[i]["title"],
                     ).add_to(map)
                 folium_static(map, width=665, height=500)
                 # country_list = df["country_name"].value_counts().index.tolist()[::-1]
@@ -478,7 +474,8 @@ if query != "":
                     color=alt.Color(
                         "Source",
                         scale=alt.Scale(
-                            domain=["Renewable", "Non-renewable"], range=["#0ec956", "#ff1717"]
+                            domain=["Renewable", "Non-renewable"],
+                            range=["#0ec956", "#ff1717"],
                         ),
                     ),
                 )
