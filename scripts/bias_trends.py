@@ -7,10 +7,6 @@ import yaml
 import socket
 from textblob import TextBlob
 import scipy
-import geoip2.database
-import folium
-from streamlit_folium import folium_static
-from plotnine import *
 import altair as alt
 from wordcloud import WordCloud
 from PIL import Image

@@ -10,7 +10,6 @@ from textblob import TextBlob
 import geoip2.database
 import folium
 from streamlit_folium import folium_static
-from plotnine import *
 import altair as alt
 
 # The url below can be replaced with 'http://localhost/8888/search' if searx is locally setup.
@@ -164,7 +163,7 @@ if query != "":
             # presently printing out top 20 search results
             for index, row in df.iterrows():
                 with st.beta_container():
-                    # st.write("Sentiment: ", row["polarity"])
+                    # st.write("Sentiment: ", row["sentiment"])
                     # st.write("Host Country: `", row["country_name"], "`")
                     if row["content"] == row["content"]:
                         st.markdown(
@@ -189,15 +188,15 @@ if query != "":
 
         expander1 = col2.beta_expander(
             "🗣️ Sentiment Bias: Do I see more positive (or more negative) sentiment in my results?",
-            expanded=True,
+            # expanded=True,
         )
         expander2 = col2.beta_expander(
             "🌍 Spatial Bias: Are my results hosted in geographically diverse locations?",
-            expanded=True,
+            # expanded=True,
         )
         expander3 = col2.beta_expander(
             "🔥 Environmental Bias: Are my results coming from eco-friendly domains?",
-            expanded=True,
+            # expanded=True,
         )
         # expander3 = col2.beta_expander("🦜 Lingual Bias", expanded=True)
 
@@ -210,31 +209,31 @@ if query != "":
                 df["pol_content"] = df.apply(
                     lambda row: sentiment_calc(row["content"]), axis=1
                 )
-                df["polarity"] = ((2 * df["pol_title"]) + df["pol_content"]) / 3
-                df["polarity"] = df["polarity"].apply(lambda x: round(x, 4))
-                sentiment_mean = round(df["polarity"].mean(), 4)
-                sentiment_median = round(df["polarity"].median(), 4)
-                sentiment_min = df["polarity"].min()
-                sentiment_max = df["polarity"].max()
+                df["sentiment"] = ((2 * df["pol_title"]) + df["pol_content"]) / 3
+                df["sentiment"] = df["sentiment"].apply(lambda x: round(x, 4))
+                sentiment_mean = round(df["sentiment"].mean(), 4)
+                sentiment_median = round(df["sentiment"].median(), 4)
+                sentiment_min = df["sentiment"].min()
+                sentiment_max = df["sentiment"].max()
 
-                correlation = df["search_rank"].corr(df["polarity"])
+                correlation = df["search_rank"].corr(df["sentiment"])
                 sentiment_bias = round(abs(correlation * 100), 2)
 
-                line1 = "Bias magnitude: _" + str(sentiment_bias) + " /100_"
+                line1 = "Bias magnitude: __" + str(sentiment_bias) + "/100__"
                 if correlation < 0:
-                    line2 = "Bias direction: Results with _positive_ sentiment are likely to be seen _first_."
+                    line2 = "Results with _positive_ sentiment are likely to be seen _first_"
                 elif correlation > 0:
-                    line2 = "Bias direction: Results with _negative_ sentiment are likely to be seen _first_."
+                    line2 = "Results with _negative_ sentiment are likely to be seen _first_"
                 else:
                     line2 = "Bias direction: No sentiment in bias in results!"
-                # df['new_score'] = df['score'] + abs(df['polarity'])
-                st.success(line1 + "  \n" + line2)
+                # df['new_score'] = df['score'] + abs(df['sentiment'])
+                st.success(line1 + " (" + line2 + ").")
                 st.write("\n")
-                if sentiment_mean <= -0.1:
+                if sentiment_mean < 0:
                     sentiment_text = "negative"
-                if sentiment_mean > -0.1 and sentiment_mean < 0.1:
+                elif sentiment_mean == 0:
                     sentiment_text = "neutral"
-                if sentiment_mean >= 0.1:
+                elif sentiment_mean > 0:
                     sentiment_text = "positive"
 
                 st.write(
@@ -242,50 +241,46 @@ if query != "":
                     + sentiment_text
                     + "_, with an average sentiment score of "
                     + str(sentiment_mean)
-                    + ". The distribution of sentiment in these results is shown below, with the red line highlighting the distribution median."
-                )
-
-                plot_dist = (
-                    alt.Chart(df[df["polarity"].notna()])
-                    .transform_density(
-                        "polarity",
-                        as_=["polarity", "density"],
-                    )
-                    .mark_area(opacity=0.75)
-                    .encode(
-                        x="polarity:Q",
-                        y="density:Q",
-                        tooltip=["polarity"],
-                    )
-                    .encode(
-                        x=alt.X("polarity:Q", title="Sentiment"),
-                        y=alt.Y("density:Q", title=""),
-                    )
-                    .properties(height=450)
-                )
-                rule_dist = (
-                    alt.Chart(df[df["polarity"].notna()])
-                    .mark_rule(color="red", strokeDash=[10, 10], size=2)
-                    .encode(x="median(polarity):Q")
-                )
-                st.altair_chart(plot_dist + rule_dist, use_container_width=True)
-                st.markdown("\n")
-
-                st.write(
-                    "Here's a scatter plot of search result rank versus sentiment for your top "
+                    + ". Here's how sentiment varies with rank for your top "
                     + str(df_size)
                     + " search results. Results with positive and negative sentiment are highlighted in green and red respectively."
                 )
+                st.write("\n")
+                # plot_dist = (
+                #     alt.Chart(df[df["sentiment"].notna()])
+                #     .transform_density(
+                #         "sentiment",
+                #         as_=["sentiment", "density"],
+                #     )
+                #     .mark_area(opacity=0.75)
+                #     .encode(
+                #         x="sentiment:Q",
+                #         y="density:Q",
+                #         tooltip=["sentiment"],
+                #     )
+                #     .encode(
+                #         x=alt.X("sentiment:Q", title="Sentiment"),
+                #         y=alt.Y("density:Q", title=""),
+                #     )
+                #     .properties(height=450)
+                # )
+                # rule_dist = (
+                #     alt.Chart(df[df["sentiment"].notna()])
+                #     .mark_rule(color="red", strokeDash=[10, 10], size=2)
+                #     .encode(x="median(sentiment):Q")
+                # )
+                # st.altair_chart(plot_dist + rule_dist, use_container_width=True)
+                # st.markdown("\n")
 
                 plot_corr = (
-                    alt.Chart(df[df["polarity"].notna()])
+                    alt.Chart(df[df["sentiment"].notna()])
                     .mark_circle(size=300)
                     .encode(
                         x=alt.X("search_rank:Q", title="Search result rank"),
-                        y=alt.Y("polarity:Q", title="Sentiment"),
-                        tooltip=["title", "search_rank", "polarity"],
+                        y=alt.Y("sentiment:Q", title="Sentiment"),
+                        tooltip=["title", "search_rank", "sentiment"],
                         color=alt.condition(
-                            alt.datum.polarity >= 0,
+                            alt.datum.sentiment >= 0,
                             alt.value("#0ec956"),  # The positive color
                             alt.value("#ff1717"),  # The negative color
                         ),
@@ -389,71 +384,66 @@ if query != "":
                 spatial_bias_full = round(
                     rmad(df_tabulated[["spatial_score"]].values) * 100, 2
                 )
+
+                countries = ", ".join(sorted(df["country_name"].unique()))
+
                 # Replace sonder_host_country with appropriate value if your Sonder server is hosted in another country
-                sonder_host_country = "United States"
-                spatial_bias_adjusted = round(
-                    rmad(
-                        df_tabulated[
-                            df_tabulated["country_name"] != sonder_host_country
-                        ][["spatial_score"]].values
-                    )
-                    * 100,
-                    2,
-                )
-                st.success(
-                    "Bias magnitude (Unadjusted): _"
-                    + str(spatial_bias_full)
-                    + "/100_"
-                    + "  \n"
-                    + "Bias magnitude (excluding country where `Sonder` is hosted): _"
-                    + str(spatial_bias_adjusted)
-                    + "/100_"
+                # sonder_host_country = "United States"
+                # spatial_bias_adjusted = round(
+                #     rmad(
+                #         df_tabulated[
+                #             df_tabulated["country_name"] != sonder_host_country
+                #         ][["spatial_score"]].values
+                #     )
+                #     * 100,
+                #     2,
+                # )
+                st.success("Bias magnitude: __" + str(spatial_bias_full) + "/100__")
+                st.write("\n")
+
+                st.write(
+                    "Your top "
+                    + str(df_size)
+                    + " search results come from websites hosted in "
+                    + str(df["country_name"].nunique())
+                    + " countries - "
+                    + countries
+                    + ". Zoom in to see more below. :telescope:"
                 )
                 st.write("\n")
-                st.write(
-                    "You can zoom in to see where your search results come from. :telescope:"
-                )
                 map = folium.Map(
                     location=[0, 0], zoom_start=1.49, tiles="cartodb positron"
                 )
                 for i in range(0, len(df)):
                     folium.Marker(
                         location=[df.iloc[i]["latitude"], df.iloc[i]["longitude"]],
-                        popup=df.iloc[i]["city"],
+                        popup=df.iloc[i]["title"],
                     ).add_to(map)
                 folium_static(map, width=665, height=500)
-                st.write("\n")
-                st.write(
-                    "Your top "
-                    + str(df_size)
-                    + " search results come from websites hosted in "
-                    + str(df["country_name"].nunique())
-                    + " countries. The host country for `Sonder` is highlighted in a separate color."
-                )
-                country_list = df["country_name"].value_counts().index.tolist()[::-1]
-                df["country_cat"] = pd.Categorical(
-                    df["country_name"], categories=country_list
-                )
-                df["sonder_host_country"] = "True"
-                df.loc[
-                    df["country_name"] != "United States", "sonder_host_country"
-                ] = "False"
-
-                plot_country = (
-                    ggplot(df, aes("country_cat"))
-                    + geom_bar(
-                        aes(fill="sonder_host_country"),
-                        color="black",
-                        alpha=0.25,
-                        na_rm=True,
-                    )
-                    + scale_fill_manual(values=["blue", "red"])
-                    + theme_bw()
-                    + theme(legend_position="none")
-                    + coord_flip()
-                    + labs(x="Country", y="Results")
-                )
-                st.pyplot(ggplot.draw(plot_country))
+                # country_list = df["country_name"].value_counts().index.tolist()[::-1]
+                # df["country_cat"] = pd.Categorical(
+                #     df["country_name"], categories=country_list
+                # )
+                # df["sonder_host_country"] = "True"
+                # df.loc[
+                #     df["country_name"] != "United States", "sonder_host_country"
+                # ] = "False"
+                #
+                # plot_country = (
+                #     ggplot(df, aes("country_cat"))
+                #     + geom_bar(
+                #         aes(fill="sonder_host_country"),
+                #         color="black",
+                #         alpha=0.25,
+                #         na_rm=True,
+                #     )
+                #     + scale_fill_manual(values=["blue", "red"])
+                #     + theme_bw()
+                #     + theme(legend_position="none")
+                #     + coord_flip()
+                #     + labs(x="Country", y="Results")
+                # )
+                # st.pyplot(ggplot.draw(plot_country))
 
                 st.markdown("&nbsp;")
                 # IDEA: Add average rank per country plot.
@@ -464,31 +454,42 @@ if query != "":
             green_count = len(df[df["is_green"] == "Green"])
             eco_hazard = round((1 - (green_count / len(df))) * 100, 2)
 
-            st.success(
-                str(eco_hazard)
-                + "% of your search results come from domains using _non-renewable_ sources of energy."
+            st.success("Bias magnitude: __" + str(eco_hazard) + "/100__")
+            st.write("\n")
+            st.write(
+                str(round(100 - eco_hazard, 2))
+                + "% of your search results come from domains using renewable sources of energy."
             )
+            st.write("\n")
 
             df_eco = pd.DataFrame(
-                [eco_hazard, 100 - eco_hazard],
+                [100 - eco_hazard, eco_hazard],
                 columns=["value"],
             )
-            df_eco["label"] = ["Red", "Green"]
+            df_eco["Source"] = ["Renewable", "Non-renewable"]
             df_eco["Energy"] = ["Energy", "Energy"]  # dummy column for plot
-            # Summary plot
             plot_eco = (
-                ggplot(df_eco, aes("Energy", "value", fill="label"))
-                + geom_col(alpha=0.75, color="black")
-                + scale_y_continuous(
-                    labels=lambda l: ["%d%%" % v for v in l], limits=[0, 100]
+                alt.Chart(df_eco)
+                .mark_bar(opacity=0.75)
+                .encode(
+                    x=alt.X("sum(value)", title="Search results (%)"),
+                    y=alt.Y("Energy", title="", sort="x"),
+                    tooltip=["value"],
+                    color=alt.Color(
+                        "Source",
+                        scale=alt.Scale(
+                            domain=["Renewable", "Non-renewable"], range=["#0ec956", "#ff1717"]
+                        ),
+                    ),
                 )
-                + scale_fill_manual(values=["#0ec956", "#ff1717"])
-                + theme_minimal()
-                + theme(legend_position="none", figure_size=(8, 2))
-                + coord_flip()
-                + labs(x="", y="")
+                .properties(
+                    height=125,
+                )
+                .configure_title(fontSize=18)
+                .configure_axis(labelFontSize=15, titleFontSize=15)
             )
-            st.pyplot(ggplot.draw(plot_eco))
+            st.altair_chart(plot_eco, use_container_width=True)
+
             st.markdown("&nbsp;")
             st.markdown("---")
             st.markdown(

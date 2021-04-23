@@ -22,29 +22,28 @@ _Empowering humans with fairer knowledge access_
 ---
 """
 
-# Main
-st.sidebar.title("S🎈nder")
-st.sidebar.markdown("_Empowering humans with fairer knowledge access_")
-
-st.sidebar.markdown("---")
-
 # Sidebar
-navigate_sidebar = st.sidebar.radio("Go to", ["Home", "Balance", "Trends", "Unsung"], 0)
-
+st.sidebar.title("S🎈nder")
 st.sidebar.markdown("---")
 
-st.sidebar.info(
-    "Sonder is a nonprofit search platform enabling fairer access to human knowledge. We welcome contributions through comments, questions, issues, and pull requests to our [open-source code](https://github.com/sonder-labs/sonder)."
+navigate_sidebar = st.sidebar.radio(
+    "Go to", ["Home", "⚖️ Balance", "📣 Trends", "📻 Unsung"], 0
 )
+st.sidebar.markdown("---")
 
 st.sidebar.markdown("**🏆 Awards**")
 st.sidebar.info(
     "Digital Learning Design Challenge Winter Grant [Stanford Transforming Learning Accelerator]"
 )
 
-st.sidebar.markdown("**:octopus: Contributors**")
+st.sidebar.markdown("**:octopus: Maitainers**")
 st.sidebar.info(
     "[Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)  \n[Shruti Jain](mailto:shruti_jain@berkeley.edu)  \n\nWrite to us to join forces!"
+)
+
+st.sidebar.markdown("**🐧 Contribute**")
+st.sidebar.info(
+    "We welcome contributions through comments, issues, and pull requests to our [open-source code](https://github.com/sonder-labs/sonder)."
 )
 
 # Main page
@@ -54,15 +53,15 @@ if navigate_sidebar == "Home":
     exec(open("scripts/about_us.py").read())
 
 # Balance
-if navigate_sidebar == "Balance":
+if navigate_sidebar == "⚖️ Balance":
     exec(open("scripts/balance.py").read())
 
 # Bias trends
-if navigate_sidebar == "Trends":
+if navigate_sidebar == "📣 Trends":
     exec(open("scripts/bias_trends.py").read())
 
 # Unsung
-if navigate_sidebar == "Unsung":
+if navigate_sidebar == "📻 Unsung":
     st.markdown("## 📻 Unsung")
     st.markdown("\n\n")
     st.info(

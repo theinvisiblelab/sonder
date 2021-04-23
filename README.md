@@ -15,12 +15,12 @@
 
 ## ⚡ TL;DR
 
-Our access to knowledge is biased by ~~open-source~~ proprietary algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` is an attempt to make this _choice_ explicit. To at least be conscious of our knowledge bubbles, if not break them.
+Our access to knowledge is biased by ~~open-source~~ proprietary algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` is an attempt to make this _choice_ explicit. To at least be mindful of our knowledge bubbles, if not break them.
 
 We are working on three projects:
-+ `Balance`: Enabling fairer knowledge search by balancing relevance with diversity.
-+ `Trends`: Showcasing global trends around fairness of knowledge access on the internet.
-+ `Unsung`: Spotlighting untold stories from around the planet.
++ `Balance`: Tackle bias as you search the web. Balance relevance with diversity.
++ `Trends`: Highlight fairness in web, news, and social media trends.
++ `Unsung`: Draw attention to untold stories from around the planet.
 
 <br/>
 

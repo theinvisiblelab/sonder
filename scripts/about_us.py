@@ -1,28 +1,23 @@
-"""
-> *sonder (n.)*
->
->> the realization that each random passerby is living a life as vivid and complex as your own—populated with their own ambitions, friends, routines, worries and inherited craziness—an epic story that continues invisibly around you like an anthill sprawling deep underground, with elaborate passageways to thousands of other lives that you’ll never know existed, in which you might appear only once, as an extra sipping coffee in the background, as a blur of traffic passing on the highway, as a lighted window at dusk.
->
-> &mdash; John Koenig, The Dictionary of Obscure Sorrows
-
-&nbsp;
-"""
+st.info(
+    ":heart: Sonder is a nonprofit sustained by grants, donations, and community support. [Donate](https://github.com/sonder-labs/sonder) to Sonder."
+)
 
 with st.beta_expander("⚡ TL;DR", expanded=True):
     st.markdown(
         """
-    Our access to knowledge is biased by ~~open-source~~ proprietary algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` is an attempt to make this _choice_ explicit. To at least be conscious of our knowledge bubbles, if not break them.
+    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` is an attempt to make this _choice_ explicit. To at least be mindful of our knowledge bubbles, if not break them.
 
     We are working on three projects (view 👈 sidebar):
-    + `Balance`: Enabling fairer knowledge search by balancing relevance with diversity.
-    + `Trends`: Showcasing global trends around fairness of knowledge access on the internet.
-    + `Unsung`: Spotlighting untold stories from around the planet.
+
+    + ⚖️ `Balance`: Tackle bias as you search the web. Balance relevance with diversity.
+    + 📣 `Trends`: Highlight fairness in web, news, and social media trends.
+    + 📻 `Unsung`: Draw attention to untold stories from around the planet.
 
     &nbsp;
     """
     )
 
-with st.beta_expander("🧭 ️Mission"):
+with st.beta_expander("🧭 Mission"):
     st.markdown(
         """
     Our access to knowledge on the internet carries biases inherent in algorithms trained to maximize consumption, rather than to promote understanding. This robs us of the _choice_ to understand those who learn, think, and grow differently. Sonder &ndash; a nonprofit open-source platform enabling access to diverse knowledge &ndash; is an attempt to make this choice explicit. To at least be conscious of our knowledge bubbles, if not break them.
@@ -32,17 +27,6 @@ with st.beta_expander("🧭 ️Mission"):
     As an open-source knowledge platform, Sonder is bound to be a community owned work-in-progress. We have four clear next steps towards which we need feedback and support. First, Sonder is currently hosted on a Heroku hobby dyno we have access to as graduate students. Support in the form of grants or sponsorships will help us move the platform to a stronger server, hence increasing the platform performance. Second, we intend to add to the dimensions of assessing bias (e.g. bias by gender, ranking algorithm), as well as use more robust algorithms to assess this bias. Third, we intend to implement Balance &ndash; an attempt at fairer knowledge access by minimizing bias along different dimensions (affirmative action for knowledge search per se). Fourth, we intend to run Unsung &ndash; a platform publishing stories that would otherwise go unheard. Of course, we rely heavily on support from the open-source community towards achieving these goals.
 
     The internet accounts for a large proportion of our access to knowledge, with effects bolstered further due to minimal in-person interaction in the current pandemic. Understanding the dynamics of modern knowledge access bears strong implications for sustaining inclusive learning environments built on top of a diverse knowledge base, and consequently an equitable evolution of society.
-
-    &nbsp;
-    """
-    )
-
-with st.beta_expander("🎯 Impact"):
-    st.markdown(
-        """
-    _STILL COOKING!_ :spaghetti:
-
-    Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates.
 
     &nbsp;
     """
@@ -84,6 +68,18 @@ with st.beta_expander("🧮 Algorithms"):
     st.markdown(
         """
     * __Environmental Bias__: We query the public database of green domains hosted by the The Green Web Foundation to flag if a given search result is hosted on a domain running on renewable sources of energy. Environmental bias is reflected in the proportion of overall search results hosted on domains running on non-renewable sources of energy.
+
+    &nbsp;
+    """
+    )
+
+
+with st.beta_expander("🎯 Impact"):
+    st.markdown(
+        """
+    _STILL COOKING!_ :spaghetti:
+
+    Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates.
 
     &nbsp;
     """
