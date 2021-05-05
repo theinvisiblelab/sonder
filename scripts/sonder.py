@@ -27,7 +27,7 @@ st.sidebar.title("S🎈nder")
 st.sidebar.markdown("---")
 
 navigate_sidebar = st.sidebar.radio(
-    "Go to", ["Home", "⚖️ Balance", "📣 Trends", "📻 Unsung"], 0
+    "Go to", ["Home", "⚖️ Balance", "📣 Trends"], 0
 )
 st.sidebar.markdown("---")
 
@@ -43,7 +43,7 @@ st.sidebar.info(
 
 st.sidebar.markdown("**🐧 Contribute**")
 st.sidebar.info(
-    "We welcome contributions through comments, issues, and pull requests to our [open-source code](https://github.com/sonder-labs/sonder)."
+    "We welcome contributions through comments, issues, and pull requests to our [open-source code](https://github.com/sonder-labs)."
 )
 
 # Main page

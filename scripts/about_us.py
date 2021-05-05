@@ -7,11 +7,10 @@ with st.beta_expander("⚡ TL;DR", expanded=True):
         """
     Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` is an attempt to make this _choice_ explicit. To at least be mindful of our knowledge bubbles, if not break them.
 
-    We are working on three projects (view 👈 sidebar):
+    We are working on two projects (view 👈 sidebar):
 
     + ⚖️ `Balance`: Tackle bias as you search the web. Balance relevance with diversity.
     + 📣 `Trends`: Highlight fairness in web, news, and social media trends.
-    + 📻 `Unsung`: Draw attention to untold stories from around the planet.
 
     &nbsp;
     """
