@@ -600,3 +600,11 @@ if query != "":
             st.markdown(
                 "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates."
             )
+
+st.write("&nbsp;")
+st.write("&nbsp;")
+st.write("&nbsp;")
+st.write("&nbsp;")
+st.write("&nbsp;")
+st.write("&nbsp;")
+st.info("💡 De-centralized search is the future! Host Sonder locally for added control. Details [here](https://github.com/sonder-labs/sonder).")
