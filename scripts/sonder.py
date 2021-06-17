@@ -15,35 +15,31 @@ footer {visibility: hidden;}
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-"""
-# S🎈nder
-_Empowering humans with fairer knowledge access_
-
----
-"""
+st.title("S🎈nder")
+st.write("_Know. What you otherwise won't._")
+st.markdown("---")
 
 # Sidebar
 st.sidebar.title("S🎈nder")
+st.sidebar.write("_Know. What you otherwise won't._")
 st.sidebar.markdown("---")
 
-navigate_sidebar = st.sidebar.radio(
-    "Go to", ["Home", "⚖️ Balance", "📣 Trends"], 0
-)
+navigate_sidebar = st.sidebar.radio("Go to", ["Home", "⚖️ Balance", "📣 Trends"], 0)
 st.sidebar.markdown("---")
 
-st.sidebar.markdown("**🏆 Awards**")
+st.sidebar.markdown("**🐧 Contribute**")
 st.sidebar.info(
-    "Digital Learning Design Challenge Winter Grant [Stanford Transforming Learning Accelerator]"
+    "Contributions welcome through comments, issues, and pull requests to the open-source [code base](https://github.com/sonder-labs/sonder)."
+)
+
+st.sidebar.markdown("**🏅 Awards**")
+st.sidebar.info(
+    "🏆 Design Challenge Research Award, Stanford University (June 2021) \n\n 🏆 Digital Learning Design Challenge Grant, Stanford University (March 2021)"
 )
 
 st.sidebar.markdown("**:octopus: Maitainers**")
 st.sidebar.info(
     "[Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)  \n[Shruti Jain](mailto:shruti_jain@berkeley.edu)  \n\nWrite to us to join forces!"
-)
-
-st.sidebar.markdown("**🐧 Contribute**")
-st.sidebar.info(
-    "We welcome contributions through comments, issues, and pull requests to our [open-source code](https://github.com/sonder-labs)."
 )
 
 # Main page
@@ -61,10 +57,10 @@ if navigate_sidebar == "📣 Trends":
     exec(open("scripts/bias_trends.py").read())
 
 # Unsung
-if navigate_sidebar == "📻 Unsung":
-    st.markdown("## 📻 Unsung")
-    st.markdown("\n\n")
-    st.info(
-        ":heart: Do [write to us](mailto:saurabhkhanna@stanford.edu) to contribute an untold story that needs to be heard. Our story archive is hosted [here](https://github.com/sonder-labs/sonder/tree/main/unsung)."
-    )
-    st.markdown(Path("unsung/unsung-sotw.md").read_text(), unsafe_allow_html=True)
+# if navigate_sidebar == "📻 Unsung":
+#     st.markdown("## 📻 Unsung")
+#     st.markdown("\n\n")
+#     st.info(
+#         ":heart: Do [write to us](mailto:saurabhkhanna@stanford.edu) to contribute an untold story that needs to be heard. Our story archive is hosted [here](https://github.com/sonder-labs/sonder/tree/main/unsung)."
+#     )
+#     st.markdown(Path("unsung/unsung-sotw.md").read_text(), unsafe_allow_html=True)

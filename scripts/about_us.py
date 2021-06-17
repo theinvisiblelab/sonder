@@ -1,13 +1,15 @@
-st.info(
-    ":heart: Sonder is a nonprofit sustained by grants, donations, and community support. [Donate](https://github.com/sonder-labs/sonder) to Sonder."
-)
+# st.info(
+#     ":heart: Sonder is a nonprofit sustained by grants, donations, and community support. [Donate](https://github.com/sonder-labs/sonder) to Sonder."
+# )
 
 with st.beta_expander("⚡ TL;DR", expanded=True):
     st.markdown(
         """
-    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` is an attempt to make this _choice_ explicit. To at least be mindful of our knowledge bubbles, if not break them.
+    Internet search shows you what you consume. `Sonder` shows you what you miss out on. We assess the opportunity cost of internet search.
 
-    We are working on two projects (view 👈 sidebar):
+    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the choice to understand those who think and learn differently. `Sonder` is an attempt to make this lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
+
+    We are working along two dimensions (view 👈 sidebar):
 
     + ⚖️ `Balance`: Tackle bias as you search the web. Balance relevance with diversity.
     + 📣 `Trends`: Highlight fairness in web, news, and social media trends.
@@ -36,7 +38,7 @@ with st.beta_expander("🧮 Algorithms"):
         """
     `Sonder` curates meta-search results from a locally hosted Searx instance. Bias is calculated on three dimensions:
 
-    * __Sentiment Bias__: As a first step, Sonder evaluates the sentiment of search results using the polarity metric implemented in TextBlob &ndash; a Python library for processing textual data. As a second step, sentiment bias ($bias_{sent}$) is assessed as the scaled absolute magnitude of the correlation between search result sentiment $sent_i$ and search result rank $rank_i$, where $i$ is an index corresponding to $n$ search results obtained from first ten meta-search web pages. The correlation sign is used to define the direction of the bias. A positive correlation indicates that results with negative sentiment are seen first (and vice versa for a negative correlation).
+    * __Sentiment Bias__: As a first step, Sonder evaluates the sentiment of search results using the sentiment analysis pipeline from a pretrained GPT-2 model. As a second step, sentiment bias ($bias_{sent}$) is assessed as the scaled absolute magnitude of the correlation between search result sentiment $sent_i$ and search result rank $rank_i$, where $i$ is an index corresponding to $n$ search results obtained from first ten meta-search web pages. The correlation sign is used to define the direction of the bias. A positive correlation indicates that results with negative sentiment are seen first (and vice versa for a negative correlation).
     """
     )
 

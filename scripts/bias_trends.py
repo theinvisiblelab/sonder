@@ -5,7 +5,7 @@ import pandas as pd
 import io
 import yaml
 import socket
-from textblob import TextBlob
+# from textblob import TextBlob
 import scipy
 import altair as alt
 from wordcloud import WordCloud
@@ -80,22 +80,22 @@ with expander_1:
 
     duration = col2.slider("Choose a window (days)", 15, 100, 50)
 
-    st.write("\n\n")
-    st.write(
+    col2.write("\n\n")
+    col2.write(
         "#### "
         + str(country)
         + ": Bias trends for the last "
         + str(duration)
         + " days*"
     )
-    st.markdown("&nbsp;")
+    col2.markdown("&nbsp;")
 
     source = pd.DataFrame(
         {
             "Window (Days)": np.arange(duration),
-            "Sentiment bias": np.random.randint(low=0, high=75, size=duration),
-            "Spatial bias": np.random.randint(low=20, high=100, size=duration),
-            "Environmental bias": np.random.randint(low=40, high=100, size=duration),
+            "Sentiment representation": np.random.randint(low=0, high=75, size=duration),
+            "Spatial representation": np.random.randint(low=20, high=100, size=duration),
+            "Eco-friendliness": np.random.randint(low=10, high=60, size=duration),
         }
     )
 
@@ -103,7 +103,7 @@ with expander_1:
         alt.Chart(source)
         .mark_circle(opacity=0.5)
         .transform_fold(
-            fold=["Sentiment bias", "Spatial bias", "Environmental bias"],
+            fold=["Sentiment representation", "Spatial representation", "Eco-friendliness"],
             as_=["Bias category", "Bias magnitude"],
         )
         .encode(
@@ -123,7 +123,7 @@ with expander_1:
         )
     )
 
-    st.altair_chart(
+    col2.altair_chart(
         base
         + base.transform_loess(
             "Window (Days)", "Bias magnitude", groupby=["Bias category"]
@@ -131,9 +131,10 @@ with expander_1:
         use_container_width=True,
     )
 
-    st.write("#### " + str(country) + ": Search trends for the last 24 hours")
+    col1.write("\n\n")
+    col1.write("#### " + str(country) + ": Search trends for the last 24 hours")
     country_lower = country.lower().replace(" ", "_")
-    st.image(
+    col1.image(
         Image.open(Path("wordclouds/" + str(country_lower) + ".png")),
         use_column_width="auto",
     )
@@ -142,7 +143,7 @@ with expander_2:
     st.markdown("&nbsp;")
     st.markdown("_STILL COOKING!_ :spaghetti:")
     st.markdown(
-        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates."
+        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
     )
     st.markdown("&nbsp;")
 
@@ -150,7 +151,7 @@ with expander_3:
     st.markdown("&nbsp;")
     st.markdown("_STILL COOKING!_ :spaghetti:")
     st.markdown(
-        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates."
+        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
     )
     st.markdown("&nbsp;")
 
@@ -158,6 +159,6 @@ with expander_4:
     st.markdown("&nbsp;")
     st.markdown("_STILL COOKING!_ :spaghetti:")
     st.markdown(
-        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates."
+        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
     )
     st.markdown("&nbsp;")

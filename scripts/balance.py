@@ -6,11 +6,13 @@ import socket
 import numpy as np
 import pandas as pd
 import scipy
-from textblob import TextBlob
+
+# from textblob import TextBlob
 import geoip2.database
 import folium
 from streamlit_folium import folium_static
 import altair as alt
+from transformers import pipeline
 
 # The url below can be replaced with 'http://localhost/8888/search' if searx is locally setup.
 # See https://searx.github.io/searx/admin/installation.html for more details.
@@ -47,9 +49,22 @@ def load_searx_data(query):
     return df
 
 
+# def sentiment_calc(text):
+#     try:
+#         return TextBlob(text).sentiment.polarity
+#     except:
+#         return None
+
+@st.cache(allow_output_mutation=True, show_spinner=False)
 def sentiment_calc(text):
     try:
-        return TextBlob(text).sentiment.polarity
+        result = classifier(text)[0]
+        if result["label"] == "POSITIVE":
+            return result["score"]
+        elif result["label"] == "NEGATIVE":
+            return -result["score"]
+        else:
+            return 0
     except:
         return None
 
@@ -125,7 +140,7 @@ def rmad(x):
 # st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
 
 st.markdown("## ⚖️ Balance")
-st.write("Tackle bias as you search the web. Balance relevance with diversity.")
+st.write("Evaluate representation as you search the web.")
 
 st.markdown("&nbsp;")
 
@@ -143,18 +158,20 @@ if query != "":
         st.markdown("&nbsp;")
         st.markdown("_STILL COOKING!_ :spaghetti:")
         st.markdown(
-            "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates."
+            "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
         )
 
     col2, col1 = st.beta_columns(2)
 
     if search_type == "Unbalanced results":
 
-        with st.spinner("Assessing bias in your search..."):
+        with st.spinner("Assessing representation in your search..."):
             df = load_searx_data(query)
             df["search_rank"] = df.reset_index().index + 1
             df_size = len(df.index)
             green_list = pd.read_csv(Path("green/greendomain.txt"))["url"].tolist()
+            # sentiment analyzer loading
+            classifier = pipeline("sentiment-analysis")
 
         with col1:
             st.markdown("### Search results")
@@ -182,18 +199,18 @@ if query != "":
                         )
                     st.markdown("---")
 
-        col2.markdown("### Bias in search results")
+        col2.markdown("### Representation in search results")
         col2.markdown("---")
         summary_chart = col2.empty()
 
         expander1 = col2.beta_expander(
-            "🗣️ Sentiment Bias: Do I see more positive (or more negative) sentiment in my results?"
+            "🗣️ Sentiment Representation: Do I see more positive (or more negative) sentiment in my results?"
         )
         expander2 = col2.beta_expander(
-            "🌍 Spatial Bias: Are my results hosted in geographically diverse locations?"
+            "🌍 Spatial Representation: Are my results hosted in geographically diverse locations?"
         )
         expander3 = col2.beta_expander(
-            "🔥 Environmental Bias: Are my results coming from eco-friendly domains?"
+            "🔥 Eco-friendliness: Are my results coming from eco-friendly domains?"
         )
 
         with expander1:
@@ -212,16 +229,16 @@ if query != "":
                 sentiment_min = df["sentiment"].min()
                 sentiment_max = df["sentiment"].max()
 
-                correlation = df["search_rank"].corr(df["sentiment"])
-                sentiment_bias = round(abs(correlation * 100), 2)
+                correlation = 1 - abs(df["search_rank"].corr(df["sentiment"]))
+                sentiment_bias = round((correlation * 100), 2)
 
-                line1 = "Bias magnitude: __" + str(sentiment_bias) + "/100__"
+                line1 = "Representation: __" + str(sentiment_bias) + "/100__"
                 if correlation < 0:
                     line2 = "Results with _positive_ sentiment are likely to be seen _first_"
                 elif correlation > 0:
                     line2 = "Results with _negative_ sentiment are likely to be seen _first_"
                 else:
-                    line2 = "Bias direction: No sentiment in bias in results!"
+                    line2 = "Direction: No sentiment bias in results!"
                 # df['new_score'] = df['score'] + abs(df['sentiment'])
                 st.success(line1 + " (" + line2 + ").")
                 st.write("\n")
@@ -235,38 +252,39 @@ if query != "":
                 st.write(
                     "The overall sentiment in your search results is _"
                     + sentiment_text
-                    + "_, with an average sentiment score of "
-                    + str(sentiment_mean)
+                    + "_, with a median sentiment score of "
+                    + str(sentiment_median)
                     + ". Here's how sentiment varies with rank for your top "
                     + str(df_size)
                     + " search results. Results with positive and negative sentiment are highlighted in green and red respectively."
                 )
                 st.write("\n")
-                # plot_dist = (
-                #     alt.Chart(df[df["sentiment"].notna()])
-                #     .transform_density(
-                #         "sentiment",
-                #         as_=["sentiment", "density"],
-                #     )
-                #     .mark_area(opacity=0.75)
-                #     .encode(
-                #         x="sentiment:Q",
-                #         y="density:Q",
-                #         tooltip=["sentiment"],
-                #     )
-                #     .encode(
-                #         x=alt.X("sentiment:Q", title="Sentiment"),
-                #         y=alt.Y("density:Q", title=""),
-                #     )
-                #     .properties(height=450)
-                # )
-                # rule_dist = (
-                #     alt.Chart(df[df["sentiment"].notna()])
-                #     .mark_rule(color="red", strokeDash=[10, 10], size=2)
-                #     .encode(x="median(sentiment):Q")
-                # )
-                # st.altair_chart(plot_dist + rule_dist, use_container_width=True)
-                # st.markdown("\n")
+
+                plot_dist = (
+                    alt.Chart(df[df["sentiment"].notna()])
+                    .transform_density(
+                        "sentiment",
+                        as_=["sentiment", "density"],
+                    )
+                    .mark_area(opacity=0.75)
+                    .encode(
+                        x="sentiment:Q",
+                        y="density:Q",
+                        tooltip=["sentiment"],
+                    )
+                    .encode(
+                        x=alt.X("sentiment:Q", title="Sentiment"),
+                        y=alt.Y("density:Q", title=""),
+                    )
+                    .properties(height=450)
+                )
+                rule_dist = (
+                    alt.Chart(df[df["sentiment"].notna()])
+                    .mark_rule(color="red", strokeDash=[10, 10], size=2)
+                    .encode(x="median(sentiment):Q")
+                )
+                st.altair_chart(plot_dist + rule_dist, use_container_width=True)
+                st.markdown("\n")
 
                 plot_corr = (
                     alt.Chart(df[df["sentiment"].notna()])
@@ -378,8 +396,8 @@ if query != "":
                     df_tabulated["count"] / df_tabulated["search_rank"]
                 )
                 spatial_bias_full = round(
-                    rmad(df_tabulated[["spatial_score"]].values) * 100, 2
-                )
+                    (1 - rmad(df_tabulated[["spatial_score"]].values)) * 100, 2
+                ) # this is representation as of now, not bias
 
                 countries = ", ".join(sorted(df["country_name"].unique()))
 
@@ -394,7 +412,7 @@ if query != "":
                 #     * 100,
                 #     2,
                 # )
-                st.success("Bias magnitude: __" + str(spatial_bias_full) + "/100__")
+                st.success("Representation: __" + str(spatial_bias_full) + "/100__")
                 st.write("\n")
 
                 st.write(
@@ -415,31 +433,7 @@ if query != "":
                         location=[df.iloc[i]["latitude"], df.iloc[i]["longitude"]],
                         tooltip=df.iloc[i]["title"],
                     ).add_to(map)
-                folium_static(map, width=665, height=500)
-                # country_list = df["country_name"].value_counts().index.tolist()[::-1]
-                # df["country_cat"] = pd.Categorical(
-                #     df["country_name"], categories=country_list
-                # )
-                # df["sonder_host_country"] = "True"
-                # df.loc[
-                #     df["country_name"] != "United States", "sonder_host_country"
-                # ] = "False"
-                #
-                # plot_country = (
-                #     ggplot(df, aes("country_cat"))
-                #     + geom_bar(
-                #         aes(fill="sonder_host_country"),
-                #         color="black",
-                #         alpha=0.25,
-                #         na_rm=True,
-                #     )
-                #     + scale_fill_manual(values=["blue", "red"])
-                #     + theme_bw()
-                #     + theme(legend_position="none")
-                #     + coord_flip()
-                #     + labs(x="Country", y="Results")
-                # )
-                # st.pyplot(ggplot.draw(plot_country))
+                folium_static(map, width=620, height=500)
 
                 st.markdown("&nbsp;")
                 # IDEA: Add average rank per country plot.
@@ -448,18 +442,18 @@ if query != "":
             df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
             df["is_green"] = np.where(df["domain"].isin(green_list), "Green", "Red")
             green_count = len(df[df["is_green"] == "Green"])
-            eco_hazard = round((1 - (green_count / len(df))) * 100, 2)
+            eco_hazard = round((green_count / len(df)) * 100, 2)
 
-            st.success("Bias magnitude: __" + str(eco_hazard) + "/100__")
+            st.success("Eco-friendliness: __" + str(eco_hazard) + "/100__")
             st.write("\n")
             st.write(
-                str(round(100 - eco_hazard, 2))
+                str(round(eco_hazard, 2))
                 + "% of your search results come from domains using renewable sources of energy."
             )
             st.write("\n")
 
             df_eco = pd.DataFrame(
-                [100 - eco_hazard, eco_hazard],
+                [eco_hazard, 100 - eco_hazard],
                 columns=["value"],
             )
             df_eco["Source"] = ["Renewable", "Non-renewable"]
@@ -490,98 +484,38 @@ if query != "":
             st.markdown("&nbsp;")
             st.markdown("---")
             st.markdown(
-                "<span style='color:gray'>_Details on bias calculation algorithms can be seen [here](https://github.com/sonder-labs/sonder#-algorithms)_</span>",
+                "<span style='color:gray'>_Details on metric calculation algorithms can be seen [here](https://github.com/sonder-labs/sonder#-algorithms)_</span>",
                 unsafe_allow_html=True,
             )
 
-        # with expander3:
-        #     with st.spinner("Assessing lingual bias in your search results..."):
-        #         df_lang = pd.DataFrame(load_lang_data(query))
-        #         df_lang.columns = ["language", "count"]
-        #         df_lang = df_lang.sort_values(by=["language"])
-        #         df_lang["web_usage"] = [1.1, 1.4, 60.5, 2.7, 2.3, 0.7, 2.1, 1.1, 8.5, 3.9]
-        #         df_lang["lingual_score"] = df_lang["count"] / df_lang["web_usage"]
-        #
-        #         lingual_bias_full = round(rmad(df_lang[["count"]].values) * 100, 2)
-        #         lingual_bias_adjusted = round(
-        #             rmad(df_lang[["lingual_score"]].values) * 100, 2
-        #         )
-        #
-        #         st.success(
-        #             "Bias magnitude (Unadjusted): _"
-        #             + str(lingual_bias_full)
-        #             + "/100_"
-        #             + "  \n"
-        #             + "Bias magnitude (adjusted for language distribution on the internet): _"
-        #             + str(lingual_bias_adjusted)
-        #             + "/100_"
-        #         )
-        #         st.write("\n")
-        #         st.write(
-        #             "The distribution of your _total search results_ among the top 10 internet languages (based on number of users) can be seen below."
-        #         )
-        #         df_lang = df_lang.sort_values(by=["count"])
-        #         lang_list = df_lang["language"].tolist()
-        #         df_lang["language_cat"] = pd.Categorical(
-        #             df_lang["language"], categories=lang_list
-        #         )
-        #         plot_lang = (
-        #             ggplot(df_lang, aes("language_cat", "count"))
-        #             + geom_col(fill="blue", color="black", alpha=0.25, na_rm=True)
-        #             + theme_bw()
-        #             + coord_flip()
-        #             + labs(x="Language", y="Total Results")
-        #         )
-        #         st.pyplot(ggplot.draw(plot_lang))
 
         # Summary data frame
         df_summary = pd.DataFrame(
             [eco_hazard, spatial_bias_full, sentiment_bias],
             columns=["value"],
         )
-        df_summary["label"] = ["Environmental Bias", "Spatial Bias", "Sentiment Bias"]
-        # df_summary["label_cat"] = pd.Categorical(
-        #     df_summary["label"], categories=df_summary["label"].tolist()
-        # )
-        # df_summary.loc[df_summary["value"] <= 33, "bias_level"] = "1"
-        # df_summary.loc[df_summary["value"] > 33, "bias_level"] = "2"
-        # df_summary.loc[df_summary["value"] > 66, "bias_level"] = "3"
-        # df_summary = df_summary.sort_values(by=["value"])
-        # # Summary plot
-        # plot_summary = (
-        #     ggplot(df_summary, aes("label_cat", "value"))
-        #     + geom_col(
-        #         aes(fill="bias_level"),
-        #         alpha=0.70,
-        #         na_rm=True,
-        #     )
-        #     + geom_hline(yintercept=33, linetype="dashed")
-        #     + geom_hline(yintercept=66, linetype="dashed")
-        #     + scale_y_continuous(
-        #         labels=lambda l: ["%d%%" % v for v in l], limits=[0, 100]
-        #     )
-        #     + scale_fill_manual(values=["#0ec956", "#ffbf00", "#ff1717"])
-        #     + theme_light()
-        #     + theme(legend_position="none", legend_title_align="left")
-        #     + coord_flip()
-        #     + labs(x="", y="")
-        # )
+        df_summary["label"] = [
+            "Eco-friendliness",
+            "Spatial Representation",
+            "Sentiment Representation",
+        ]
+
         plot_summary = (
             alt.Chart(df_summary)
             .mark_bar(cornerRadiusBottomRight=10, cornerRadiusTopRight=10, opacity=0.80)
             .encode(
-                x=alt.X("value", title="Bias magnitude (0-100)"),
+                x=alt.X("value", title="Score (0-100)"),
                 y=alt.Y("label", title="", sort="-x"),
                 tooltip=["value"],
                 color=alt.condition(
-                    alt.datum.value < 50,
+                    alt.datum.value > 50,
                     alt.value("#0ec956"),  # The positive color
                     alt.value("#ff1717"),  # The negative color
                 ),
             )
             .properties(
                 height=300,
-                title="Bias Overview for " + str(df_size) + " search results",
+                title="Representation Overview for " + str(df_size) + " search results",
             )
             .configure_title(fontSize=18)
             .configure_axis(labelFontSize=15, titleFontSize=15)
@@ -598,7 +532,7 @@ if query != "":
         if st.button("Add more search results to analysis"):
             st.markdown("_STILL COOKING!_ :spaghetti:")
             st.markdown(
-                "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates."
+                "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
             )
 
 st.write("&nbsp;")
@@ -607,4 +541,4 @@ st.write("&nbsp;")
 st.write("&nbsp;")
 st.write("&nbsp;")
 st.write("&nbsp;")
-st.info("💡 De-centralized search is the future! Host Sonder locally for added control. Details [here](https://github.com/sonder-labs/sonder).")
+st.info("💡 De-centralized search is the future! Host Sonder locally for added control. Details [forthcoming](https://github.com/sonder-labs/sonder).")
