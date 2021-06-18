@@ -80,7 +80,7 @@ with st.beta_expander("🎯 Impact"):
         """
     _STILL COOKING!_ :spaghetti:
 
-    Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates.
+    Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature.
 
     &nbsp;
     """

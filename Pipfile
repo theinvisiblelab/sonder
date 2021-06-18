@@ -23,6 +23,7 @@ scipy = "*"
 pyarrow = "==2.0.0"
 altair = "*"
 wordcloud = "*"
+transformers = "*"
 
 [dev-packages]
 
