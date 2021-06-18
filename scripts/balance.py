@@ -260,31 +260,31 @@ if query != "":
                 )
                 st.write("\n")
 
-                plot_dist = (
-                    alt.Chart(df[df["sentiment"].notna()])
-                    .transform_density(
-                        "sentiment",
-                        as_=["sentiment", "density"],
-                    )
-                    .mark_area(opacity=0.75)
-                    .encode(
-                        x="sentiment:Q",
-                        y="density:Q",
-                        tooltip=["sentiment"],
-                    )
-                    .encode(
-                        x=alt.X("sentiment:Q", title="Sentiment"),
-                        y=alt.Y("density:Q", title=""),
-                    )
-                    .properties(height=450)
-                )
-                rule_dist = (
-                    alt.Chart(df[df["sentiment"].notna()])
-                    .mark_rule(color="red", strokeDash=[10, 10], size=2)
-                    .encode(x="median(sentiment):Q")
-                )
-                st.altair_chart(plot_dist + rule_dist, use_container_width=True)
-                st.markdown("\n")
+                # plot_dist = (
+                #     alt.Chart(df[df["sentiment"].notna()])
+                #     .transform_density(
+                #         "sentiment",
+                #         as_=["sentiment", "density"],
+                #     )
+                #     .mark_area(opacity=0.75)
+                #     .encode(
+                #         x="sentiment:Q",
+                #         y="density:Q",
+                #         tooltip=["sentiment"],
+                #     )
+                #     .encode(
+                #         x=alt.X("sentiment:Q", title="Sentiment"),
+                #         y=alt.Y("density:Q", title=""),
+                #     )
+                #     .properties(height=450)
+                # )
+                # rule_dist = (
+                #     alt.Chart(df[df["sentiment"].notna()])
+                #     .mark_rule(color="red", strokeDash=[10, 10], size=2)
+                #     .encode(x="median(sentiment):Q")
+                # )
+                # st.altair_chart(plot_dist + rule_dist, use_container_width=True)
+                # st.markdown("\n")
 
                 plot_corr = (
                     alt.Chart(df[df["sentiment"].notna()])
