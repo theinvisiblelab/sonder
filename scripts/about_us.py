@@ -5,7 +5,7 @@
 with st.beta_expander("⚡ TL;DR", expanded=True):
     st.markdown(
         """
-    Internet search shows you what you consume. `Sonder` shows you what you miss out on. We assess the opportunity cost of internet search.
+    Internet search shows you what you like to consume. `Sonder` shows you what you miss out on. We assess the opportunity cost of internet search.
 
     Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the choice to understand those who think and learn differently. `Sonder` is an attempt to make this lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
 

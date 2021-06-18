@@ -16,12 +16,12 @@ footer {visibility: hidden;}
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 st.title("S🎈nder")
-st.write("_Know. What you otherwise won't._")
+st.write("_Know the unknown_")
 st.markdown("---")
 
 # Sidebar
 st.sidebar.title("S🎈nder")
-st.sidebar.write("_Know. What you otherwise won't._")
+st.sidebar.write("_Know the unknown_")
 st.sidebar.markdown("---")
 
 navigate_sidebar = st.sidebar.radio("Go to", ["Home", "⚖️ Balance", "📣 Trends"], 0)
