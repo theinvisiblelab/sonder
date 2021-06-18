@@ -7,12 +7,12 @@ import numpy as np
 import pandas as pd
 import scipy
 
-# from textblob import TextBlob
+from textblob import TextBlob
 import geoip2.database
 import folium
 from streamlit_folium import folium_static
 import altair as alt
-from transformers import pipeline
+# from transformers import pipeline
 
 # The url below can be replaced with 'http://localhost/8888/search' if searx is locally setup.
 # See https://searx.github.io/searx/admin/installation.html for more details.
@@ -49,24 +49,24 @@ def load_searx_data(query):
     return df
 
 
-# def sentiment_calc(text):
-#     try:
-#         return TextBlob(text).sentiment.polarity
-#     except:
-#         return None
-
-@st.cache(allow_output_mutation=True, show_spinner=False)
 def sentiment_calc(text):
     try:
-        result = classifier(text)[0]
-        if result["label"] == "POSITIVE":
-            return result["score"]
-        elif result["label"] == "NEGATIVE":
-            return -result["score"]
-        else:
-            return 0
+        return TextBlob(text).sentiment.polarity
     except:
         return None
+
+# @st.cache(allow_output_mutation=True, show_spinner=False)
+# def sentiment_calc(text):
+#     try:
+#         result = classifier(text)[0]
+#         if result["label"] == "POSITIVE":
+#             return result["score"]
+#         elif result["label"] == "NEGATIVE":
+#             return -result["score"]
+#         else:
+#             return 0
+#     except:
+#         return None
 
 
 def get_ip(hostname):
@@ -171,7 +171,7 @@ if query != "":
             df_size = len(df.index)
             green_list = pd.read_csv(Path("green/greendomain.txt"))["url"].tolist()
             # sentiment analyzer loading
-            classifier = pipeline("sentiment-analysis")
+            # classifier = pipeline("sentiment-analysis")
 
         with col1:
             st.markdown("### Search results")
