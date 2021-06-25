@@ -12,6 +12,7 @@ import geoip2.database
 import folium
 from streamlit_folium import folium_static
 import altair as alt
+
 # from transformers import pipeline
 
 # The url below can be replaced with 'http://localhost/8888/search' if searx is locally setup.
@@ -54,6 +55,7 @@ def sentiment_calc(text):
         return TextBlob(text).sentiment.polarity
     except:
         return None
+
 
 # @st.cache(allow_output_mutation=True, show_spinner=False)
 # def sentiment_calc(text):
@@ -397,7 +399,7 @@ if query != "":
                 )
                 spatial_bias_full = round(
                     (1 - rmad(df_tabulated[["spatial_score"]].values)) * 100, 2
-                ) # this is representation as of now, not bias
+                )  # this is representation as of now, not bias
 
                 countries = ", ".join(sorted(df["country_name"].unique()))
 
@@ -488,7 +490,6 @@ if query != "":
                 unsafe_allow_html=True,
             )
 
-
         # Summary data frame
         df_summary = pd.DataFrame(
             [eco_hazard, spatial_bias_full, sentiment_bias],
@@ -517,15 +518,14 @@ if query != "":
                 height=300,
                 title="Representation Overview for " + str(df_size) + " search results",
             )
-            .configure_title(fontSize=18)
-            .configure_axis(labelFontSize=15, titleFontSize=15)
         )
-        # threshold_line = (
-        #     alt.Chart(pd.DataFrame({"x": [50]}))
-        #     .mark_rule(strokeDash=[10, 10], size=1.5)
-        #     .encode(x="x")
-        # )
-        summary_chart.altair_chart(plot_summary, use_container_width=True)
+        threshold_line = (
+            alt.Chart(pd.DataFrame({"x": [50]}))
+            .mark_rule(color="red",strokeDash=[10, 10], size=1.5)
+            .encode(x="x")
+        )
+        summary_chart.altair_chart(alt.layer(plot_summary, threshold_line).configure_title(fontSize=18)
+        .configure_axis(labelFontSize=15, titleFontSize=15), use_container_width=True)
         st.markdown("&nbsp;")
 
         st.markdown("&nbsp;")
@@ -534,11 +534,3 @@ if query != "":
             st.markdown(
                 "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
             )
-
-st.write("&nbsp;")
-st.write("&nbsp;")
-st.write("&nbsp;")
-st.write("&nbsp;")
-st.write("&nbsp;")
-st.write("&nbsp;")
-st.info("💡 De-centralized search is the future! Host Sonder locally for added control. Details [forthcoming](https://github.com/sonder-labs/sonder).")

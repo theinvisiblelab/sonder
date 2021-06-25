@@ -24,7 +24,18 @@ st.sidebar.title("S🎈nder")
 st.sidebar.write("_Know the unknown_")
 st.sidebar.markdown("---")
 
-navigate_sidebar = st.sidebar.radio("Go to", ["Home", "⚖️ Balance", "📣 Trends"], 0)
+navigate_sidebar = st.sidebar.radio(
+    "Go to",
+    [
+        "Home",
+        "⚖️ Balance",
+        "🕸️ Web Trends",
+        "🗞️ News Trends",
+        "🐦 Twitter Trends",
+        "🕯️ Wiki Trends",
+    ],
+    0,
+)
 st.sidebar.markdown("---")
 
 st.sidebar.markdown("**🐧 Contribute**")
@@ -53,8 +64,33 @@ if navigate_sidebar == "⚖️ Balance":
     exec(open("scripts/balance.py").read())
 
 # Bias trends
-if navigate_sidebar == "📣 Trends":
-    exec(open("scripts/bias_trends.py").read())
+if navigate_sidebar == "🕸️ Web Trends":
+    exec(open("scripts/web_trends.py").read())
+
+if navigate_sidebar == "🗞️ News Trends":
+    st.markdown("&nbsp;")
+    st.markdown("_STILL COOKING!_ :spaghetti:")
+    st.markdown(
+        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
+    )
+    st.markdown("&nbsp;")
+
+if navigate_sidebar == "🐦 Twitter Trends":
+    st.markdown("&nbsp;")
+    st.markdown("_STILL COOKING!_ :spaghetti:")
+    st.markdown(
+        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
+    )
+    st.markdown("&nbsp;")
+
+if navigate_sidebar == "🕯️ Wiki Trends":
+    st.markdown("&nbsp;")
+    st.markdown("_STILL COOKING!_ :spaghetti:")
+    st.markdown(
+        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
+    )
+    st.markdown("&nbsp;")
+
 
 # Unsung
 # if navigate_sidebar == "📻 Unsung":
