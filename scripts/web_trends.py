@@ -12,59 +12,8 @@ import altair as alt
 from wordcloud import WordCloud
 from PIL import Image
 from statistics import median
+from statistics import mean
 import datetime
-
-country_list = [
-    "",
-    "United States",
-    "Argentina",
-    "Australia",
-    "Austria",
-    "Belgium",
-    "Brazil",
-    "Canada",
-    "Chile",
-    "Colombia",
-    "Czech Republic",
-    "Denmark",
-    "Egypt",
-    "Finland",
-    "France",
-    "Germany",
-    "Greece",
-    "Hong Kong",
-    "Hungary",
-    "India",
-    "Indonesia",
-    "Ireland",
-    "Israel",
-    "Italy",
-    "Japan",
-    "Kenya",
-    "Malaysia",
-    "Mexico",
-    "Netherlands",
-    "New Zealand",
-    "Nigeria",
-    "Norway",
-    "Philippines",
-    "Poland",
-    "Portugal",
-    "Romania",
-    "Russia",
-    "Saudi Arabia",
-    "Singapore",
-    "South Africa",
-    "South Korea",
-    "Sweden",
-    "Switzerland",
-    "Taiwan",
-    "Thailand",
-    "Turkey",
-    "Ukraine",
-    "United Kingdom",
-    "Vietnam",
-]
 
 # can use for search rank
 def list_to_dict(lst):
@@ -99,6 +48,7 @@ def draw_bar(df_summary):
     )
     st.altair_chart(plot_summary, use_container_width=True)
 
+
 def draw_eco_bar(df_summary):
     plot_summary = (
         alt.Chart(df_summary)
@@ -119,8 +69,12 @@ def draw_eco_bar(df_summary):
         .mark_rule(color="red", strokeDash=[10, 10], size=2)
         .encode(x="mean(eco_fr):Q")
     )
-    st.altair_chart(alt.layer(plot_summary, rule).configure_title(fontSize=18)
-    .configure_axis(labelFontSize=15, titleFontSize=15), use_container_width=True)
+    st.altair_chart(
+        alt.layer(plot_summary, rule)
+        .configure_title(fontSize=18)
+        .configure_axis(labelFontSize=15, titleFontSize=15),
+        use_container_width=True,
+    )
 
 
 def draw_dist(df_temp):
@@ -203,7 +157,7 @@ def draw_eco_dist(df_temp):
 def draw_corr(df):
     plot_corr = (
         alt.Chart(df)
-        .mark_bar(size=20, opacity = 0.8)
+        .mark_bar(size=20, opacity=0.8)
         .encode(
             x=alt.X("trend_rank:Q", title="Search Trend Rank"),
             y=alt.Y("sentiment_median:Q", title="Median Sentiment"),
@@ -222,19 +176,20 @@ def draw_corr(df):
     )
     st.altair_chart(plot_corr + rule_corr, use_container_width=True)
 
+
 # this is actually another bar chart for now
 def draw_eco_corr(df):
     plot_corr = (
         alt.Chart(df)
-        .mark_bar(size=20, opacity = 0.8)
+        .mark_bar(size=20, opacity=0.8)
         .encode(
             x=alt.X("trend_rank:Q", title="Search Trend Rank"),
             y=alt.Y("eco_fr:Q", title="Mean Eco-friendliness"),
             tooltip=["trend_rank", "eco_fr"],
-        color=alt.condition(
-            alt.datum.eco_fr > df["eco_fr"].mean(),
-            alt.value("#0ec956"),  # The positive color
-            alt.value("#ff1717"),  # The negative color
+            color=alt.condition(
+                alt.datum.eco_fr > df["eco_fr"].mean(),
+                alt.value("#0ec956"),  # The positive color
+                alt.value("#ff1717"),  # The negative color
             ),
         )
     ).properties(
@@ -266,18 +221,28 @@ navigate_web = st.radio("Explore", ["Sentiment", "Eco-friendliness"], 0)
 st.markdown("---")
 st.markdown("&nbsp;")
 
-st.write("_Updated: " + datetime.date.today().strftime("%B %d, %Y") + "_")
+# read data
+df = pd.read_csv(
+    Path("today/web_trends.csv"),
+    converters={
+    "sentiment_dist": lambda x: x.strip("[]").replace("'", "").split(", "),
+    "is_green": lambda x: x.strip("[]").replace("'", "").split(", ")
+    },
+)
+
+country_list_raw = sorted(list(set(df["country"].tolist())))
+
+country_list = [i.replace("_", " ").title() for i in country_list_raw]
+country_list.insert(0, "")
+
+df["date"] = pd.to_datetime(df["date"])
+st.write("_Updated: " + df["date"].iloc[0].strftime("%B %d, %Y") + "_")
 
 col1, col2 = st.beta_columns([1, 1])
 
+
 if navigate_web == "Sentiment":
 
-    df = pd.read_csv(
-        Path("today/web_trends.csv"),
-        converters={
-            "sentiment_dist": lambda x: x.strip("[]").replace("'", "").split(", ")
-        },
-    )
     df["trend_rank"] = 21 - np.power((df["weight"]), 1 / 3)
     df["sentiment_dictionary"] = df.apply(
         lambda row: list_to_dict(row["sentiment_dist"]), axis=1
@@ -347,13 +312,14 @@ if navigate_web == "Sentiment":
             draw_corr(df[df["country"] == country_lower])
 
 
-
-
-
 if navigate_web == "Eco-friendliness":
-
-    df = pd.read_csv(Path("today/web_trends.csv"))
     df["trend_rank"] = 21 - np.power((df["weight"]), 1 / 3)
+    df["is_green"] = df.apply(
+        lambda row: list(map(int, row["is_green"])), axis=1
+    )
+    df["eco_fr"] = df.apply(
+        lambda row: mean(row["is_green"]), axis=1
+    )
     eco_fr_mean = df["eco_fr"].mean()
 
     with col1:
@@ -376,8 +342,7 @@ if navigate_web == "Eco-friendliness":
         # sentiment distribution
         st.write("#### Global: Eco-friendliness distribution today*")
         st.write("\n\n")
-        draw_eco_dist(df[['eco_fr']])
-
+        draw_eco_dist(df[["eco_fr"]])
 
         st.write("#### Global: Eco-friendliness variation with Trend Rank")
         st.write("\n\n")
@@ -405,8 +370,10 @@ if navigate_web == "Eco-friendliness":
 
             st.write("#### " + str(country) + ": Eco-friendliness distribution today")
             st.write("\n\n")
-            draw_eco_dist(df[df["country"] == country_lower][['eco_fr']])
+            draw_eco_dist(df[df["country"] == country_lower][["eco_fr"]])
 
-            st.write("#### " + str(country) + ": Eco-friendliness variation with Trend Rank")
+            st.write(
+                "#### " + str(country) + ": Eco-friendliness variation with Trend Rank"
+            )
             st.write("\n\n")
             draw_eco_corr(df[df["country"] == country_lower])

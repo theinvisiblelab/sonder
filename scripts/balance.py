@@ -521,11 +521,15 @@ if query != "":
         )
         threshold_line = (
             alt.Chart(pd.DataFrame({"x": [50]}))
-            .mark_rule(color="red",strokeDash=[10, 10], size=1.5)
+            .mark_rule(color="red", strokeDash=[10, 10], size=1.5)
             .encode(x="x")
         )
-        summary_chart.altair_chart(alt.layer(plot_summary, threshold_line).configure_title(fontSize=18)
-        .configure_axis(labelFontSize=15, titleFontSize=15), use_container_width=True)
+        summary_chart.altair_chart(
+            alt.layer(plot_summary, threshold_line)
+            .configure_title(fontSize=18)
+            .configure_axis(labelFontSize=15, titleFontSize=15),
+            use_container_width=True,
+        )
         st.markdown("&nbsp;")
 
         st.markdown("&nbsp;")

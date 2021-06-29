@@ -31,8 +31,8 @@ navigate_sidebar = st.sidebar.radio(
         "⚖️ Balance",
         "🕸️ Web Trends",
         "🗞️ News Trends",
-        "🐦 Twitter Trends",
         "🕯️ Wiki Trends",
+        "🐦 Twitter Trends",
     ],
     0,
 )
@@ -68,22 +68,13 @@ if navigate_sidebar == "🕸️ Web Trends":
     exec(open("scripts/web_trends.py").read())
 
 if navigate_sidebar == "🗞️ News Trends":
-    st.markdown("&nbsp;")
-    st.markdown("_STILL COOKING!_ :spaghetti:")
-    st.markdown(
-        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
-    )
-    st.markdown("&nbsp;")
-
-if navigate_sidebar == "🐦 Twitter Trends":
-    st.markdown("&nbsp;")
-    st.markdown("_STILL COOKING!_ :spaghetti:")
-    st.markdown(
-        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
-    )
-    st.markdown("&nbsp;")
+    exec(open("scripts/news_trends.py").read())
 
 if navigate_sidebar == "🕯️ Wiki Trends":
+    exec(open("scripts/wiki_trends.py").read())
+
+
+if navigate_sidebar == "🐦 Twitter Trends":
     st.markdown("&nbsp;")
     st.markdown("_STILL COOKING!_ :spaghetti:")
     st.markdown(
