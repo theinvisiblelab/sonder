@@ -54,7 +54,7 @@ def draw_eco_bar(df_summary):
         alt.Chart(df_summary)
         .mark_bar(opacity=0.80)
         .encode(
-            x=alt.X("eco_fr", title="Eco-friendliness"),
+            x=alt.X("eco_fr", title="Carbon Cost"),
             y=alt.Y("country", title="Country", sort="-x"),
             tooltip=["eco_fr"],
             color=alt.condition(
@@ -129,7 +129,7 @@ def draw_eco_dist(df_temp):
             tooltip=["eco_fr"],
         )
         .encode(
-            x=alt.X("eco_fr:Q", title="Eco-friendliness"),
+            x=alt.X("eco_fr:Q", title="Carbon Cost"),
             y=alt.Y("density:Q", title=""),
         )
         .properties(
@@ -184,7 +184,7 @@ def draw_eco_corr(df):
         .mark_bar(size=20, opacity=0.8)
         .encode(
             x=alt.X("trend_rank:Q", title="Search Trend Rank"),
-            y=alt.Y("eco_fr:Q", title="Mean Eco-friendliness"),
+            y=alt.Y("eco_fr:Q", title="Mean Carbon Cost"),
             tooltip=["trend_rank", "eco_fr"],
             color=alt.condition(
                 alt.datum.eco_fr > df["eco_fr"].mean(),
@@ -214,10 +214,33 @@ def draw_eco_corr(df):
 ## CONTENT ##
 #############
 
+with st.beta_expander("🎈 Why Sonder?"):
+    st.info(
+        """
+    *son$\cdot$der (n.)*
+
+    the realization that each random passerby is living a life as vivid and complex as your own
+    """
+    )
+    st.markdown(
+        """
+    Internet search shows you what you consume. Sonder shows you what you miss out on. We assess the opportunity cost of internet search.
+
+    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
+
+    We are working along two dimensions (view 👈 sidebar):
+
+    + ⚖️ Balance: Tackle bias as you search the web. Balance relevance with diversity.
+    + 📣 Trends: Highlight fairness in web, news, wiki, and social media trends.
+
+    &nbsp;
+    """
+    )
+
 st.markdown("## 🕸️ Web Trends")
 st.write("Explore fairness trends for internet search across the globe.")
 st.markdown("&nbsp;")
-navigate_web = st.radio("Explore", ["Sentiment", "Eco-friendliness"], 0)
+navigate_web = st.radio("Explore", ["Sentiment", "Carbon Cost"], 0)
 st.markdown("---")
 st.markdown("&nbsp;")
 
@@ -225,8 +248,8 @@ st.markdown("&nbsp;")
 df = pd.read_csv(
     Path("today/web_trends.csv"),
     converters={
-    "sentiment_dist": lambda x: x.strip("[]").replace("'", "").split(", "),
-    "is_green": lambda x: x.strip("[]").replace("'", "").split(", ")
+        "sentiment_dist": lambda x: x.strip("[]").replace("'", "").split(", "),
+        "is_green": lambda x: x.strip("[]").replace("'", "").split(", "),
     },
 )
 
@@ -312,20 +335,16 @@ if navigate_web == "Sentiment":
             draw_corr(df[df["country"] == country_lower])
 
 
-if navigate_web == "Eco-friendliness":
+if navigate_web == "Carbon Cost":
     df["trend_rank"] = 21 - np.power((df["weight"]), 1 / 3)
-    df["is_green"] = df.apply(
-        lambda row: list(map(int, row["is_green"])), axis=1
-    )
-    df["eco_fr"] = df.apply(
-        lambda row: mean(row["is_green"]), axis=1
-    )
+    df["is_green"] = df.apply(lambda row: list(map(int, row["is_green"])), axis=1)
+    df["eco_fr"] = df.apply(lambda row: mean(row["is_green"]), axis=1)
     eco_fr_mean = df["eco_fr"].mean()
 
     with col1:
         st.write("## Global Trends Today")
         st.write("&nbsp;")
-        st.write("#### Eco-friendliness ranking")
+        st.write("#### Carbon Cost ranking")
         st.write("\n\n")
 
         # country rank plot
@@ -340,11 +359,11 @@ if navigate_web == "Eco-friendliness":
         draw_eco_bar(df_country)
 
         # sentiment distribution
-        st.write("#### Global: Eco-friendliness distribution today*")
+        st.write("#### Global: Carbon Cost distribution today*")
         st.write("\n\n")
         draw_eco_dist(df[["eco_fr"]])
 
-        st.write("#### Global: Eco-friendliness variation with Trend Rank")
+        st.write("#### Global: Carbon Cost variation with Trend Rank")
         st.write("\n\n")
         df_mean = pd.DataFrame(
             df.groupby(["trend_rank"])[["eco_fr"]].mean(),
@@ -368,12 +387,10 @@ if navigate_web == "Eco-friendliness":
                 use_column_width="auto",
             )
 
-            st.write("#### " + str(country) + ": Eco-friendliness distribution today")
+            st.write("#### " + str(country) + ": Carbon Cost distribution today")
             st.write("\n\n")
             draw_eco_dist(df[df["country"] == country_lower][["eco_fr"]])
 
-            st.write(
-                "#### " + str(country) + ": Eco-friendliness variation with Trend Rank"
-            )
+            st.write("#### " + str(country) + ": Carbon Cost variation with Trend Rank")
             st.write("\n\n")
             draw_eco_corr(df[df["country"] == country_lower])

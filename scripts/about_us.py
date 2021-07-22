@@ -1,18 +1,21 @@
-# st.info(
-#     ":heart: Sonder is a nonprofit sustained by grants, donations, and community support. [Donate](https://github.com/sonder-labs/sonder) to Sonder."
-# )
+with st.beta_expander("🎈 Why Sonder?", expanded=True):
+    st.info(
+        """
+    *son$\cdot$der (n.)*
 
-with st.beta_expander("⚡ TL;DR", expanded=True):
+    the realization that each random passerby is living a life as vivid and complex as your own
+    """
+    )
     st.markdown(
         """
-    Internet search shows you what you like to consume. `Sonder` shows you what you miss out on. We assess the opportunity cost of internet search.
+    Internet search shows you what you consume. Sonder shows you what you miss out on. We assess the opportunity cost of internet search.
 
-    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the choice to understand those who think and learn differently. `Sonder` is an attempt to make this lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
+    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
 
     We are working along two dimensions (view 👈 sidebar):
 
-    + ⚖️ `Balance`: Tackle bias as you search the web. Balance relevance with diversity.
-    + 📣 `Trends`: Highlight fairness in web, news, and social media trends.
+    + ⚖️ Balance: Tackle bias as you search the web. Balance relevance with diversity.
+    + 📣 Trends: Highlight fairness in web, news, wiki, and social media trends.
 
     &nbsp;
     """

@@ -4,6 +4,7 @@
 __pycache__
 *.ipynb
 .ipynb_checkpoints/
+jupyter/
 
 # GeoIP script
 geoip_download.sh

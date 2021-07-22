@@ -23,6 +23,9 @@ pyarrow = "==2.0.0"
 altair = "*"
 wordcloud = "*"
 textblob = "*"
+transformers = "*"
+torch = "*"
+rpy2 = "*"
 
 [dev-packages]
 

@@ -53,7 +53,7 @@ def draw_eco_bar(df_summary):
         alt.Chart(df_summary)
         .mark_bar(opacity=0.80)
         .encode(
-            x=alt.X("eco_fr", title="Eco-friendliness"),
+            x=alt.X("eco_fr", title="Carbon Cost"),
             y=alt.Y("country", title="Country", sort="-x"),
             tooltip=["eco_fr"],
             color=alt.condition(
@@ -128,7 +128,7 @@ def draw_eco_dist(df_temp):
             tooltip=["eco_fr"],
         )
         .encode(
-            x=alt.X("eco_fr:Q", title="Eco-friendliness"),
+            x=alt.X("eco_fr:Q", title="Carbon Cost"),
             y=alt.Y("density:Q", title=""),
         )
         .properties(
@@ -183,7 +183,7 @@ def draw_eco_corr(df):
         .mark_bar(size=20, opacity=0.8)
         .encode(
             x=alt.X("trend_rank:Q", title="Search Trend Rank"),
-            y=alt.Y("eco_fr:Q", title="Mean Eco-friendliness"),
+            y=alt.Y("eco_fr:Q", title="Mean Carbon Cost"),
             tooltip=["trend_rank", "eco_fr"],
             color=alt.condition(
                 alt.datum.eco_fr > df["eco_fr"].mean(),
@@ -231,10 +231,33 @@ def print_headlines(df):
 ## CONTENT ##
 #############
 
+with st.beta_expander("🎈 Why Sonder?"):
+    st.info(
+        """
+    *son$\cdot$der (n.)*
+
+    the realization that each random passerby is living a life as vivid and complex as your own
+    """
+    )
+    st.markdown(
+        """
+    Internet search shows you what you consume. Sonder shows you what you miss out on. We assess the opportunity cost of internet search.
+
+    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
+
+    We are working along two dimensions (view 👈 sidebar):
+
+    + ⚖️ Balance: Tackle bias as you search the web. Balance relevance with diversity.
+    + 📣 Trends: Highlight fairness in web, news, wiki, and social media trends.
+
+    &nbsp;
+    """
+    )
+
 st.markdown("## 🗞️ News Trends")
 st.write("Explore fairness trends for news across the globe.")
 st.markdown("&nbsp;")
-navigate_web = st.radio("Explore", ["Sentiment", "Eco-friendliness"], 0)
+navigate_web = st.radio("Explore", ["Sentiment", "Carbon Cost"], 0)
 st.markdown("---")
 st.markdown("&nbsp;")
 
@@ -274,7 +297,7 @@ if navigate_web == "Sentiment":
 
         # country rank plot
         df_country = pd.DataFrame(
-            df.groupby(["country"])[["sentiment"]].median(),
+            df.groupby(["country"])[["sentiment"]].mean(),  # mean or median?
             columns=["sentiment"],
         )
         df_country = df_country.reset_index()

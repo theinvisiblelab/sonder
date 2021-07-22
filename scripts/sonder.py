@@ -13,26 +13,30 @@ footer {visibility: hidden;}
 </style>
 
 """
+
+# Main page
+
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 st.title("S🎈nder")
-st.write("_Know the unknown_")
-st.markdown("---")
+st.write("_The Opportunity Cost of Internet Search_")
+st.markdown("&nbsp;")
+
 
 # Sidebar
 st.sidebar.title("S🎈nder")
-st.sidebar.write("_Know the unknown_")
+st.sidebar.write("_The Opportunity Cost of Internet Search_")
 st.sidebar.markdown("---")
 
 navigate_sidebar = st.sidebar.radio(
     "Go to",
     [
-        "Home",
         "⚖️ Balance",
         "🕸️ Web Trends",
         "🗞️ News Trends",
         "🕯️ Wiki Trends",
         "🐦 Twitter Trends",
+        "About",
     ],
     0,
 )
@@ -55,10 +59,6 @@ st.sidebar.info(
 
 # Main page
 
-# Philosophy
-if navigate_sidebar == "Home":
-    exec(open("scripts/about_us.py").read())
-
 # Balance
 if navigate_sidebar == "⚖️ Balance":
     exec(open("scripts/balance.py").read())
@@ -71,7 +71,13 @@ if navigate_sidebar == "🗞️ News Trends":
     exec(open("scripts/news_trends.py").read())
 
 if navigate_sidebar == "🕯️ Wiki Trends":
-    exec(open("scripts/wiki_trends.py").read())
+    # exec(open("scripts/wiki_trends.py").read())
+    st.markdown("&nbsp;")
+    st.markdown("_STILL COOKING!_ :spaghetti:")
+    st.markdown(
+        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
+    )
+    st.markdown("&nbsp;")
 
 
 if navigate_sidebar == "🐦 Twitter Trends":
@@ -82,6 +88,9 @@ if navigate_sidebar == "🐦 Twitter Trends":
     )
     st.markdown("&nbsp;")
 
+# Philosophy
+if navigate_sidebar == "About":
+    exec(open("scripts/about_us.py").read())
 
 # Unsung
 # if navigate_sidebar == "📻 Unsung":
