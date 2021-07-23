@@ -15,14 +15,31 @@
 
 ## ⚡ TL;DR
 
-Our access to knowledge is biased by ~~open-source~~ proprietary algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the _choice_ to understand those who learn, think, and grow differently. `Sonder` is an attempt to make this _choice_ explicit. To at least be mindful of our knowledge bubbles, if not break them.
+Internet search shows you what you consume. Sonder shows you what you miss out on. We assess the opportunity cost of internet search.
 
-We are working on three projects:
-+ `Balance`: Tackle bias as you search the web. Balance relevance with diversity.
-+ `Trends`: Highlight fairness in web, news, and social media trends.
-+ `Unsung`: Draw attention to untold stories from around the planet.
+Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~understanding~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
+
+We are working along two dimensions (view 👈 sidebar):
+
++ ⚖️ Balance: Tackle bias as you search the web. Balance relevance with diversity.
++ 📣 Trends: Highlight fairness in web, news, wiki, and social media trends.
+
 
 <br/>
+
+## Glimpses
+
+Latent Knowledge Summary for Web Search:
+
+<p align="center">
+  <img src="images/1.png" />
+</p>
+
+Latent Sentiment:
+
+<p align="center">
+  <img src="images/2.png" />
+</p>
 
 ## 🧭 ️Mission
 

@@ -49,7 +49,7 @@ st.sidebar.info(
 
 st.sidebar.markdown("**🏅 Awards**")
 st.sidebar.info(
-    "🏆 Design Challenge Research Award, Stanford University (June 2021) \n\n 🏆 Digital Learning Design Challenge Grant, Stanford University (March 2021)"
+    "🏆 Design Challenge Research Award, Stanford University \n\n 🏆 Karr Fellowship, Stanford University \n\n 🏆 Digital Learning Design Challenge Grant, Stanford University"
 )
 
 st.sidebar.markdown("**:octopus: Maitainers**")

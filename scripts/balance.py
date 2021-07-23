@@ -416,7 +416,10 @@ if query != "":
             df_prop.loc[(df_prop["diff"] < 0), "diff"] = 0
             df_prop["diff"].fillna(0, inplace=True)
             # st.write(df_prop)
-            spatial_bias_full = round(df_prop["diff"].sum() / (len(df_prop) - 1), 2)
+            if len(df_prop) > 1:
+                spatial_bias_full = round(df_prop["diff"].sum() / (len(df_prop) - 1), 2)
+            else:
+                spatial_bias_full = 0
 
             df_prop = (
                 df_prop[["country_name", "total_all", "total_top", "diff"]]
