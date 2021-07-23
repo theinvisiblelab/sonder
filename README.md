@@ -6,7 +6,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4536014.svg)](https://doi.org/10.5281/zenodo.4536014)
 
 
-> *sonder (n.)*
+> *son$\cdot$der (n.)*
 >
 >> the realization that each random passerby is living a life as vivid and complex as your own
 >
@@ -34,6 +34,8 @@ Latent knowledge summary for search query:
 <p align="center">
   <img src="images/1.png" />
 </p>
+
+![summary]("images/1.png")
 
 <br/>
 
