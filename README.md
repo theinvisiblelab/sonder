@@ -21,7 +21,7 @@ Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~
 
 We are working along two dimensions (view 👈 sidebar):
 
-+ ⚖️ Balance: Tackle bias as you search the web. Balance relevance with diversity.
++ ⚖️ Balance: Assess latent/hidden knowledge as you search the web. Balance relevance with diversity.
 + 📣 Trends: Highlight fairness in web, news, wiki, and social media trends.
 
 
@@ -29,17 +29,42 @@ We are working along two dimensions (view 👈 sidebar):
 
 ## Glimpses
 
-Latent Knowledge Summary for Web Search:
+Latent knowledge summary for search query:
 
 <p align="center">
   <img src="images/1.png" />
 </p>
 
-Latent Sentiment:
+Latent sentiment:
 
 <p align="center">
   <img src="images/2.png" />
 </p>
+
+Latent geographies:
+
+<p align="center">
+  <img src="images/3.png" />
+</p>
+
+Latent carbon cost:
+
+<p align="center">
+  <img src="images/4.png" />
+</p>
+
+Global sentiment trends (Web search):
+
+<p align="center">
+  <img src="images/5.png" />
+</p>
+
+Global sentiment trends (News search):
+
+<p align="center">
+  <img src="images/6.png" />
+</p>
+
 
 ## 🧭 ️Mission
 

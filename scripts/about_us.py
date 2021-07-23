@@ -14,7 +14,7 @@ with st.beta_expander("🎈 Why Sonder?", expanded=True):
 
     We are working along two dimensions (view 👈 sidebar):
 
-    + ⚖️ Balance: Tackle bias as you search the web. Balance relevance with diversity.
+    + ⚖️ Balance: Assess latent/hidden knowledge as you search the web. Balance relevance with diversity.
     + 📣 Trends: Highlight fairness in web, news, wiki, and social media trends.
 
     &nbsp;
