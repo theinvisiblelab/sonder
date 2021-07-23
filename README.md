@@ -35,7 +35,7 @@ Latent knowledge summary for search query:
   <img src="images/1.png" />
 </p>
 
-![summary]("images/1.png")
+![summary](images/1.png)
 
 <br/>
 
