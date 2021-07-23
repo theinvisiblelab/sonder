@@ -8,7 +8,7 @@
 
 > *sonder (n.)*
 >
->> the realization that each random passerby is living a life as vivid and complex as your own—populated with their own ambitions, friends, routines, worries and inherited craziness—an epic story that continues invisibly around you like an anthill sprawling deep underground, with elaborate passageways to thousands of other lives that you’ll never know existed, in which you might appear only once, as an extra sipping coffee in the background, as a blur of traffic passing on the highway, as a lighted window at dusk.
+>> the realization that each random passerby is living a life as vivid and complex as your own
 >
 > &mdash; John Koenig, The Dictionary of Obscure Sorrows
 
@@ -27,7 +27,7 @@ We are working along two dimensions (view 👈 sidebar):
 
 <br/>
 
-## Glimpses
+## 👀 Glimpses
 
 Latent knowledge summary for search query:
 
@@ -35,11 +35,15 @@ Latent knowledge summary for search query:
   <img src="images/1.png" />
 </p>
 
+<br/>
+
 Latent sentiment:
 
 <p align="center">
   <img src="images/2.png" />
 </p>
+
+<br/>
 
 Latent geographies:
 
@@ -47,17 +51,23 @@ Latent geographies:
   <img src="images/3.png" />
 </p>
 
+<br/>
+
 Latent carbon cost:
 
 <p align="center">
   <img src="images/4.png" />
 </p>
 
+<br/>
+
 Global sentiment trends (Web search):
 
 <p align="center">
   <img src="images/5.png" />
 </p>
+
+<br/>
 
 Global sentiment trends (News search):
 
