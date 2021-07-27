@@ -5,11 +5,13 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.0%20adopted-ff69b4.svg)](CODE_OF_CONDUCT.md)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4536014.svg)](https://doi.org/10.5281/zenodo.4536014)
 
+<br/>
 
-> *sonder (n.)*
+> _sonder (n.)_
 >
 > the realization that each random passerby is living a life as vivid and complex as your own<sup id="a1">[1](#f1)</sup>
 
+<br/>
 
 ## ⚡ TL;DR
 
@@ -19,9 +21,8 @@ Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~
 
 We are working along two dimensions:
 
-+ ⚖️ Balance: Assess latent/hidden knowledge as you search the web. Balance relevance with diversity.
-+ 📣 Trends: Highlight fairness in web, news, wiki, and social media trends.
-
+-   ⚖️ Balance: Assess latent/hidden knowledge as you search the web. Balance relevance with diversity.
+-   📣 Trends: Highlight fairness in web, news, wiki, and social media trends.
 
 <br/>
 
@@ -77,11 +78,24 @@ We are working along two dimensions:
   <img src="images/6.png" />
 </p>
 
+<br/>
 
 ## 🧮 Algorithms
 
 Details [here](https://raw.githubusercontent.com/sonder-labs/sonder/main/slides_sonder.pdf).
 
----
+<br/>
 
-<b id="f1">1</b> John Koenig, The Dictionary of Obscure Sorrows. [↩](#a1)
+## 👾 Maintainers
+
+* [Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)
+* [Shruti Jain](mailto:shruti_jain@berkeley.edu)
+
+Sonder is [open-source](https://github.com/sonder-labs/sonder/blob/main/LICENSE) and envisioned as a nonprofit. [Reach out](mailto:saurabhkhanna@stanford.edu) to join forces.
+
+<br/>
+
+
+* * *
+
+<b id="f1">1</b> Diction credit: [John Koenig](https://www.ted.com/speakers/john_koenig) [↩](#a1)
