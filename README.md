@@ -8,9 +8,7 @@
 
 > *sonder (n.)*
 >
->> the realization that each random passerby is living a life as vivid and complex as your own
->
-> &mdash; John Koenig, The Dictionary of Obscure Sorrows
+>> the realization that each random passerby is living a life as vivid and complex as your own<sup id="a1">[1](#f1)</sup>
 
 
 ## ⚡ TL;DR
@@ -31,7 +29,7 @@ We are working along two dimensions:
 
 ### ⚖️ Balance
 
-Latent knowledge summary for search query:
+#### Latent knowledge summary for search query
 
 <p align="center">
   <img src="images/1.png" />
@@ -39,7 +37,7 @@ Latent knowledge summary for search query:
 
 <br/>
 
-Latent sentiment:
+#### Latent sentiment
 
 <p align="center">
   <img src="images/2.png" />
@@ -47,7 +45,7 @@ Latent sentiment:
 
 <br/>
 
-Latent geographies:
+#### Latent geographies
 
 <p align="center">
   <img src="images/3.png" />
@@ -55,7 +53,7 @@ Latent geographies:
 
 <br/>
 
-Latent carbon cost:
+#### Latent carbon cost
 
 <p align="center">
   <img src="images/4.png" />
@@ -65,7 +63,7 @@ Latent carbon cost:
 
 ### 📣 Trends
 
-#### Global sentiment trends (Web search):
+#### Global sentiment trends (Web search)
 
 <p align="center">
   <img src="images/5.png" />
@@ -73,7 +71,7 @@ Latent carbon cost:
 
 <br/>
 
-Global sentiment trends (News search):
+#### Global sentiment trends (News search)
 
 <p align="center">
   <img src="images/6.png" />
@@ -83,3 +81,7 @@ Global sentiment trends (News search):
 ## 🧮 Algorithms
 
 Details [here](https://raw.githubusercontent.com/sonder-labs/sonder/main/slides_sonder.pdf).
+
+---
+
+<b id="f1">1</b> John Koenig, The Dictionary of Obscure Sorrows. [↩](#a1)
