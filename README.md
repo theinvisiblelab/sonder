@@ -8,7 +8,7 @@
 
 > *sonder (n.)*
 >
->> the realization that each random passerby is living a life as vivid and complex as your own<sup id="a1">[1](#f1)</sup>
+> the realization that each random passerby is living a life as vivid and complex as your own<sup id="a1">[1](#f1)</sup>
 
 
 ## ⚡ TL;DR
