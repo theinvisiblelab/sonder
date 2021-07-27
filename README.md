@@ -29,6 +29,8 @@ We are working along two dimensions:
 
 ## 👀 Glimpses
 
+### Balance
+
 Latent knowledge summary for search query:
 
 <p align="center">
@@ -61,6 +63,8 @@ Latent carbon cost:
 
 <br/>
 
+### Trends
+
 Global sentiment trends (Web search):
 
 <p align="center">
@@ -78,4 +82,4 @@ Global sentiment trends (News search):
 
 ## 🧮 Algorithms
 
-Details [here](https://github.com/sonder-labs/sonder).
+Details [here](https://raw.githubusercontent.com/sonder-labs/sonder/main/slides_sonder.pdf).
