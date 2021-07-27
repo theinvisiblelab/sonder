@@ -29,7 +29,7 @@ We are working along two dimensions:
 
 ## 👀 Glimpses
 
-### Balance
+### ⚖️ Balance
 
 Latent knowledge summary for search query:
 
@@ -63,7 +63,7 @@ Latent carbon cost:
 
 <br/>
 
-### Trends
+### 📣 Trends
 
 Global sentiment trends (Web search):
 
