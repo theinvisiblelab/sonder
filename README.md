@@ -65,7 +65,7 @@ Latent carbon cost:
 
 ### 📣 Trends
 
-Global sentiment trends (Web search):
+#### Global sentiment trends (Web search):
 
 <p align="center">
   <img src="images/5.png" />
