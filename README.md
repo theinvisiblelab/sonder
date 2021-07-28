@@ -86,12 +86,22 @@ Details [here](https://raw.githubusercontent.com/sonder-labs/sonder/main/slides_
 
 <br/>
 
+## 🏆 Awards
+
+* Design Challenge Research Award, Stanford University
+* Karr Fellowship, Stanford University
+* Digital Learning Design Challenge Grant, Stanford University
+
+<br/>
+
 ## 👾 Maintainers
 
 * [Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)
 * [Shruti Jain](mailto:shruti_jain@berkeley.edu)
 
 Sonder is [open-source](https://github.com/sonder-labs/sonder/blob/main/LICENSE) and envisioned as a nonprofit. [Reach out](mailto:saurabhkhanna@stanford.edu) to join forces.
+
+Contribution covenant [here](https://github.com/sonder-labs/sonder/blob/main/CODE_OF_CONDUCT.md).
 
 <br/>
 

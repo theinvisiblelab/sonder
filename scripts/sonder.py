@@ -52,7 +52,7 @@ st.sidebar.info(
     "🏆 Design Challenge Research Award, Stanford University \n\n 🏆 Karr Fellowship, Stanford University \n\n 🏆 Digital Learning Design Challenge Grant, Stanford University"
 )
 
-st.sidebar.markdown("**:octopus: Maitainers**")
+st.sidebar.markdown("**👾 Maitainers**")
 st.sidebar.info(
     "[Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)  \n[Shruti Jain](mailto:shruti_jain@berkeley.edu)  \n\nWrite to us to join forces!"
 )
