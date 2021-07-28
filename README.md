@@ -21,8 +21,8 @@ Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~
 
 We are working along two dimensions:
 
--   ⚖️ Balance: Assess latent/hidden knowledge as you search the web. Balance relevance with diversity.
--   📣 Trends: Highlight fairness in web, news, wiki, and social media trends.
+-   ⚖️ **Balance**: Assess latent/hidden knowledge as you search the web. Balance relevance with diversity.
+-   📣 **Trends**: Highlight fairness in web, news, wiki, and social media trends.
 
 <br/>
 
