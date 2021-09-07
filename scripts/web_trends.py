@@ -3,7 +3,6 @@ import requests
 import numpy as np
 import pandas as pd
 import io
-import yaml
 import socket
 
 # from textblob import TextBlob
@@ -17,7 +16,7 @@ import datetime
 
 # can use for search rank
 def list_to_dict(lst):
-    res_dict = {i + 1: float(lst[i]) for i in range(len(lst))}
+    res_dict = {str(i + 1): float(lst[i]) for i in range(len(lst))}
     return res_dict
 
 
@@ -34,11 +33,11 @@ def draw_bar(df_summary):
         alt.Chart(df_summary)
         .mark_bar(opacity=0.80)
         .encode(
-            x=alt.X("sentiment_median", title="Sentiment"),
+            x=alt.X("sentiment", title="Sentiment"),
             y=alt.Y("country", title="Country", sort="-x"),
-            tooltip=["sentiment_median"],
+            tooltip=["sentiment"],
             color=alt.condition(
-                alt.datum.sentiment_median > 0,
+                alt.datum.sentiment > 0,
                 alt.value("#0ec956"),  # The positive color
                 alt.value("#ff1717"),  # The negative color
             ),
@@ -54,21 +53,32 @@ def draw_eco_bar(df_summary):
         alt.Chart(df_summary)
         .mark_bar(opacity=0.80)
         .encode(
-            x=alt.X("eco_fr", title="Carbon Cost"),
+            x=alt.X("is_green", title="Carbon Cost"),
             y=alt.Y("country", title="Country", sort="-x"),
-            tooltip=["eco_fr"],
+            tooltip=["is_green"],
             color=alt.condition(
-                alt.datum.eco_fr > df_summary["eco_fr"].mean(),
+                alt.datum.is_green > df_summary["is_green"].mean(),
                 alt.value("#0ec956"),  # The positive color
                 alt.value("#ff1717"),  # The negative color
             ),
         )
+    ).properties(
+        title=alt.TitleParams(
+            ["* Dashed red line indicates the cross-country mean"],
+            baseline="bottom",
+            orient="bottom",
+            anchor="start",
+            fontWeight="normal",
+            fontSize=11,
+        )
     )
+
     rule = (
-        alt.Chart(df_summary[df_summary["eco_fr"].notna()])
+        alt.Chart(df_summary[df_summary["is_green"].notna()])
         .mark_rule(color="red", strokeDash=[10, 10], size=2)
-        .encode(x="mean(eco_fr):Q")
+        .encode(x="mean(is_green):Q")
     )
+
     st.altair_chart(
         alt.layer(plot_summary, rule)
         .configure_title(fontSize=18)
@@ -96,7 +106,7 @@ def draw_dist(df_temp):
         )
         .properties(
             title=alt.TitleParams(
-                ["* Dashed red line indicates the distribution median"],
+                ["* Dashed red line indicates the distribution mean"],
                 baseline="bottom",
                 orient="bottom",
                 anchor="end",
@@ -108,7 +118,7 @@ def draw_dist(df_temp):
     web_dist_sent2 = (
         alt.Chart(df_temp[df_temp["sentiment"].notna()])
         .mark_rule(color="red", strokeDash=[10, 10], size=2)
-        .encode(x="median(sentiment):Q")
+        .encode(x="mean(sentiment):Q")
     )
 
     st.altair_chart(web_dist_sent1 + web_dist_sent2, use_container_width=True)
@@ -117,19 +127,19 @@ def draw_dist(df_temp):
 
 def draw_eco_dist(df_temp):
     web_dist_sent1 = (
-        alt.Chart(df_temp[df_temp["eco_fr"].notna()])
+        alt.Chart(df_temp[df_temp["is_green"].notna()])
         .transform_density(
-            "eco_fr",
-            as_=["eco_fr", "density"],
+            "is_green",
+            as_=["is_green", "density"],
         )
         .mark_area(opacity=0.75)
         .encode(
-            x="eco_fr:Q",
+            x="is_green:Q",
             y="density:Q",
-            tooltip=["eco_fr"],
+            tooltip=["is_green"],
         )
         .encode(
-            x=alt.X("eco_fr:Q", title="Carbon Cost"),
+            x=alt.X("is_green:Q", title="Carbon Cost"),
             y=alt.Y("density:Q", title=""),
         )
         .properties(
@@ -137,16 +147,16 @@ def draw_eco_dist(df_temp):
                 ["* Dashed red line indicates the distribution mean"],
                 baseline="bottom",
                 orient="bottom",
-                anchor="end",
+                anchor="start",
                 fontWeight="normal",
                 fontSize=11,
             )
         )
     )
     web_dist_sent2 = (
-        alt.Chart(df_temp[df_temp["eco_fr"].notna()])
+        alt.Chart(df_temp[df_temp["is_green"].notna()])
         .mark_rule(color="red", strokeDash=[10, 10], size=2)
-        .encode(x="mean(eco_fr):Q")
+        .encode(x="mean(is_green):Q")
     )
 
     st.altair_chart(web_dist_sent1 + web_dist_sent2, use_container_width=True)
@@ -157,13 +167,13 @@ def draw_eco_dist(df_temp):
 def draw_corr(df):
     plot_corr = (
         alt.Chart(df)
-        .mark_bar(size=20, opacity=0.8)
-        .encode(
-            x=alt.X("trend_rank:Q", title="Search Trend Rank"),
-            y=alt.Y("sentiment_median:Q", title="Median Sentiment"),
-            tooltip=["trend_rank", "sentiment_median"],
+        # .mark_point(size=20, opacity=0.8)
+        .mark_circle(size=150, opacity=0.8).encode(
+            x=alt.X("rank_group:Q", title="Search Rank"),
+            y=alt.Y("sentiment:Q", title="Mean Sentiment"),
+            tooltip=["rank_group", "sentiment"],
             color=alt.condition(
-                alt.datum.sentiment_median >= 0,
+                alt.datum.sentiment >= 0,
                 alt.value("#0ec956"),  # The positive color
                 alt.value("#ff1717"),  # The negative color
             ),
@@ -181,13 +191,13 @@ def draw_corr(df):
 def draw_eco_corr(df):
     plot_corr = (
         alt.Chart(df)
-        .mark_bar(size=20, opacity=0.8)
+        .mark_circle(size=150, opacity=0.8)
         .encode(
-            x=alt.X("trend_rank:Q", title="Search Trend Rank"),
-            y=alt.Y("eco_fr:Q", title="Mean Carbon Cost"),
-            tooltip=["trend_rank", "eco_fr"],
+            x=alt.X("rank_group:Q", title="Search Rank"),
+            y=alt.Y("is_green:Q", title="Mean Carbon Cost"),
+            tooltip=["rank_group", "is_green"],
             color=alt.condition(
-                alt.datum.eco_fr > df["eco_fr"].mean(),
+                alt.datum.is_green > df["is_green"].mean(),
                 alt.value("#0ec956"),  # The positive color
                 alt.value("#ff1717"),  # The negative color
             ),
@@ -197,13 +207,13 @@ def draw_eco_corr(df):
             ["* Dashed red line indicates the distribution mean"],
             baseline="bottom",
             orient="bottom",
-            anchor="end",
+            anchor="start",
             fontWeight="normal",
             fontSize=11,
         )
     )
     rule_corr = (
-        alt.Chart(pd.DataFrame({"y": [df["eco_fr"].mean()]}))
+        alt.Chart(pd.DataFrame({"y": [df["is_green"].mean()]}))
         .mark_rule(strokeDash=[10, 10], size=1.5, color="red")
         .encode(y="y")
     )
@@ -214,7 +224,7 @@ def draw_eco_corr(df):
 ## CONTENT ##
 #############
 
-with st.beta_expander("🎈 Why Sonder?"):
+with st.expander("🎈 Why Sonder?"):
     st.info(
         """
     *son$\cdot$der (n.)*
@@ -245,13 +255,9 @@ st.markdown("---")
 st.markdown("&nbsp;")
 
 # read data
-df = pd.read_csv(
-    Path("today/web_trends.csv"),
-    converters={
-        "sentiment_dist": lambda x: x.strip("[]").replace("'", "").split(", "),
-        "is_green": lambda x: x.strip("[]").replace("'", "").split(", "),
-    },
-)
+df = pd.read_parquet(Path("today/trends.parquet"))
+df = df.loc[df['type'] == "organic"]
+#df = df.loc[df['type'] == "news_search"]
 
 country_list_raw = sorted(list(set(df["country"].tolist())))
 
@@ -259,20 +265,17 @@ country_list = [i.replace("_", " ").title() for i in country_list_raw]
 country_list.insert(0, "")
 
 df["date"] = pd.to_datetime(df["date"])
-st.write("_Updated: " + df["date"].iloc[0].strftime("%B %d, %Y") + "_")
+st.write("_Update: " + df["date"].iloc[0].strftime("%B %d, %Y") + "_")
+st.write(
+    "_Today's Sample: "
+    + f"{len(df.index):,}"
+    + " web search results for top trends across 48 countries._"
+)
 
-col1, col2 = st.beta_columns([1, 1])
+col1, col2 = st.columns([1, 1])
 
 
 if navigate_web == "Sentiment":
-
-    df["trend_rank"] = 21 - np.power((df["weight"]), 1 / 3)
-    df["sentiment_dictionary"] = df.apply(
-        lambda row: list_to_dict(row["sentiment_dist"]), axis=1
-    )
-    df["sentiment_median"] = df.apply(
-        lambda row: median(row["sentiment_dictionary"].values()), axis=1
-    )
 
     with col1:
         st.write("## Global Trends Today")
@@ -281,11 +284,7 @@ if navigate_web == "Sentiment":
         st.write("\n\n")
 
         # country rank plot
-        df_country = pd.DataFrame(
-            df.groupby(["country"])[["sentiment_median"]].median(),
-            columns=["sentiment_median"],
-        )
-        df_country = df_country.reset_index()
+        df_country = df.groupby(["country"])["sentiment"].mean().reset_index()
         df_country["country"] = df_country.apply(
             lambda row: row["country"].replace("_", " ").title(), axis=1
         )
@@ -294,29 +293,28 @@ if navigate_web == "Sentiment":
         # sentiment distribution
         st.write("#### Global: Sentiment distribution today*")
         st.write("\n\n")
-        df_dist = pd.DataFrame(sentiment_flatlist(df), columns=["sentiment"])
-        draw_dist(df_dist)
+        draw_dist(df[["sentiment"]])
 
-        #
-        st.write("#### Global: Sentiment variation with Trend Rank")
+        # correlation with search rank
+        st.write("#### Global: Sentiment variation with Search Rank")
         st.write("\n\n")
-        df_median = pd.DataFrame(
-            df.groupby(["trend_rank"])[["sentiment_median"]].median(),
-            columns=["sentiment_median"],
-        )
-        df_median = df_median.reset_index()
-        draw_corr(df_median)
+        draw_corr(df.groupby(["rank_group"])["sentiment"].mean().reset_index())
 
     with col2:
         st.write("## Regional Trends Today")
-        # draw_dist(sentiment_flatlist(df))
         st.write("&nbsp;")
         country = st.selectbox("Choose a country", country_list)
         if country != "":
             st.write("&nbsp;")
 
-            st.write("#### " + str(country) + ": Search queries today")
             country_lower = country.lower().replace(" ", "_")
+            st.write(
+                "#### "
+                + str(country)
+                + ": Search queries today ("
+                + str(len(df[df["country"] == country_lower].index))
+                + " results)"
+            )
             st.image(
                 Image.open(Path("wordclouds/" + str(country_lower) + ".png")),
                 use_column_width="auto",
@@ -324,22 +322,26 @@ if navigate_web == "Sentiment":
 
             st.write("#### " + str(country) + ": Sentiment distribution today")
             st.write("\n\n")
-            draw_dist(
-                pd.DataFrame(
-                    sentiment_flatlist(df[df["country"] == country_lower]),
-                    columns=["sentiment"],
-                )
-            )
-            st.write("#### " + str(country) + ": Sentiment variation with Trend Rank")
-            st.write("\n\n")
-            draw_corr(df[df["country"] == country_lower])
+            draw_dist(df[df["country"] == country_lower][["sentiment"]])
 
+            st.write("#### " + str(country) + ": Sentiment variation with Search Rank")
+            st.write("\n\n")
+            draw_corr(
+                df[df["country"] == country_lower]
+                .groupby(["rank_group"])["sentiment"]
+                .mean()
+                .reset_index()
+            )
+
+###################
+### CARBON COST ###
+###################
 
 if navigate_web == "Carbon Cost":
-    df["trend_rank"] = 21 - np.power((df["weight"]), 1 / 3)
-    df["is_green"] = df.apply(lambda row: list(map(int, row["is_green"])), axis=1)
-    df["eco_fr"] = df.apply(lambda row: mean(row["is_green"]), axis=1)
-    eco_fr_mean = df["eco_fr"].mean()
+    # df["trend_rank"] = 21 - np.power((df["weight"]), 1 / 3)
+    # df["is_green"] = df.apply(lambda row: list(map(int, row["is_green"])), axis=1)
+    # df["eco_fr"] = df.apply(lambda row: mean(row["is_green"]), axis=1)
+    # eco_fr_mean = df["is_green"].mean()
 
     with col1:
         st.write("## Global Trends Today")
@@ -348,11 +350,7 @@ if navigate_web == "Carbon Cost":
         st.write("\n\n")
 
         # country rank plot
-        df_country = pd.DataFrame(
-            df.groupby(["country"])[["eco_fr"]].mean(),
-            columns=["eco_fr"],
-        )
-        df_country = df_country.reset_index()
+        df_country = df.groupby(["country"])["is_green"].mean().reset_index()
         df_country["country"] = df_country.apply(
             lambda row: row["country"].replace("_", " ").title(), axis=1
         )
@@ -361,16 +359,12 @@ if navigate_web == "Carbon Cost":
         # sentiment distribution
         st.write("#### Global: Carbon Cost distribution today*")
         st.write("\n\n")
-        draw_eco_dist(df[["eco_fr"]])
+        # aggregating to query level
+        draw_eco_dist(df.groupby(["query"])["is_green"].mean().reset_index())
 
-        st.write("#### Global: Carbon Cost variation with Trend Rank")
+        st.write("#### Global: Carbon Cost variation with Search Rank")
         st.write("\n\n")
-        df_mean = pd.DataFrame(
-            df.groupby(["trend_rank"])[["eco_fr"]].mean(),
-            columns=["eco_fr"],
-        )
-        df_mean = df_mean.reset_index()
-        draw_eco_corr(df_mean)
+        draw_eco_corr(df.groupby(["rank_group"])["is_green"].mean().reset_index())
 
     with col2:
         st.write("## Regional Trends Today")
@@ -380,8 +374,14 @@ if navigate_web == "Carbon Cost":
         if country != "":
             st.write("&nbsp;")
 
-            st.write("#### " + str(country) + ": Search queries today")
             country_lower = country.lower().replace(" ", "_")
+            st.write(
+                "#### "
+                + str(country)
+                + ": Search queries today ("
+                + str(len(df[df["country"] == country_lower].index))
+                + " results)"
+            )
             st.image(
                 Image.open(Path("wordclouds/" + str(country_lower) + ".png")),
                 use_column_width="auto",
@@ -389,8 +389,18 @@ if navigate_web == "Carbon Cost":
 
             st.write("#### " + str(country) + ": Carbon Cost distribution today")
             st.write("\n\n")
-            draw_eco_dist(df[df["country"] == country_lower][["eco_fr"]])
+            draw_eco_dist(
+                df[df["country"] == country_lower]
+                .groupby(["query"])["is_green"]
+                .mean()
+                .reset_index()
+            )
 
             st.write("#### " + str(country) + ": Carbon Cost variation with Trend Rank")
             st.write("\n\n")
-            draw_eco_corr(df[df["country"] == country_lower])
+            draw_eco_corr(
+                df[df["country"] == country_lower]
+                .groupby(["rank_group"])["is_green"]
+                .mean()
+                .reset_index()
+            )

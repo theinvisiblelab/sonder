@@ -145,7 +145,7 @@ country_list.insert(0, "")
 df["date"] = pd.to_datetime(df["date"])
 st.write("_Updated: " + df["date"].iloc[0].strftime("%B %d, %Y") + "_")
 
-col1, col2 = st.beta_columns([1, 1])
+col1, col2 = st.columns([1, 1])
 
 if navigate_wiki == "All":
 

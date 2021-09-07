@@ -1,13 +1,16 @@
 ## PARAMETERS ##
 import requests
 import io
-import yaml
 import socket
+import pickle
 import numpy as np
 import pandas as pd
 import scipy
 from statistics import mean, median
 from nltk import tokenize
+from dotenv import load_dotenv
+from client import RestClient
+import os
 
 # from scipy.stats import ks_2samp
 import rpy2.robjects as ro
@@ -30,33 +33,47 @@ url = "http://searx.sonder.care/search"
 
 @st.cache(allow_output_mutation=True, show_spinner=False)
 def load_searx_data(query):
-    df = []
-    results = 0
-    # search the first 5 pages
-    for page in range(1, 6):
-        querystring = {
-            "q": query,
-            "categories": "general",
-            "engines": ["google", "bing", "duckduckgo"],
-            "pageno": page,
-            "format": "json",
-        }
-        response = requests.request("GET", url, params=querystring)
-        text = yaml.safe_load(response.text)
-        df_mini = pd.DataFrame(text["results"])
-        df.append(df_mini)
-        # keeping at least 30 results
-        results += len(df_mini)
-        if results >= 30:
-            break
-    df = pd.concat(df)
-    df = df.sort_values(by=["score"], ascending=False)
-    if "title" in df.columns:
-        df["title"] = df["title"].str.encode("utf-8", "ignore").str.decode("utf-8")
-    if "content" in df.columns:
-        df["content"] = df["content"].str.encode("utf-8", "ignore").str.decode("utf-8")
-    df.drop_duplicates(subset="url", inplace=True)
+    post_data = dict()
+    post_data[len(post_data)] = dict(
+        language_code="en",
+        location_code=2840,
+        keyword=query,
+    )
+    response = client.post("/v3/serp/google/organic/live/regular", post_data)
+    df = pd.DataFrame(response["tasks"][0]["result"][0]["items"])
+    df.rename(columns={"content": "description"}, inplace=True)
+    df.dropna(subset=["title", "description"], inplace=True)
     return df
+
+
+# def load_searx_data(query):
+#     df = []
+#     results = 0
+#     # search the first 5 pages
+#     for page in range(1, 6):
+#         querystring = {
+#             "q": query,
+#             "categories": "general",
+#             "engines": ["google", "bing", "duckduckgo"],
+#             "pageno": page,
+#             "format": "json",
+#         }
+#         response = requests.request("GET", url, params=querystring)
+#         text = yaml.safe_load(response.text)
+#         df_mini = pd.DataFrame(text["results"])
+#         df.append(df_mini)
+#         # keeping at least 30 results
+#         results += len(df_mini)
+#         if results >= 30:
+#             break
+#     df = pd.concat(df)
+#     df = df.sort_values(by=["score"], ascending=False)
+#     if "title" in df.columns:
+#         df["title"] = df["title"].str.encode("utf-8", "ignore").str.decode("utf-8")
+#     if "content" in df.columns:
+#         df["content"] = df["content"].str.encode("utf-8", "ignore").str.decode("utf-8")
+#     df.drop_duplicates(subset="url", inplace=True)
+#     return df
 
 
 def subjectivity_calc(text):
@@ -135,10 +152,17 @@ def overlap_calc(df, n_top=10):
     return np.array(ovl.rx("OV"))[0][0]
 
 
+# Remove domain prefix
+def remove_prefix(text, prefix="www."):
+    if text.startswith(prefix):
+        return text[len(prefix) :]
+    return text
+
+
 ## CONTENT ##
 
 # st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
-with st.beta_expander("🎈 Why Sonder?"):
+with st.expander("🎈 Why Sonder?"):
     st.info(
         """
     *son$\cdot$der (n.)*
@@ -154,7 +178,7 @@ with st.beta_expander("🎈 Why Sonder?"):
 
     We are working along two dimensions (view 👈 sidebar):
 
-    + ⚖️ *Balance*: Tackle bias as you search the web. Balance relevance with diversity.
+    + ⚖️ *Balance*: Assess hidden knowledge as you search the web. Balance relevance with diversity.
     + 📣 *Trends*: Highlight fairness in web, news, wiki, and social media trends.
 
     &nbsp;
@@ -172,13 +196,18 @@ st.markdown("&nbsp;")
 
 if query != "":
 
-    col2, col1 = st.beta_columns(2)
+    col2, col1 = st.columns(2)
 
     with st.spinner("Assessing latent knowledge in your search..."):
+        load_dotenv()
+        client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
         df = load_searx_data(query)
         df["search_rank"] = df.reset_index().index + 1
         df_size = len(df.index)
-        green_list = pd.read_csv(Path("green/greendomain.txt"))["url"].tolist()
+        # green_list = pd.read_csv(Path("green/greendomain.txt"))["url"].tolist()
+        with open(Path("green/greendomain"), "rb") as fp:
+            green_list = pickle.load(fp)
+
 
     with col1:
         st.markdown("### Search results")
@@ -186,17 +215,17 @@ if query != "":
         # st.markdown("\n\n")
         # presently printing out top 20 search results
         for index, row in df.iterrows():
-            with st.beta_container():
+            with st.container():
                 # st.write("Sentiment: ", row["sentiment"])
                 # st.write("Host Country: `", row["country_name"], "`")
-                if row["content"] == row["content"]:
+                if row["description"] == row["description"]:
                     st.markdown(
                         "> "
                         + row["url"]
                         + "<br/><br/><i>"
                         + row["title"]
                         + ".</i> "
-                        + row["content"],
+                        + row["description"],
                         unsafe_allow_html=True,
                     )
                 else:
@@ -210,9 +239,9 @@ if query != "":
     col2.markdown("---")
     summary_chart = col2.empty()
 
-    expander1 = col2.beta_expander("🗣️ Sentiment")
-    expander2 = col2.beta_expander("🌍 Geographies")
-    expander3 = col2.beta_expander("🔥 Carbon Cost")
+    expander1 = col2.expander("🗣️ Sentiment")
+    expander2 = col2.expander("🌍 Geographies")
+    expander3 = col2.expander("🔥 Carbon Cost")
 
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
@@ -220,13 +249,13 @@ if query != "":
             classifier = pipeline("sentiment-analysis")
             df["sentiment"] = df.apply(
                 lambda row: sentiment_all(
-                    str(row["title"]) + ". " + str(row["content"])
+                    str(row["title"]) + ". " + str(row["description"])
                 ),
                 axis=1,
             )
 
             # df["subjectivity"] = df.apply(lambda row: subjectivity_calc(str(row["title"])), axis=1)
-            # st.write(df[["title", "content", "subjectivity", "sentiment"]])
+            # st.write(df[["title", "description", "subjectivity", "sentiment"]])
 
             sentiment_mean = round(df["sentiment"].mean(), 4)
             sentiment_median = round(df["sentiment"].median(), 4)
@@ -247,7 +276,7 @@ if query != "":
 
             plot_corr = (
                 alt.Chart(df[df["sentiment"].notna()])
-                .mark_circle(size=300, opacity=0.8)
+                .mark_circle(size=150, opacity=0.8)
                 .encode(
                     x=alt.X("search_rank:Q", title="Search result rank"),
                     y=alt.Y("sentiment:Q", title="Sentiment"),
@@ -285,7 +314,7 @@ if query != "":
             st.write("\n")
 
             df_plot1 = df[df["sentiment"].notna()]
-            df_plot1["Source"] = "All results"
+            df_plot1["Source"] = "Top " + str(df_size) + " results"
 
             df_plot2 = df[df["sentiment"].notna()].head(n_top)
             df_plot2["Source"] = "Top " + str(n_top) + " results"
@@ -318,7 +347,7 @@ if query != "":
 
     with expander2:
         with st.spinner("Geolocating your search results..."):
-            df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
+            # df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
             df["ip_address"] = df.apply(lambda row: get_ip(row["domain"]), axis=1)
             df = df[df["ip_address"].notnull()]
             df["map_result_tuple"] = df.apply(
@@ -403,8 +432,10 @@ if query != "":
             )
             df_prop2["prop_top"] = df_prop2["total_top"] / df_prop2["total_top"].sum()
 
+            # merging df_prop1 and df_prop2
             df_prop = df_prop1.merge(df_prop2, on="country_name", how="left")
             df_prop["total_top"] = df_prop["total_top"].fillna(0)
+            df_prop["total_top"] = df_prop["total_top"].round(0).astype(int)
             df_prop["prop_top"] = df_prop["prop_top"].fillna(0)
             df_prop["diff"] = (
                 np.sqrt(
@@ -478,7 +509,8 @@ if query != "":
             # IDEA: Add average rank per country plot.
 
     with expander3:
-        df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
+        # df["domain"] = df.apply(lambda row: row["parsed_url"][1], axis=1)
+        df["domain"] = df.apply(lambda row: remove_prefix(row["domain"]), axis=1)
         df["is_green"] = np.where(df["domain"].isin(green_list), "Green", "Red")
 
         green_prop_all = len(df[df["is_green"] == "Green"]) / len(df)
@@ -496,7 +528,7 @@ if query != "":
         st.write("\n")
         st.write(
             str(green_prop_all)
-            + "% of _all_ search results come from domains using renewable energy sources."
+            + "% of _top " + str(df_size) + "_ search results come from domains using renewable energy sources."
         )
         st.write("\n")
 
@@ -532,7 +564,7 @@ if query != "":
         st.write("\n")
         st.write(
             str(green_prop_top)
-            + "% of _top_ search results come from domains using renewable energy sources."
+            + "% of _top " + str(n_top) + "_ search results come from domains using renewable energy sources."
         )
         st.write("\n")
         df_eco = pd.DataFrame(
@@ -590,7 +622,7 @@ if query != "":
             y=alt.Y("label", title="", sort="-x"),
             tooltip=["value"],
             color=alt.condition(
-                alt.datum.value < 50,
+                alt.datum.value < 25,
                 alt.value("#ff8000"),  # The positive color
                 alt.value("#ff1717"),  # The negative color
             ),
@@ -601,7 +633,7 @@ if query != "":
         )
     )
     threshold_line = (
-        alt.Chart(pd.DataFrame({"x": [50]}))
+        alt.Chart(pd.DataFrame({"x": [25]}))
         .mark_rule(color="red", strokeDash=[10, 10], size=1.5)
         .encode(x="x")
     )
@@ -612,10 +644,3 @@ if query != "":
         use_container_width=True,
     )
     st.markdown("&nbsp;")
-
-    st.markdown("&nbsp;")
-    if st.button("Add more search results to analysis"):
-        st.markdown("_STILL COOKING!_ :spaghetti:")
-        st.markdown(
-            "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
-        )

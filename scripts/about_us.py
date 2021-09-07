@@ -1,4 +1,4 @@
-with st.beta_expander("🎈 Why Sonder?", expanded=True):
+with st.expander("🎈 Why Sonder?", expanded=True):
     st.info(
         """
     *son$\cdot$der (n.)*
@@ -21,7 +21,7 @@ with st.beta_expander("🎈 Why Sonder?", expanded=True):
     """
     )
 
-with st.beta_expander("🧭 Mission"):
+with st.expander("🧭 Mission"):
     st.markdown(
         """
     Our access to knowledge on the internet carries biases inherent in algorithms trained to maximize consumption, rather than to promote understanding. This robs us of the _choice_ to understand those who learn, think, and grow differently. Sonder &ndash; a nonprofit open-source platform enabling access to diverse knowledge &ndash; is an attempt to make this choice explicit. To at least be conscious of our knowledge bubbles, if not break them.
@@ -36,7 +36,7 @@ with st.beta_expander("🧭 Mission"):
     """
     )
 
-with st.beta_expander("🧮 Algorithms"):
+with st.expander("🧮 Algorithms"):
     st.markdown(
         """
     `Sonder` curates meta-search results from a locally hosted Searx instance. Bias is calculated on three dimensions:
@@ -78,7 +78,7 @@ with st.beta_expander("🧮 Algorithms"):
     )
 
 
-with st.beta_expander("🎯 Impact"):
+with st.expander("🎯 Impact"):
     st.markdown(
         """
     _STILL COOKING!_ :spaghetti:

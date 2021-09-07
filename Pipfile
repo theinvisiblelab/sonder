@@ -11,7 +11,6 @@ certifi = "==2020.6.20"
 idna = "==2.10"
 lxml = "==4.6.1"
 python-dateutil = "==2.8.0"
-PyYAML = "==5.3.1"
 Flask-Babel = "==1.0.0"
 Jinja2 = "*"
 pyOpenSSL = "==19.1.0"
@@ -26,6 +25,8 @@ textblob = "*"
 transformers = "*"
 torch = "*"
 rpy2 = "*"
+sendgrid = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
