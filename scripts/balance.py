@@ -6,13 +6,13 @@ import pickle
 import numpy as np
 import pandas as pd
 import scipy
-from statistics import mean, median
+from statistics import mean, median, NormalDist
 from nltk import tokenize
 from dotenv import load_dotenv
 from client import RestClient
 import os
 
-# from scipy.stats import ks_2samp
+from scipy.stats import ks_2samp
 import rpy2.robjects as ro
 from rpy2.robjects.packages import importr
 
@@ -36,7 +36,7 @@ def load_searx_data(query):
     post_data = dict()
     post_data[len(post_data)] = dict(
         language_code="en",
-        location_code=2840,
+        location_code=2643,
         keyword=query,
     )
     response = client.post("/v3/serp/google/organic/live/regular", post_data)
@@ -150,6 +150,7 @@ def overlap_calc(df, n_top=10):
     v2 = ro.vectors.FloatVector(df[df["sentiment"].notna()].head(n_top)["sentiment"])
     ovl = overlapping.overlap([v1, v2])
     return np.array(ovl.rx("OV"))[0][0]
+    # return 0.7912
 
 
 # Remove domain prefix
@@ -207,7 +208,6 @@ if query != "":
         # green_list = pd.read_csv(Path("green/greendomain.txt"))["url"].tolist()
         with open(Path("green/greendomain"), "rb") as fp:
             green_list = pickle.load(fp)
-
 
     with col1:
         st.markdown("### Search results")
@@ -273,7 +273,7 @@ if query != "":
             st.write(
                 "Here's how sentiment varies with rank for all your search results. You miss out on the blue region."
             )
-
+            # st.write(df)
             plot_corr = (
                 alt.Chart(df[df["sentiment"].notna()])
                 .mark_circle(size=150, opacity=0.8)
@@ -528,7 +528,9 @@ if query != "":
         st.write("\n")
         st.write(
             str(green_prop_all)
-            + "% of _top " + str(df_size) + "_ search results come from domains using renewable energy sources."
+            + "% of _top "
+            + str(df_size)
+            + "_ search results come from domains using renewable energy sources."
         )
         st.write("\n")
 
@@ -564,7 +566,9 @@ if query != "":
         st.write("\n")
         st.write(
             str(green_prop_top)
-            + "% of _top " + str(n_top) + "_ search results come from domains using renewable energy sources."
+            + "% of _top "
+            + str(n_top)
+            + "_ search results come from domains using renewable energy sources."
         )
         st.write("\n")
         df_eco = pd.DataFrame(

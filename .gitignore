@@ -3,14 +3,18 @@
 .env
 __pycache__
 *.ipynb
+.DS_Store
 .ipynb_checkpoints/
 jupyter/
+Dockerfile
 
 # GeoIP script
 geoip_download.sh
 
 # Reports
 reports/
+today/
+database/
 
 # Data files
 *.xlsx

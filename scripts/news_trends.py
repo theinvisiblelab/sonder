@@ -250,13 +250,13 @@ with st.expander("🎈 Why Sonder?"):
 st.markdown("## 🗞️ News Trends")
 st.write("Explore fairness trends for news across the globe.")
 st.markdown("&nbsp;")
-navigate_web = st.radio("Explore", ["Sentiment", "Carbon Cost"], 0)
+navigate_web = st.radio("Explore", ["Carbon Cost", "Sentiment"], 0)
 st.markdown("---")
 st.markdown("&nbsp;")
 
 # read data
 df = pd.read_parquet(Path("today/trends.parquet"))
-df = df.loc[df['type'] == "news_search"]
+df = df.loc[df["type"] == "news_search"]
 
 country_list_raw = sorted(list(set(df["country"].tolist())))
 
@@ -265,6 +265,7 @@ country_list.insert(0, "")
 
 df["date"] = pd.to_datetime(df["date"])
 st.write("_Update: " + df["date"].iloc[0].strftime("%B %d, %Y") + "_")
+# st.write("_Update: September 20, 2021_")
 st.write(
     "_Today's Sample: "
     + f"{len(df.index):,}"
