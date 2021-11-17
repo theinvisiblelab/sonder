@@ -1,0 +1,80 @@
+---
+title: "Analysis"
+date: "Updated: `r format(Sys.Date(), format='%B %d %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4
+---
+
+---
+
+```{r setup, include=FALSE}
+# knitr options
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+
+```{r message=FALSE, warning=FALSE}
+# Libraries
+pacman::p_load(tidyverse, countrycode, sf, state, htmltools, htmlwidgets, urltools, janitor, DT, RColorBrewer, plotly, ussf)
+
+serp_locations <- 
+  read_csv(here::here("locations_serp_google_2021_11_09.csv")) %>% 
+  filter(country_iso_code == "US", location_type == "County") %>% 
+  mutate(
+    location_name = str_replace(location_name, " Borough", ""),
+    location_name = str_replace(location_name, " Census Area", ""),
+    location_name = str_replace(location_name, " Municipality", ""),
+    location_name = str_replace(location_name, " City and", "")
+  )
+
+county_locations <- read_csv(here::here("uscounties.csv"))
+
+county_maps <- 
+  ussf::boundaries(geography = "county") %>% 
+  rename(county_fips = GEOID) %>% 
+  left_join(county_locations, by = "county_fips") %>% 
+  mutate(
+    location_name = str_c(county_full, state_name, "United States", sep = ","),
+    location_name = str_replace(location_name, " Borough", ""),
+    location_name = str_replace(location_name, " Census Area", ""),
+    location_name = str_replace(location_name, " Municipality", ""),
+    location_name = str_replace(location_name, " City and", ""),
+    location_name = if_else(
+      location_name == "LaSalle Parish,Louisiana,United States", "La Salle Parish,Louisiana,United States", location_name
+    ),
+    location_name = if_else(
+      location_name == "Doña Ana County,New Mexico,United States", "Dona Ana County,New Mexico,United States", location_name
+    )
+  )
+  
+
+serp_locations %>% glimpse()
+county_maps %>% glimpse()
+```
+
+
+```{r}
+serp_locations %>% 
+  anti_join(county_maps, by = "location_name") %>% 
+  select(location_name) %>% 
+  arrange(location_name)
+
+serp_locations %>% 
+  anti_join(county_maps, ., by = "location_name") %>% 
+  select(location_name) %>% 
+  arrange(location_name)
+```
+
+```{r}
+county_maps %>% 
+  left_join(serp_locations, by = "location_name") %>% 
+  #select(location_code) %>% 
+  ggplot() + geom_sf(aes(fill=population))
+```
+
+
+
+
+

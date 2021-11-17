@@ -3,7 +3,7 @@
 import streamlit as st
 from pathlib import Path
 
-st.set_page_config(page_title="Sonder", page_icon=":balloon:", layout="wide")
+st.set_page_config(page_title="Metrics", page_icon=":balloon:", layout="wide")
 
 # hiding the hamburger menu and footer
 hide_streamlit_style = """
@@ -18,15 +18,15 @@ footer {visibility: hidden;}
 
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-st.title("S🎈nder")
-st.write("_The Opportunity Cost of Internet Search_")
-st.markdown("&nbsp;")
+# st.title("S🎈nder")
+# st.write("_The Opportunity Cost of Internet Search_")
+# st.markdown("&nbsp;")
 
 
 # Sidebar
-st.sidebar.title("S🎈nder")
-st.sidebar.write("_The Opportunity Cost of Internet Search_")
-st.sidebar.markdown("---")
+# st.sidebar.title("S🎈nder")
+# st.sidebar.write("_The Opportunity Cost of Internet Search_")
+# st.sidebar.markdown("---")
 
 navigate_sidebar = st.sidebar.radio(
     "Go to",
@@ -34,11 +34,12 @@ navigate_sidebar = st.sidebar.radio(
         "⚖️ Balance",
         "🕸️ Web Trends",
         "🗞️ News Trends",
-        "🕯️ Wiki Trends",
-        "🐦 Twitter Trends",
+        # "🕯️ Wiki Trends",
+        # "🐦 Twitter Trends",
+        "🧮 Metrics",
         "About",
     ],
-    0,
+    3,
 )
 st.sidebar.markdown("---")
 
@@ -88,7 +89,11 @@ if navigate_sidebar == "🐦 Twitter Trends":
     )
     st.markdown("&nbsp;")
 
-# Philosophy
+# Metrics
+if navigate_sidebar == "🧮 Metrics":
+    exec(open("scripts/metrics.py").read())
+
+# About Us
 if navigate_sidebar == "About":
     exec(open("scripts/about_us.py").read())
 

@@ -250,7 +250,7 @@ with st.expander("🎈 Why Sonder?"):
 st.markdown("## 🕸️ Web Trends")
 st.write("Explore fairness trends for internet search across the globe.")
 st.markdown("&nbsp;")
-navigate_web = st.radio("Explore", ["Carbon Cost", "Sentiment"], 0)
+navigate_web = st.radio("Explore", ["Sentiment", "Carbon Cost"], 0)
 st.markdown("---")
 st.markdown("&nbsp;")
 
@@ -292,9 +292,9 @@ if navigate_web == "Sentiment":
         draw_bar(df_country)
 
         # sentiment distribution
-        st.write("#### Global: Sentiment distribution today*")
-        st.write("\n\n")
-        draw_dist(df[["sentiment"]])
+        # st.write("#### Global: Sentiment distribution today*")
+        # st.write("\n\n")
+        # draw_dist(df[["sentiment"]])
 
         # correlation with search rank
         st.write("#### Global: Sentiment variation with Search Rank")
@@ -321,9 +321,9 @@ if navigate_web == "Sentiment":
                 use_column_width="auto",
             )
 
-            st.write("#### " + str(country) + ": Sentiment distribution today")
-            st.write("\n\n")
-            draw_dist(df[df["country"] == country_lower][["sentiment"]])
+            # st.write("#### " + str(country) + ": Sentiment distribution today")
+            # st.write("\n\n")
+            # draw_dist(df[df["country"] == country_lower][["sentiment"]])
 
             st.write("#### " + str(country) + ": Sentiment variation with Search Rank")
             st.write("\n\n")
