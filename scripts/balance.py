@@ -356,7 +356,7 @@ if query != "":
                     tooltip=["visibility"],
                 )
             )
-            st.altair_chart(plot_vis_continuous + areas, use_container_width=True)
+            st.altair_chart(plot_vis_continuous, use_container_width=True)
             # st.write("\n")
             # st.write(
             #     "Your first page of search results misses out on "
@@ -504,7 +504,7 @@ if query != "":
                     ],
                 )
             )
-            st.altair_chart(plot_vis_cat + areas, use_container_width=True)
+            st.altair_chart(plot_vis_cat, use_container_width=True)
 
             # # constructing table for invisibility
             # df_prop1 = (
@@ -595,7 +595,7 @@ if query != "":
                     + ": "
                     + str(df.iloc[i]["title"]),
                 ).add_to(map)
-            folium_static(map, width=600, height=500)
+            folium_static(map)
 
             # st.markdown("&nbsp;")
 
@@ -645,12 +645,15 @@ if query != "":
                     axis=alt.Axis(format="%"),
                 ),
                 y=alt.Y(
-                    "eco_fr:Q", title="Eco-friendliness", axis=alt.Axis(format="%")
+                    "eco_fr:Q",
+                    title="Eco-friendliness",
+                    axis=alt.Axis(format="%"),
+                    scale=alt.Scale(domain=[0, 1]),
                 ),
                 tooltip=["eco_fr"],
             )
         )
-        st.altair_chart(plot_vis_continuous2 + areas, use_container_width=True)
+        st.altair_chart(plot_vis_continuous2, use_container_width=True)
     #     green_prop_all = len(df[df["is_green"] == "Green"]) / len(df)
     #     green_prop_top = len(
     #         df.head(n_top)[df.head(n_top)["is_green"] == "Green"]

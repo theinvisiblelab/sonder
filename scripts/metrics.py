@@ -34,33 +34,44 @@ with st.expander("Equations"):
     K_{efficiency} = \int_{n=1}^{N} \int_{R_n} min\left[ f_n(x), f_N(x)\right] \,dx \,dn"""
     )
 
-# # case 0 (most extreme)
-# df_1 = pd.DataFrame(
-#     [-1 for i in range(100)],
-#     columns=["sentiment"],
-# )
-# df_2 = pd.DataFrame(
-#     [1 for i in range(100)],
-#     columns=["sentiment"],
-# )
-# df = pd.concat([df_1, df_2])
-
-# # case 1 (extreme)
-# df = pd.DataFrame(
-#     [(random.random() * 2) - 1 for i in range(200)],
-#     columns=["sentiment"],
-# ).sort_values('sentiment')
-
-# case 2 (less extreme)
-df_1 = pd.DataFrame(
-    [random.random() - 1 for i in range(100)],
-    columns=["sentiment"],
+case = st.radio(
+    "Choose case",
+    [
+        "Case 1",
+        "Case 2",
+        "Case 3",
+    ],
+    0,
 )
-df_2 = pd.DataFrame(
-    [random.random() for i in range(100)],
-    columns=["sentiment"],
-)
-df = pd.concat([df_1, df_2])
+
+if case == "Case 3":
+    # case 1 (most extreme)
+    df_1 = pd.DataFrame(
+        [-1 for i in range(100)],
+        columns=["sentiment"],
+    )
+    df_2 = pd.DataFrame(
+        [1 for i in range(100)],
+        columns=["sentiment"],
+    )
+    df = pd.concat([df_1, df_2])
+elif case == "Case 2":
+    # case 2 (extreme)
+    df = pd.DataFrame(
+        [(random.random() * 2) - 1 for i in range(200)],
+        columns=["sentiment"],
+    ).sort_values("sentiment")
+elif case == "Case 1":
+    # case 2 (less extreme)
+    df_1 = pd.DataFrame(
+        [random.random() - 1 for i in range(100)],
+        columns=["sentiment"],
+    )
+    df_2 = pd.DataFrame(
+        [random.random() for i in range(100)],
+        columns=["sentiment"],
+    )
+    df = pd.concat([df_1, df_2])
 
 
 # rank and size
