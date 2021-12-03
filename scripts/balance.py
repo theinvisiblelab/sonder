@@ -198,7 +198,7 @@ with st.expander("🎈 Why Sonder?"):
 
     We are working along two dimensions (view 👈 sidebar):
 
-    + ⚖️ *Balance*: Assess hidden knowledge as you search the web. Balance relevance with diversity.
+    + ⚖️ *Balance*: Assess invisible knowledge as you search the web. Balance relevance with diversity.
     + 📣 *Trends*: Highlight fairness in web, news, wiki, and social media trends.
 
     &nbsp;

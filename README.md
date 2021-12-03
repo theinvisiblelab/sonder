@@ -19,10 +19,10 @@ Internet search shows you what you consume. Sonder shows you what you miss out o
 
 Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~representation~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
 
-We are working along two dimensions:
+Our work spans two dimensions:
 
--   ⚖️ *Balance*: Assess latent/hidden knowledge as you search the web. Balance relevance with diversity.
--   📣 *Trends*: Highlight fairness in web, news, wiki, and social media trends.
+-   ⚖️ *Balance*: Assess latent/invisible knowledge as you search the web. Balance relevance with diversity.
+-   📣 *Trends*: Highlight fairness in global web, news, wiki, and social media trends.
 
 <br/>
 
@@ -94,10 +94,9 @@ Details [here](https://raw.githubusercontent.com/sonder-labs/sonder/main/slides_
 
 <br/>
 
-## 👾 Maintainers
+## 👾 Maintainer
 
 -   [Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)
--   [Shruti Jain](mailto:shruti_jain@berkeley.edu)
 
 Sonder is [open-source](https://github.com/sonder-labs/sonder/blob/main/LICENSE) and envisioned as a nonprofit. [Reach out](mailto:saurabhkhanna@stanford.edu) to join forces.
 
