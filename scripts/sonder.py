@@ -8,7 +8,7 @@ st.set_page_config(page_title="Metrics", page_icon=":balloon:", layout="wide")
 # hiding the hamburger menu and footer
 hide_streamlit_style = """
 <style>
-#MainMenu {visibility: hidden;}
+MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
 </style>
 

@@ -127,7 +127,10 @@ with col1:
     )
 
     vis_present = round(df_inv["visibility"].iloc[-1] * 100, 2)
-    effic_present = round(df_inv["visibility"].mean() * 100, 2)
+    if n_top[1] == 200:
+        effic_present = round(df_inv["visibility"].mean() * 100, 2)
+    else:
+        effic_present = "--"
 
     # df_inv["rank"] = df_inv["rank"] / df_size
     plot_vis_continuous = (

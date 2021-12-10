@@ -221,8 +221,16 @@ if query != "":
     with st.spinner("Assessing visibility for your knowledge search..."):
         load_dotenv()
         client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
-        df = load_searx_data(query)
-        df["search_rank"] = df.reset_index().index + 1
+
+        # demo
+        if query in ["climate change"]:
+            df = pd.read_csv(Path("demo/" + query + ".csv"))
+
+        # default
+        else:
+            df = load_searx_data(query)
+            df["search_rank"] = df.reset_index().index + 1
+
         df_size = len(df.index)
         # green_list = pd.read_csv(Path("green/greendomain.txt"))["url"].tolist()
         with open(Path("green/greendomain"), "rb") as fp:
@@ -265,13 +273,15 @@ if query != "":
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
             # sentiment analyzer loading
-            classifier = pipeline("sentiment-analysis")
-            df["sentiment"] = df.apply(
-                lambda row: sentiment_all(
-                    str(row["title"]) + ". " + str(row["description"])
-                ),
-                axis=1,
-            )
+            if "sentiment" not in df.columns:
+                classifier = pipeline("sentiment-analysis")
+                df["sentiment"] = df.apply(
+                    lambda row: sentiment_all(
+                        str(row["title"]) + ". " + str(row["description"])
+                    ),
+                    axis=1,
+                )
+                df.to_csv(Path("demo/" + query + ".csv"), encoding="utf-8", index=False)
 
             # df["subjectivity"] = df.apply(lambda row: subjectivity_calc(str(row["title"])), axis=1)
             # st.write(df[["title", "description", "subjectivity", "sentiment"]])
@@ -290,9 +300,13 @@ if query != "":
             # st.write("\n")
             df["search_rank"] = df["search_rank"] / df_size
             st.write(
-                "Here's how sentiment varies with rank for your search results. You miss out on the gray region by staying on the first page."
+                "Here's how sentiment varies with rank for your search results. You miss out on the gray region."
             )
-            # st.write(df)
+
+            # DEMO
+            if query in ["climate change"]:
+                n_top_demo = st.slider("Results viewed", 0, df_size, (0, 0))
+
             plot_corr = (
                 alt.Chart(df[df["sentiment"].notna()])
                 .mark_circle(size=150, opacity=0.8)
@@ -317,46 +331,119 @@ if query != "":
                 .encode(y="y")
             )
 
-            cutoff = pd.DataFrame(
-                {"start": [10 / df_size, 10 / df_size], "stop": [1, 1]}
-            )
+            # DEMO
+            if query in ["climate change"]:
 
-            areas = (
-                alt.Chart(cutoff.reset_index())
-                .mark_rect(opacity=0.30)
-                .encode(x="start", x2="stop")
-            )
-
-            st.altair_chart(rule_corr + plot_corr + areas, use_container_width=True)
-
-            df_inv = pd.DataFrame(
-                [(i, overlap_calc(df, i)) for i in range(1, df_size + 1)],
-                columns=["rank", "visibility"],
-            )
-            df_inv["rank"] = df_inv["rank"] / df_size
-            st.write("\n")
-            st.write(
-                "Here's how visibility (in sentiment) varies with rank for your search results. Your visibility reaches "
-                + str(round(df_inv["visibility"].iloc[9] * 100))
-                + "% by staying on the first page."
-            )
-            # alt.themes.enable("dark")
-            plot_vis_continuous = (
-                alt.Chart(df_inv)
-                .mark_area(color="#ffd875", line=True, opacity=0.75)
-                .encode(
-                    x=alt.X(
-                        "rank:Q",
-                        title="Search results viewed",
-                        axis=alt.Axis(format="%"),
-                    ),
-                    y=alt.Y(
-                        "visibility:Q", title="Visibility", axis=alt.Axis(format="%")
-                    ),
-                    tooltip=["visibility"],
+                cutoff = pd.DataFrame(
+                    {
+                        "start": [n_top_demo[1] / df_size, n_top_demo[1] / df_size],
+                        "stop": [1, 1],
+                    }
                 )
-            )
-            st.altair_chart(plot_vis_continuous, use_container_width=True)
+                areas = (
+                    alt.Chart(cutoff.reset_index())
+                    .mark_rect(opacity=0.30)
+                    .encode(x="start", x2="stop")
+                )
+
+                cutoff0 = pd.DataFrame(
+                    {
+                        "start": [0, 0],
+                        "stop": [n_top_demo[0] / df_size, n_top_demo[0] / df_size],
+                    }
+                )
+                areas0 = (
+                    alt.Chart(cutoff0.reset_index())
+                    .mark_rect(opacity=0.30)
+                    .encode(x="start", x2="stop")
+                )
+
+                st.altair_chart(
+                    rule_corr + plot_corr + areas + areas0, use_container_width=True
+                )
+
+                df_inv = pd.DataFrame(
+                    [
+                        (i, overlap_calc(df, i))
+                        for i in range(n_top_demo[0], n_top_demo[1] + 1)
+                    ],
+                    columns=["rank", "visibility"],
+                )
+                df_inv["rank"] = df_inv["rank"] / df_size
+
+                vis_present = round(df_inv["visibility"].iloc[-1] * 100, 2)
+                if n_top_demo[1] == df_size:
+                    effic_present = round(df_inv["visibility"].mean() * 100, 2)
+                else:
+                    effic_present = "--"
+
+                plot_vis_continuous = (
+                    alt.Chart(df_inv)
+                    .mark_area(color="#ffd875", line=True, opacity=0.75)
+                    .encode(
+                        x=alt.X(
+                            "rank:Q",
+                            title="Search results viewed",
+                            axis=alt.Axis(format="%"),
+                            scale=alt.Scale(domain=(0, 1)),
+                        ),
+                        y=alt.Y(
+                            "visibility:Q",
+                            title="Visibility",
+                            axis=alt.Axis(format="%"),
+                            scale=alt.Scale(domain=(0, 1)),
+                        ),
+                        tooltip=["visibility"],
+                    )
+                )
+                st.altair_chart(plot_vis_continuous, use_container_width=True)
+
+                st.metric(label="Visibility", value=str(vis_present) + "%")
+                st.metric(label="Efficiency", value=str(effic_present) + "%")
+
+            # default path
+            else:
+                cutoff = pd.DataFrame(
+                    {"start": [10 / df_size, 10 / df_size], "stop": [1, 1]}
+                )
+                areas = (
+                    alt.Chart(cutoff.reset_index())
+                    .mark_rect(opacity=0.30)
+                    .encode(x="start", x2="stop")
+                )
+
+                st.altair_chart(rule_corr + plot_corr + areas, use_container_width=True)
+
+                df_inv = pd.DataFrame(
+                    [(i, overlap_calc(df, i)) for i in range(1, df_size + 1)],
+                    columns=["rank", "visibility"],
+                )
+                df_inv["rank"] = df_inv["rank"] / df_size
+                st.write("\n")
+                st.write(
+                    "Here's how visibility (in sentiment) varies with rank for your search results. Your visibility reaches "
+                    + str(round(df_inv["visibility"].iloc[9] * 100))
+                    + "% by staying on the first page."
+                )
+
+                plot_vis_continuous = (
+                    alt.Chart(df_inv)
+                    .mark_area(color="#ffd875", line=True, opacity=0.75)
+                    .encode(
+                        x=alt.X(
+                            "rank:Q",
+                            title="Search results viewed",
+                            axis=alt.Axis(format="%"),
+                        ),
+                        y=alt.Y(
+                            "visibility:Q",
+                            title="Visibility",
+                            axis=alt.Axis(format="%"),
+                        ),
+                        tooltip=["visibility"],
+                    )
+                )
+                st.altair_chart(plot_vis_continuous, use_container_width=True)
             # st.write("\n")
             # st.write(
             #     "Your first page of search results misses out on "
