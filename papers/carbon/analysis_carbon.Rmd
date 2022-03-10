@@ -1,0 +1,152 @@
+---
+title: "Carbon Costs of the Internet"
+#author: "Saurabh Khanna"
+date: "Updated: `r format(Sys.Date(), format='%B %d %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+---
+
+---
+
+```{r setup, include=FALSE}
+# knitr options
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+
+```{r message=FALSE, warning=FALSE, fig.retina=4}
+# Libraries
+pacman::p_load(tidyverse, countrycode, sf, state, htmltools, htmlwidgets, janitor, RColorBrewer, ussf, arrow, hrbrthemes, lubridate, estimatr, texreg, readxl, corrr, multidplyr)
+```
+
+
+```{r, eval=F}
+# multidplyr testing
+cluster <- new_cluster(6)
+cluster
+
+# read all parquets
+file_list <- list.files(here::here("database/files/"), pattern = "*.parquet", full.names = TRUE)
+names(file_list) <- fs::path_ext_remove(list.files(here::here("database/files/"), pattern = "*.parquet"))
+df <- map_dfr(file_list, read_parquet) %>% partition(cluster)
+
+# files <- dir(here::here("database/files"), pattern = "*.parquet", full.names = TRUE)
+# 
+# cluster_assign_partition(cluster, files = files)
+# 
+# cluster_send(cluster, df_multi <- purrr::map_dfr(files, arrow::read_parquet))
+# 
+# df_multi <- party_df(cluster, "df_multi")
+# df_multi
+```
+
+
+
+
+```{r}
+# Load data
+
+shapefile <- read_sf(here::here("data/shapefile/TM_WORLD_BORDERS_SIMPL-0.3.shp"))
+
+nations <- 
+  read_csv(here::here("data/nations.csv")) %>% 
+  mutate(country = country %>% str_to_lower() %>% str_replace(" ", "_")) %>% 
+  arrange(country, desc(year)) %>% 
+  group_by(country) %>% 
+  slice(1) %>% 
+  left_join(read_csv(here::here("data/press_freedom.csv")), by = "iso3c")
+
+df_ecothreat <-
+  read_xlsx(here::here("data/eco_threat_scores.xlsx"), sheet = "Overall Scores") %>% 
+  remove_empty() %>% 
+  clean_names() %>% 
+  mutate(country = country %>% str_to_lower() %>% str_replace(" ", "_"))
+
+df_internet <-
+  read_csv(here::here("data/internet_users_by_country.csv")) %>% 
+  mutate(country = country %>% str_to_lower() %>% str_replace(" ", "_")) %>% 
+  arrange(desc(internet_users))
+
+
+df <-
+  read_parquet(here::here("database/trends_consolidated.parquet")) %>%
+  mutate(date = date(date)) %>% 
+  left_join(nations, by = "country") %>%
+  select(type, rank_group, query, date, country, weight, is_green, gdp_percap, life_expect, population, birth_rate, neonat_mortal_rate, region, income, rank2021, underlying_sit_score, abuse_score, global_score, progress_rank, rank2020, score2020, zone) %>% 
+  left_join(df_ecothreat, by = "country") %>% 
+  left_join(df_internet, by = "country")
+```
+
+
+```{r}
+## CARBON COST ##
+df_carbon <-
+  df %>%
+  filter(type != "news_search") %>%
+  group_by(date, country, query) %>%
+  mutate(
+    p_open = rank_group ^ (-2.4),
+    p_open = p_open / sum(p_open, na.rm = T),
+    extra_co2_per_result = if_else(is_green == 0, p_open * (0.1584), 0)
+  ) %>% 
+  ungroup() %>% 
+  relocate(date, country, query, p_open, weight, extra_co2_per_result, is_green)
+
+df_carbon_by_country <-
+  df_carbon %>%
+  group_by(date, country, query) %>% 
+  summarize(
+    extra_co2_per_query = sum(extra_co2_per_result, na.rm = T),
+    is_green = mean(is_green, na.rm = T)
+  ) %>% 
+  ungroup() %>%
+  group_by(country) %>%
+  summarize(
+    extra_co2_per_query_by_country = mean(extra_co2_per_query, na.rm = T),
+    is_green = mean(is_green, na.rm = T),
+  ) %>%
+  ungroup() %>% 
+  arrange(desc(extra_co2_per_query_by_country))
+
+# cor(df_carbon_by_country$is_green, df_carbon_by_country$extra_co2_per_query_by_country)
+
+rm(df, df_carbon)
+```
+
+
+## Descriptives
+
+### CO<sub>2</sub> (in grams) per search query by country
+
+```{r, fig.retina=4, out.width="100%"}
+shapefile %>% 
+  clean_names() %>%
+  rename(country = name) %>%
+  mutate(
+    country = if_else(country == "Viet Nam", "Vietnam", country),
+    country = if_else(str_detect(country, "Korea, Republic of"), "South Korea", country),
+    country = country %>% str_to_lower() %>% str_replace(" ", "_")
+  ) %>%
+  inner_join(
+    df_carbon_by_country, 
+    by = "country"
+  ) %>%
+  ggplot() +
+  geom_sf(aes(fill = extra_co2_per_query_by_country), size = 0.3) +
+  scale_fill_gradientn(
+    colors = RColorBrewer::brewer.pal(n = 9, name = "Reds"),
+  ) +
+  theme_void() +
+  theme(legend.key.width = unit(3, 'cm'), legend.key.height = unit(0.3, 'cm'), legend.position = "bottom") +
+  labs(
+    fill = ""
+  )
+```
+
+
+
+
+
+

@@ -1,0 +1,650 @@
+---
+title: "Space Flight Sentiment"
+subtitle: "Draft Analysis"
+date: "Updated: `r format(Sys.Date(), format='%B %d, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+---
+
+---
+
+```{r setup, include=FALSE}
+# knitr options
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.retina = 4, out.width = "100%")
+```
+
+
+```{r message=FALSE, warning=FALSE, fig.retina=4}
+# Libraries
+pacman::p_load(tidyverse, countrycode, sf, state, htmltools, htmlwidgets, urltools, janitor, DT, RColorBrewer, plotly, ussf, arrow, hrbrthemes, overlapping, sentimentr, knitr, kableExtra, estimatr, texreg)
+```
+
+
+```{r, include = FALSE}
+serp_locations <-
+  read_csv(here::here("data/locations_serp_google_2021_11_09.csv")) %>%
+  filter(country_iso_code == "US", location_type == "County") %>%
+  mutate(
+    location_name = str_replace(location_name, " Borough", ""),
+    location_name = str_replace(location_name, " Census Area", ""),
+    location_name = str_replace(location_name, " Municipality", ""),
+    location_name = str_replace(location_name, " City and", "")
+  )
+
+county_maps <- 
+  ussf::boundaries(geography = "county") %>% 
+  rename(county_fips = GEOID) %>% 
+  left_join(read_csv(here::here("data/uscounties.csv")), by = "county_fips") %>%
+  mutate(
+    location_name = str_c(county_full, state_name, "United States", sep = ","),
+    location_name = str_replace(location_name, " Borough", ""),
+    location_name = str_replace(location_name, " Census Area", ""),
+    location_name = str_replace(location_name, " Municipality", ""),
+    location_name = str_replace(location_name, " City and", ""),
+    location_name = if_else(
+      location_name == "LaSalle Parish,Louisiana,United States", "La Salle Parish,Louisiana,United States", location_name
+    ),
+    location_name = if_else(
+      location_name == "Doña Ana County,New Mexico,United States", "Dona Ana County,New Mexico,United States", location_name
+    )
+  ) %>% 
+  left_join(serp_locations, by = "location_name")
+
+df_bezos <- read_parquet(here::here("data/for_seth_bezos.parquet")) %>% rename(location_code = location)
+df_musk <- read_parquet(here::here("data/for_seth_musk.parquet")) %>% rename(location_code = location)
+df_branson <- read_parquet(here::here("data/for_seth_branson.parquet")) %>% rename(location_code = location)
+
+df <- 
+  bind_rows("Bezos" = df_bezos, "Musk" = df_musk, "Branson" = df_branson, .id = "id") %>% 
+  left_join(county_maps, by = "location_code") %>%
+  select(id, query, county = county_full, county_fips, search_rank = rank_group, domain, title, description, url, language, sentiment) %>%
+  arrange(query, county, search_rank)
+
+df <- bind_cols(df, read_csv(here::here("data/space_flight_sentimentr.csv"))) # check sorting before merge!
+
+df_openintro <-
+  read_csv(here::here("data/us_county_openintro.csv")) %>% 
+  clean_names() %>% 
+  remove_empty() %>% 
+  rename(county_fips = fips) %>% 
+  mutate(
+    county_fips = county_fips %>% as.character(),
+    county_fips = if_else(str_length(county_fips) == 4, str_c("0", county_fips), county_fips)
+  )
+
+df <- df %>% left_join(df_openintro, by = "county_fips")
+
+# df %>% distinct(county_fips) %>% anti_join(df_openintro)
+
+rm(df_bezos, df_musk, df_branson, county_maps, serp_locations, df_openintro)
+gc()
+
+df %>% glimpse()
+```
+
+```{r, eval=F}
+# extract data for seth
+# bind_rows(df_bezos, df_branson, df_musk) %>%
+#   select(query, rank_group, domain, title, description, url, location_code, language, sentiment) %>% 
+#   left_join(county_maps, by = "location_code") %>% 
+#   select(query, county = county_full, search_rank = rank_group, domain, title, description, url, language, sentiment_bert = sentiment) %>%
+#   arrange(query, county, search_rank) %>% 
+#   write_csv(here::here("data/space_flight_raw_data_v1.csv"))
+```
+
+
+```{r, eval=F}
+# df_sentiment <-
+#   df %>% 
+#   transmute(
+#     text = str_c(title, description, sep = ". ") %>% str_squish()
+#   ) %>% 
+#   pull(text) %>% 
+#   get_sentences() %>% 
+#   sentiment_by()
+# 
+# df_sentiment %>% glimpse()
+# df_sentiment %>% write_csv(here::here("data/space_flight_sentimentr.csv"))
+```
+
+
+```{r, eval=F}
+df_domains <-
+  read_csv(here::here("data/space_flights/space_flight_raw_data_v1.csv")) %>% 
+  mutate(
+    domain = str_replace(domain, "^www.", "")
+  ) %>%
+  count(domain) %>% arrange(-n)
+
+df_mbias <- read_csv(here::here("data/space_flights/media-bias-scrubbed-results.csv"))
+
+bind_cols(
+    df_mbias,
+    df_mbias %>% pull(url) %>% domain() %>% tld_extract()
+  ) %>% 
+  transmute(
+    domain = str_replace(domain, "^www.", ""),
+    bias_rating
+  ) %>%
+  left_join(df_domains, ., by = "domain") %>% 
+  distinct(domain, .keep_all = T) %>% 
+  arrange(-n) %>% 
+  left_join(read_csv(here::here("data/space_flights/media-bias-rankings.csv")), by="bias_rating") %>% 
+  mutate(bias_label = str_extract(bias_label, "[a-z]+" )) %>% 
+  mutate(
+    bias_label = case_when(
+      bias_label == "leastbiased" ~ "N",
+      bias_label == "left" ~ "L",
+      bias_label == "leftcenter" ~ "LC",
+      bias_label == "right" ~ "R",
+      bias_label == "rightcenter" ~ "RC",
+      TRUE ~ NA_character_
+    )
+  ) %>% 
+  select(domain, n, bias_label, bias_rating) %>% count(bias_label)
+  #writexl::write_xlsx(here::here("data/space_flights/space_flight_data_domains_v2.xlsx"))
+```
+
+
+
+<br/>
+
+## Descriptives
+
+### Sentiment distribution by capitalist
+
+Sentiment polarity calculation details [here](https://github.com/trinker/sentimentr#the-equation).
+
+```{r}
+df %>% 
+  ggplot(aes(ave_sentiment)) + 
+  geom_histogram(alpha = 0.9) + 
+  facet_wrap(vars(id)) +
+  theme_ipsum() +
+  labs(
+    x = "Sentiment",
+    y = "Search result count"
+  )
+```
+
+
+---
+
+<br/>
+
+### Who does best{.tabset}
+
+#### Unweighted means
+
+##### Top result
+
+```{r}
+df %>% 
+  filter(search_rank == 1) %>% 
+  group_by(id) %>%
+  summarize(
+    mean_sentiment = mean(ave_sentiment, na.rm = T),
+    sd_sentiment = sd(ave_sentiment, na.rm = T),
+    n_results = n()
+  ) %>% 
+  arrange(-mean_sentiment) %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+##### Top 10 results
+
+```{r}
+df %>% 
+  filter(search_rank <= 10) %>% 
+  group_by(id) %>%
+  summarize(
+    mean_sentiment = mean(ave_sentiment, na.rm = T),
+    sd_sentiment = sd(ave_sentiment, na.rm = T),
+    n_results = n()
+  ) %>% 
+  arrange(-mean_sentiment) %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+
+##### Overall
+
+```{r}
+df %>% 
+  group_by(id) %>%
+  summarize(
+    mean_sentiment = mean(ave_sentiment, na.rm = T),
+    sd_sentiment = sd(ave_sentiment, na.rm = T),
+    n_results = n()
+  ) %>% 
+  arrange(-mean_sentiment) %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+
+
+#### Means weighted by $\frac{1}{search\_rank}$
+
+##### Top result
+
+```{r}
+df %>% 
+  filter(search_rank == 1) %>% 
+  group_by(id) %>%
+  summarize(
+    mean_sentiment = weighted.mean(ave_sentiment, w = 1/search_rank, na.rm = T),
+    sd_sentiment = sd(ave_sentiment, na.rm = T),
+    n_results = n()
+  ) %>% 
+  arrange(-mean_sentiment) %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+##### Top 10 results
+
+```{r}
+df %>% 
+  filter(search_rank <= 10) %>% 
+  group_by(id) %>%
+  summarize(
+    mean_sentiment = weighted.mean(ave_sentiment, w = 1/search_rank, na.rm = T),
+    sd_sentiment = sd(ave_sentiment, na.rm = T),
+    n_results = n()
+  ) %>% 
+  arrange(-mean_sentiment) %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+
+##### Overall
+
+```{r}
+df %>% 
+  group_by(id) %>%
+  summarize(
+    mean_sentiment = weighted.mean(ave_sentiment, w = 1/search_rank, na.rm = T),
+    sd_sentiment = sd(ave_sentiment, na.rm = T),
+    n_results = n()
+  ) %>% 
+  arrange(-mean_sentiment) %>% 
+  kable() %>% 
+  kable_styling()
+```
+
+
+---
+
+<br/>
+
+
+### Mean sentiment variation with search rank
+
+```{r, out.width="100%", fig.retina=4}
+df %>% 
+  group_by(id, search_rank) %>%
+  summarize(
+    ave_sentiment = mean(ave_sentiment, na.rm = T),
+    n_results = n(),
+  ) %>%
+  ungroup() %>% 
+  ggplot(aes(search_rank, ave_sentiment)) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_point(alpha = 0.75) +
+  geom_smooth() +
+  theme_ipsum() +
+  facet_wrap(vars(id)) +
+  labs(
+    x = "Search rank",
+    y = "Mean sentiment",
+    color = ""
+  )
+```
+
+
+---
+
+<br/>
+
+## County-level heterogeneity{.tabset}
+
+County level data details [here](https://www.openintro.org/data/index.php?data=county_complete).
+
+The loess curves below show very little spatial variation exists. The y-axis is weighted mean of sentiment at the county level (weight = $\frac{1}{search\_rank}$).
+
+```{r}
+df %>% 
+  group_by(county_fips, id) %>% 
+  summarize_at(
+    vars(ave_sentiment, age_over_65_2019, female_2010, white_not_hispanic_2019, some_college_2017, per_capita_income_2019),
+    ~ weighted.mean(., w = 1/search_rank, na.rm = T)
+  ) %>% 
+  ggplot(aes(age_over_65_2019, ave_sentiment, color=id)) +
+  geom_smooth(method = "loess") +
+  theme_ipsum() +
+  theme(legend.position = "bottom") +
+  labs(
+    y = "County sentiment (weighted avg.)",
+    color = ""
+  )
+```
+
+
+```{r}
+df %>% 
+  group_by(county_fips, id) %>% 
+  summarize_at(
+    vars(ave_sentiment, age_over_65_2019, female_2010, white_not_hispanic_2019, some_college_2017, per_capita_income_2019),
+    ~ weighted.mean(., w = 1/search_rank, na.rm = T)
+  ) %>% 
+  ggplot(aes(female_2010, ave_sentiment, color=id)) +
+  geom_smooth(method = "loess") +
+  theme_ipsum() +
+  theme(legend.position = "bottom") +
+  labs(
+    y = "County sentiment (weighted avg.)",
+    color = ""
+  )
+```
+
+
+```{r}
+df %>% 
+  group_by(county_fips, id) %>% 
+  summarize_at(
+    vars(ave_sentiment, age_over_65_2019, female_2010, white_not_hispanic_2019, some_college_2017, per_capita_income_2019),
+    ~ weighted.mean(., w = 1/search_rank, na.rm = T)
+  ) %>% 
+  ggplot(aes(white_not_hispanic_2019, ave_sentiment, color=id)) +
+  geom_smooth(method = "loess") +
+  theme_ipsum() +
+  theme(legend.position = "bottom") +
+  labs(
+    y = "County sentiment (weighted avg.)",
+    color = ""
+  )
+```
+
+
+
+```{r}
+df %>% 
+  group_by(county_fips, id) %>% 
+  summarize_at(
+    vars(ave_sentiment, age_over_65_2019, female_2010, white_not_hispanic_2019, some_college_2017, per_capita_income_2019),
+    ~ weighted.mean(., w = 1/search_rank, na.rm = T)
+  ) %>% 
+  ggplot(aes(some_college_2017, ave_sentiment, color=id)) +
+  geom_smooth(method = "loess") +
+  theme_ipsum() +
+  theme(legend.position = "bottom") +
+  labs(
+    y = "County sentiment (weighted avg.)",
+    color = ""
+  )
+```
+
+
+```{r}
+df %>% 
+  group_by(county_fips, id) %>% 
+  summarize_at(
+    vars(ave_sentiment, age_over_65_2019, female_2010, white_not_hispanic_2019, some_college_2017, per_capita_income_2019),
+    ~ weighted.mean(., w = 1/search_rank, na.rm = T)
+  ) %>% 
+  ggplot(aes(per_capita_income_2019, ave_sentiment, color=id)) +
+  geom_smooth(method = "loess") +
+  theme_ipsum() +
+  theme(legend.position = "bottom") +
+  labs(
+    y = "County sentiment (weighted avg.)",
+    color = ""
+  )
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ## Mean sentiment across _all_ search results {.tabset} -->
+
+<!-- ### Bezos -->
+
+<!-- ```{r, out.width="100%", fig.retina=4} -->
+<!-- df %>% -->
+<!--   filter(id == "Bezos") %>%  -->
+<!--   group_by(location_code) %>%  -->
+<!--   summarize(sentiment = mean(sentiment, na.rm = TRUE)) %>%  -->
+<!--   left_join(county_maps, ., by = "location_code") %>%  -->
+<!--   mutate( -->
+<!--     hover_text = str_c(county_full, sentiment, sep = "\n") -->
+<!--   ) %>%  -->
+<!--   ggplot() + -->
+<!--   geom_sf(aes(fill = sentiment))  + -->
+<!--   scale_fill_gradientn( -->
+<!--     colors = RColorBrewer::brewer.pal(n = 9, name = "Greens"), -->
+<!--   ) + -->
+<!--   theme_void() + -->
+<!--   theme(legend.key.width = unit(1, 'cm'), legend.position = "bottom") + -->
+<!--   labs(fill = "Mean sentiment (All)") -->
+<!-- ``` -->
+
+
+<!-- ### Branson -->
+
+<!-- ```{r, out.width="100%", fig.retina=4} -->
+<!-- df %>% -->
+<!--   filter(id == "Branson") %>%  -->
+<!--   group_by(location_code) %>%  -->
+<!--   summarize(sentiment = mean(sentiment, na.rm = TRUE)) %>%  -->
+<!--   left_join(county_maps, ., by = "location_code") %>%  -->
+<!--   mutate( -->
+<!--     hover_text = str_c(county_full, sentiment, sep = "\n") -->
+<!--   ) %>%  -->
+<!--   ggplot() + -->
+<!--   geom_sf(aes(fill = sentiment))  + -->
+<!--   scale_fill_gradientn( -->
+<!--     colors = RColorBrewer::brewer.pal(n = 9, name = "Greens"), -->
+<!--   ) + -->
+<!--   theme_void() + -->
+<!--   theme(legend.key.width = unit(1, 'cm'), legend.position = "bottom") + -->
+<!--   labs(fill = "Mean sentiment (All)") -->
+<!-- ``` -->
+
+
+<!-- ### Musk -->
+
+<!-- ```{r, out.width="100%", fig.retina=4} -->
+<!-- df %>% -->
+<!--   filter(id == "Musk") %>% -->
+<!--   group_by(location_code) %>%  -->
+<!--   summarize(sentiment = mean(sentiment, na.rm = TRUE)) %>%  -->
+<!--   left_join(county_maps, ., by = "location_code") %>%  -->
+<!--   mutate( -->
+<!--     hover_text = str_c(county_full, sentiment, sep = "\n") -->
+<!--   ) %>%  -->
+<!--   ggplot() + -->
+<!--   geom_sf(aes(fill = sentiment))  + -->
+<!--   scale_fill_gradientn( -->
+<!--     colors = RColorBrewer::brewer.pal(n = 9, name = "Greens"), -->
+<!--   ) + -->
+<!--   theme_void() + -->
+<!--   theme(legend.key.width = unit(1, 'cm'), legend.position = "bottom") + -->
+<!--   labs(fill = "Mean sentiment (All)") -->
+<!-- ``` -->
+
+
+<!-- <br/><br/> -->
+
+<!-- ## Mean sentiment across _top 10_ search results {.tabset} -->
+
+<!-- ### Bezos -->
+
+<!-- ```{r, out.width="100%", fig.retina=4} -->
+<!-- df %>% -->
+<!--   filter(id == "Bezos") %>% -->
+<!--   group_by(location_code) %>%  -->
+<!--   slice(1:10) %>%  -->
+<!--   summarize(sentiment = mean(sentiment, na.rm = TRUE)) %>%  -->
+<!--   left_join(county_maps, ., by = "location_code") %>%  -->
+<!--   mutate( -->
+<!--     hover_text = str_c(county_full, sentiment, sep = "\n") -->
+<!--   ) %>%  -->
+<!--   ggplot() + -->
+<!--   geom_sf(aes(fill = sentiment))  + -->
+<!--   scale_fill_gradientn( -->
+<!--     colors = RColorBrewer::brewer.pal(n = 9, name = "Greens"), -->
+<!--   ) + -->
+<!--   theme_void() + -->
+<!--   theme(legend.key.width = unit(1, 'cm'), legend.position = "bottom") + -->
+<!--   labs(fill = "Mean sentiment (top 10)") -->
+<!-- ``` -->
+
+
+<!-- ### Branson -->
+
+<!-- ```{r, out.width="100%", fig.retina=4} -->
+<!-- df %>% -->
+<!--   filter(id == "Branson") %>% -->
+<!--   group_by(location_code) %>%  -->
+<!--   slice(1:10) %>%  -->
+<!--   summarize(sentiment = mean(sentiment, na.rm = TRUE)) %>%  -->
+<!--   left_join(county_maps, ., by = "location_code") %>%  -->
+<!--   mutate( -->
+<!--     hover_text = str_c(county_full, sentiment, sep = "\n") -->
+<!--   ) %>%  -->
+<!--   ggplot() + -->
+<!--   geom_sf(aes(fill = sentiment))  + -->
+<!--   scale_fill_gradientn( -->
+<!--     colors = RColorBrewer::brewer.pal(n = 9, name = "Greens"), -->
+<!--   ) + -->
+<!--   theme_void() + -->
+<!--   theme(legend.key.width = unit(1, 'cm'), legend.position = "bottom") + -->
+<!--   labs(fill = "Mean sentiment (top 10)") -->
+<!-- ``` -->
+
+
+<!-- ### Musk -->
+
+<!-- ```{r, out.width="100%", fig.retina=4} -->
+<!-- df %>% -->
+<!--   filter(id == "Musk") %>% -->
+<!--   group_by(location_code) %>%  -->
+<!--   slice(1:10) %>%  -->
+<!--   summarize(sentiment = mean(sentiment, na.rm = TRUE)) %>%  -->
+<!--   left_join(county_maps, ., by = "location_code") %>%  -->
+<!--   mutate( -->
+<!--     hover_text = str_c(county_full, sentiment, sep = "\n") -->
+<!--   ) %>%  -->
+<!--   ggplot() + -->
+<!--   geom_sf(aes(fill = sentiment))  + -->
+<!--   scale_fill_gradientn( -->
+<!--     colors = RColorBrewer::brewer.pal(n = 9, name = "Greens"), -->
+<!--   ) + -->
+<!--   theme_void() + -->
+<!--   theme(legend.key.width = unit(1, 'cm'), legend.position = "bottom") + -->
+<!--   labs(fill = "Mean sentiment (top 10)") -->
+<!-- ``` -->
+
+
+
+<!-- <br/><br/> -->
+
+<!-- ## Distribution overlap in _top 10_ vs _all_ search results{.tabset} -->
+
+<!-- For any county, a high value here indicates that the sentiment distribution of top 10 results overlaps well with the sentiment distribution of all search results (i.e. high information _visibility_). -->
+
+<!-- ### Bezos -->
+
+<!-- ```{r, out.width="100%", fig.retina=4} -->
+<!-- df %>% -->
+<!--   filter(id == "Bezos") %>% -->
+<!--   group_by(location_code) %>% -->
+<!--   summarize(overlap = overlap(list(sentiment, sentiment %>% head(10)))$OV) %>% -->
+<!--   left_join(county_maps, ., by = "location_code") %>% -->
+<!--   ggplot() + -->
+<!--   geom_sf(aes(fill = overlap))  + -->
+<!--   scale_fill_gradientn( -->
+<!--     colors = RColorBrewer::brewer.pal(n = 9, name = "Blues"), -->
+<!--   ) + -->
+<!--   theme_void() + -->
+<!--   theme(legend.key.width = unit(1, 'cm'), legend.position = "bottom") + -->
+<!--   labs(fill = "Overlap (All vs top 10)") -->
+<!-- ``` -->
+
+
+<!-- ### Branson -->
+
+<!-- ```{r, out.width="100%", fig.retina=4} -->
+<!-- df %>% -->
+<!--   filter(id == "Branson") %>% -->
+<!--   group_by(location_code) %>% -->
+<!--   summarize(overlap = overlap(list(sentiment, sentiment %>% head(10)))$OV) %>% -->
+<!--   left_join(county_maps, ., by = "location_code") %>% -->
+<!--   ggplot() + -->
+<!--   geom_sf(aes(fill = overlap))  + -->
+<!--   scale_fill_gradientn( -->
+<!--     colors = RColorBrewer::brewer.pal(n = 9, name = "Blues"), -->
+<!--   ) + -->
+<!--   theme_void() + -->
+<!--   theme(legend.key.width = unit(1, 'cm'), legend.position = "bottom") + -->
+<!--   labs(fill = "Overlap (All vs top 10)") -->
+<!-- ``` -->
+
+
+<!-- ### Musk -->
+
+<!-- ```{r, out.width="100%", fig.retina=4} -->
+<!-- df %>% -->
+<!--   filter(id == "Musk") %>% -->
+<!--   group_by(location_code) %>% -->
+<!--   summarize(overlap = overlap(list(sentiment, sentiment %>% head(10)))$OV) %>% -->
+<!--   left_join(county_maps, ., by = "location_code") %>% -->
+<!--   ggplot() + -->
+<!--   geom_sf(aes(fill = overlap))  + -->
+<!--   scale_fill_gradientn( -->
+<!--     colors = RColorBrewer::brewer.pal(n = 9, name = "Blues"), -->
+<!--   ) + -->
+<!--   theme_void() + -->
+<!--   theme(legend.key.width = unit(1, 'cm'), legend.position = "bottom") + -->
+<!--   labs(fill = "Overlap (All vs top 10)") -->
+<!-- ``` -->
+
+
+
+
+
+
