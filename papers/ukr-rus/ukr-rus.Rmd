@@ -25,10 +25,12 @@ pacman::p_load(tidyverse, countrycode, sf, state, htmltools, htmlwidgets, janito
 ```{r, eval=F}
 # read all parquets
 file_list <- list.files(here::here("database/files/"), pattern = glob2rx("trends_02*2022_*.parquet"), full.names = TRUE)
+
 names(file_list) <- fs::path_ext_remove(list.files(here::here("database/files/"), pattern = glob2rx("trends_02*2022_*.parquet")))
+
 df <- map_dfr(file_list, read_parquet)
 
-file_list
+df
 ```
 
 
