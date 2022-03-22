@@ -107,6 +107,7 @@ df %>% glimpse()
 # 
 # df_sentiment %>% glimpse()
 # df_sentiment %>% write_csv(here::here("data/space_flight_sentimentr.csv"))
+
 ```
 
 
