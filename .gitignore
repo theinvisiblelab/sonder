@@ -17,6 +17,7 @@ today/
 database/
 R/
 data/
+scripts/old/
 
 # Data files
 *.csv

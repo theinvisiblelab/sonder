@@ -18,28 +18,23 @@ footer {visibility: hidden;}
 
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-# st.title("S🎈nder")
-# st.write("_The Opportunity Cost of Internet Search_")
-# st.markdown("&nbsp;")
+st.title("S🎈nder")
+st.markdown("&nbsp;")
 
 
 # Sidebar
-# st.sidebar.title("S🎈nder")
-# st.sidebar.write("_The Opportunity Cost of Internet Search_")
-# st.sidebar.markdown("---")
+st.sidebar.title("S🎈nder")
+st.sidebar.write("_Enabling fairer information access_")
+st.sidebar.markdown("---")
 
 navigate_sidebar = st.sidebar.radio(
     "Go to",
     [
-        "⚖️ Balance",
-        "🕸️ Web Trends",
-        "🗞️ News Trends",
-        # "🕯️ Wiki Trends",
-        # "🐦 Twitter Trends",
-        "🧮 Metrics",
-        "About",
+        "🎈 Home",
+        "🚲 Demo",
+        "🔧 Learn more",
     ],
-    3,
+    0,
 )
 st.sidebar.markdown("---")
 
@@ -53,49 +48,22 @@ st.sidebar.info(
     "🏆 Design Challenge Research Award, Stanford University \n\n 🏆 Karr Fellowship, Stanford University \n\n 🏆 Digital Learning Design Challenge Grant, Stanford University"
 )
 
-# st.sidebar.markdown("**👾 Maitainers**")
-# st.sidebar.info(
-#     "[Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)  \n[Shruti Jain](mailto:shruti_jain@berkeley.edu)  \n\nWrite to us to join forces!"
-# )
+st.sidebar.markdown("**👾 Maitainer**")
+st.sidebar.info("[Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)")
 
 # Main page
 
 # Balance
-if navigate_sidebar == "⚖️ Balance":
+if navigate_sidebar == "🎈 Home":
     exec(open("scripts/balance.py").read())
 
-# Bias trends
-if navigate_sidebar == "🕸️ Web Trends":
-    exec(open("scripts/web_trends.py").read())
-
-if navigate_sidebar == "🗞️ News Trends":
-    exec(open("scripts/news_trends.py").read())
-
-if navigate_sidebar == "🕯️ Wiki Trends":
-    # exec(open("scripts/wiki_trends.py").read())
-    st.markdown("&nbsp;")
-    st.markdown("_STILL COOKING!_ :spaghetti:")
-    st.markdown(
-        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
-    )
-    st.markdown("&nbsp;")
-
-
-if navigate_sidebar == "🐦 Twitter Trends":
-    st.markdown("&nbsp;")
-    st.markdown("_STILL COOKING!_ :spaghetti:")
-    st.markdown(
-        "Watch our [GitHub](https://github.com/sonder-labs/sonder) repository for updates on this feature."
-    )
-    st.markdown("&nbsp;")
-
 # Metrics
-if navigate_sidebar == "🧮 Metrics":
+if navigate_sidebar == "🚲 Demo":
     exec(open("scripts/metrics.py").read())
 
 # About Us
-if navigate_sidebar == "About":
-    exec(open("scripts/about_us.py").read())
+if navigate_sidebar == "🔧 Learn more":
+    st.write("Learn more [here](https://github.com/sonder-labs/sonder).")
 
 # Unsung
 # if navigate_sidebar == "📻 Unsung":
