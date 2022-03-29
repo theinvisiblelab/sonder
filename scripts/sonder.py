@@ -59,7 +59,7 @@ if navigate_sidebar == "🎈 Home":
 
 # Metrics
 if navigate_sidebar == "🚲 Demo":
-    exec(open("scripts/metrics.py").read())
+    exec(open("scripts/demo.py").read())
 
 # About Us
 if navigate_sidebar == "🔧 Learn more":

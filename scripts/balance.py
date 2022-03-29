@@ -1,10 +1,10 @@
 ## PARAMETERS ##
-from glob import escape
-from altair.vegalite.v4.schema.channels import Tooltip
-import socket
+# from glob import escape
+# from altair.vegalite.v4.schema.channels import Tooltip
+# import socket
 import numpy as np
 import pandas as pd
-from statistics import mean, median, NormalDist
+from statistics import mean
 from nltk import tokenize
 from dotenv import load_dotenv
 from client import RestClient
@@ -21,7 +21,7 @@ import altair as alt
 from transformers import pipeline
 
 @st.cache(allow_output_mutation=True, show_spinner=False)
-def load_searx_data(query):
+def fetch_data(query):
     post_data = dict()
     post_data[len(post_data)] = dict(
         language_code="en", location_code=2840, keyword=query
@@ -86,8 +86,9 @@ def remove_prefix(text, prefix="www."):
         return text[len(prefix) :]
     return text
 
-
+#############
 ## CONTENT ##
+#############
 
 # st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
 with st.expander("🎈 Why Sonder?"):
@@ -116,8 +117,7 @@ with st.expander("🎈 Why Sonder?"):
 
 st.markdown("&nbsp;")
 
-st.write("Evaluate invisible information as you search the web in 3 steps:")
-
+st.write("Evaluate invisible information as you search the web in _3 steps_:")
 
 col_a, col_b = st.columns([1, 1.618])
 
@@ -140,19 +140,19 @@ if query != "":
             df = pd.read_csv(Path("demo/" + query + ".csv"))
         # default
         else:
-            df = load_searx_data(query)
+            df = fetch_data(query)
             df["search_rank"] = df.reset_index().index + 1
         df_size = len(df.index)
 
 
-dimension = col_b.selectbox('', ('Sentiment', 'Readability'))
+dimension = col_b.selectbox('', ('🗣️ Sentiment', 'Readability'))
 n_results = col_b.slider('', 0, df_size, 0)
 
 st.markdown("&nbsp;")
 
 if query != "":
 
-    col2, col1 = st.columns(2)
+    col1, col2 = st.columns([1, 1.618])
 
     with col1:
         st.markdown("### Search results")
@@ -161,6 +161,7 @@ if query != "":
             with st.container():
                 # st.write("Sentiment: ", row["sentiment"])
                 # st.write("Host Country: `", row["country_name"], "`")
+                st.write("Result type: `Ad-based`")
                 if row["description"] == row["description"]:
                     st.markdown(
                         "> "
@@ -181,7 +182,7 @@ if query != "":
     col2.markdown("### " + dimension + " visibility")
     col2.markdown("---")
 
-    expander1 = col2.expander("🗣️ Sentiment")
+    expander1 = col2.container("🗣️ Sentiment")
 
     with expander1:
         with st.spinner("Assessing sentiment in your search results..."):
@@ -194,7 +195,7 @@ if query != "":
                     ),
                     axis=1,
                 )
-                df.to_csv(Path("demo/" + query + ".csv"), encoding="utf-8", index=False)
+                # df.to_csv(Path("demo/" + query + ".csv"), encoding="utf-8", index=False)
 
             sentiment_mean = round(df["sentiment"].mean(), 4)
             sentiment_median = round(df["sentiment"].median(), 4)
