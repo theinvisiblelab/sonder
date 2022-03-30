@@ -212,9 +212,10 @@ if query != "":
             )
 
             # DEMO
-            if query in ["climate change"]:
-                n_top_demo = st.slider("Results viewed", 0, df_size, (0, 0))
+            # if query in ["climate change"]:
+            #     n_top_demo = st.slider("Results viewed", 0, df_size, (0, 0))
 
+            # scatter plot
             plot_corr = (
                 alt.Chart(df[df["sentiment"].notna()])
                 .mark_circle(size=150, opacity=0.8)
