@@ -55,7 +55,7 @@ st.sidebar.info("[Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)")
 
 # Balance
 if navigate_sidebar == "🎈 Home":
-    exec(open("scripts/balance.py").read())
+    exec(open("scripts/old/balance.py").read())
 
 # Metrics
 if navigate_sidebar == "🚲 Demo":
