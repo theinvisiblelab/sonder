@@ -27,42 +27,21 @@ st.write("&nbsp;")
 with st.expander("Equations"):
     st.latex(
         r"""
-    K_{visibility} =\int_{R_n} min\left[ f_n(x), f_N(x)\right] \,dx"""
+    I_{visibility} =\int_{R_n} min\left[ f_n(x), f_N(x)\right] \,dx"""
     )
     st.latex(
         r"""
-    K_{efficiency} = \int_{n=1}^{N} \int_{R_n} min\left[ f_n(x), f_N(x)\right] \,dx \,dn"""
+    I_{efficiency} = \int_{n=1}^{N} \int_{R_n} min\left[ f_n(x), f_N(x)\right] \,dx \,dn"""
     )
 
 case = st.radio(
     "Choose case",
-    [
-        "Case 1",
-        "Case 2",
-        "Case 3",
-    ],
+    ["Polarized Results", "Random Results"],
     0,
 )
 
-if case == "Case 3":
-    # case 1 (most extreme)
-    df_1 = pd.DataFrame(
-        [-1 for i in range(100)],
-        columns=["sentiment"],
-    )
-    df_2 = pd.DataFrame(
-        [1 for i in range(100)],
-        columns=["sentiment"],
-    )
-    df = pd.concat([df_1, df_2])
-elif case == "Case 2":
-    # case 2 (extreme)
-    df = pd.DataFrame(
-        [(random.random() * 2) - 1 for i in range(200)],
-        columns=["sentiment"],
-    ).sort_values("sentiment")
-elif case == "Case 1":
-    # case 2 (less extreme)
+if case == "Polarized Results":
+    # case 1 (extreme)
     df_1 = pd.DataFrame(
         [random.random() - 1 for i in range(100)],
         columns=["sentiment"],
@@ -72,7 +51,12 @@ elif case == "Case 1":
         columns=["sentiment"],
     )
     df = pd.concat([df_1, df_2])
-
+elif case == "Random Results":
+    # case 2 (random)
+    df = pd.DataFrame(
+        [(random.random() * 2) - 1 for i in range(200)],
+        columns=["sentiment"],
+    )
 
 # rank and size
 df["rank"] = df.reset_index().index + 1

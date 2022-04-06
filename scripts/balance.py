@@ -20,6 +20,7 @@ import altair as alt
 
 from transformers import pipeline
 
+
 @st.cache(allow_output_mutation=True, show_spinner=False)
 def fetch_data(query):
     post_data = dict()
@@ -86,6 +87,7 @@ def remove_prefix(text, prefix="www."):
         return text[len(prefix) :]
     return text
 
+
 #############
 ## CONTENT ##
 #############
@@ -145,8 +147,8 @@ if query != "":
         df_size = len(df.index)
 
 
-dimension = col_b.selectbox('', ('🗣️ Sentiment', 'Readability'))
-n_results = col_b.slider('', 0, df_size, 0)
+dimension = col_b.selectbox("", ("🗣️ Sentiment", "Readability"))
+n_results = col_b.slider("", 0, df_size, 0)
 
 st.markdown("&nbsp;")
 
@@ -355,4 +357,3 @@ if query != "":
                 st.altair_chart(plot_vis_continuous, use_container_width=True)
 
             st.markdown("&nbsp;")
-
