@@ -96,6 +96,48 @@ df %>% glimpse()
 
 
 ```{r, eval=F}
+# check the same data
+df_seth <- 
+  read_csv(here::here("data/space_flights/space_flight_raw_data_v1.csv")) %>% 
+  mutate(domain = str_replace(domain, "^www.", ""))
+
+df_seth %>% count(county)
+
+
+df_wajeeha <-
+  read_csv(here::here("data/newsguard_data.csv")) %>% 
+  clean_names() %>%
+  transmute(
+    domain = str_replace(domain, "^www.", ""),
+    parent_domain = str_replace(parent_domain, "^www.", ""),
+    score
+  )
+
+df_wajeeha %>% drop_na(score) %>% glimpse()
+
+df_wajeeha_clean <-
+  bind_rows(
+    df_wajeeha %>% distinct(domain, score) %>% drop_na(domain),
+    df_wajeeha %>% distinct(parent_domain, score) %>% drop_na(parent_domain) %>% rename(domain = parent_domain)
+  ) %>% 
+  drop_na(score) %>% 
+  distinct(domain, .keep_all = T)
+
+
+# joins
+df_seth %>%
+  left_join(df_wajeeha_clean, by = "domain") %>% 
+  relocate(county, score) %>% 
+  mutate(score = if_else(is.na(score), 100, score)) %>% 
+  write_csv(here::here("data/misinformation_dashboard.csv"))
+
+  
+
+200/365
+```
+
+
+```{r, eval=F}
 # df_sentiment <-
 #   df %>% 
 #   transmute(

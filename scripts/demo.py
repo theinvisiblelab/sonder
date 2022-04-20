@@ -27,16 +27,16 @@ st.write("&nbsp;")
 with st.expander("Equations"):
     st.latex(
         r"""
-    I_{visibility} =\int_{R_n} min\left[ f_n(x), f_N(x)\right] \,dx"""
+    V_{q,d} =\int_{R_n, q} min\left[ f_n(d), f_N(d)\right] \,\mathrm{d}d"""
     )
     st.latex(
         r"""
-    I_{efficiency} = \int_{n=1}^{N} \int_{R_n} min\left[ f_n(x), f_N(x)\right] \,dx \,dn"""
+    E_{q,d} = \int_{n=1}^{N} \int_{R_n, q} min\left[ f_n(d), f_N(d)\right] \,\mathrm{d}d \,\mathrm{d}n = \int_{n=1}^{N} V_{q,d} \mathrm{d}n"""
     )
 
 case = st.radio(
     "Choose case",
-    ["Polarized Results", "Random Results"],
+    ["Random Results", "Polarized Results"],
     0,
 )
 
@@ -117,24 +117,45 @@ with col1:
         effic_present = "--"
 
     # df_inv["rank"] = df_inv["rank"] / df_size
-    plot_vis_continuous = (
-        alt.Chart(df_inv)
-        .mark_area(color="#ffd875", line=True, opacity=0.75)
-        .encode(
-            x=alt.X(
-                "rank:Q",
-                title="Search results viewed",
-                scale=alt.Scale(domain=(0, df_size)),
-            ),
-            y=alt.Y(
-                "visibility:Q",
-                title="Visibility",
-                axis=alt.Axis(format="%"),
-                scale=alt.Scale(domain=(0, 1)),
-            ),
-            tooltip=["visibility"],
+    if n_top[1] == 200:
+        plot_vis_continuous = (
+            alt.Chart(df_inv)
+            .mark_area(color="#ffd875", line=True, opacity=0.75)
+            .encode(
+                x=alt.X(
+                    "rank:Q",
+                    title="Search results viewed",
+                    scale=alt.Scale(domain=(0, df_size)),
+                ),
+                y=alt.Y(
+                    "visibility:Q",
+                    title="Visibility",
+                    axis=alt.Axis(format="%"),
+                    scale=alt.Scale(domain=(0, 1)),
+                ),
+                tooltip=["visibility"],
+            )
         )
-    )
+    else:
+        plot_vis_continuous = (
+            alt.Chart(df_inv)
+            .mark_area(color="#ffd875", line=True, opacity=0)
+            .encode(
+                x=alt.X(
+                    "rank:Q",
+                    title="Search results viewed",
+                    scale=alt.Scale(domain=(0, df_size)),
+                ),
+                y=alt.Y(
+                    "visibility:Q",
+                    title="Visibility",
+                    axis=alt.Axis(format="%"),
+                    scale=alt.Scale(domain=(0, 1)),
+                ),
+                tooltip=["visibility"],
+            )
+        )
+
     st.altair_chart(plot_vis_continuous, use_container_width=True)
 
 
