@@ -52,17 +52,21 @@ county_maps <-
   ) %>% 
   left_join(serp_locations, by = "location_name")
 
-df_bezos <- read_parquet(here::here("data/for_seth_bezos.parquet")) %>% rename(location_code = location)
-df_musk <- read_parquet(here::here("data/for_seth_musk.parquet")) %>% rename(location_code = location)
-df_branson <- read_parquet(here::here("data/for_seth_branson.parquet")) %>% rename(location_code = location)
+# df_bezos <- read_parquet(here::here("data/space_flights/for_seth_bezos.parquet")) %>% rename(location_code = location)
+# df_musk <- read_parquet(here::here("data/space_flights/for_seth_musk.parquet")) %>% rename(location_code = location)
+# df_branson <- read_parquet(here::here("data/space_flights/for_seth_branson.parquet")) %>% rename(location_code = location)
+
+# space_flight_raw_data_v2.csv was created via pandas because i coudnt read in the above parquet files in R
 
 df <- 
-  bind_rows("Bezos" = df_bezos, "Musk" = df_musk, "Branson" = df_branson, .id = "id") %>% 
+  #bind_rows("Bezos" = df_bezos, "Musk" = df_musk, "Branson" = df_branson, .id = "id") %>% 
+  read_csv(here::here("data/space_flights/space_flight_raw_data_v2.csv")) %>% 
+  rename(location_code = location) %>% 
   left_join(county_maps, by = "location_code") %>%
-  select(id, query, county = county_full, county_fips, search_rank = rank_group, domain, title, description, url, language, sentiment) %>%
+  select(query, county = county_full, county_fips, search_rank = rank_group, domain, title, description, url, language, sentiment) %>%
   arrange(query, county, search_rank)
 
-df <- bind_cols(df, read_csv(here::here("data/space_flight_sentimentr.csv"))) # check sorting before merge!
+df <- bind_cols(df, read_csv(here::here("data/space_flights/space_flight_sentimentr.csv"))) # check sorting before merge!
 
 df_openintro <-
   read_csv(here::here("data/us_county_openintro.csv")) %>% 
@@ -98,11 +102,10 @@ df %>% glimpse()
 ```{r, eval=F}
 # check the same data
 df_seth <- 
-  read_csv(here::here("data/space_flights/space_flight_raw_data_v1.csv")) %>% 
+  df %>%  # this might as well be "space_flight_raw_data_v1.csv"
   mutate(domain = str_replace(domain, "^www.", ""))
 
-df_seth %>% count(county)
-
+rm(df)
 
 df_wajeeha <-
   read_csv(here::here("data/newsguard_data.csv")) %>% 
@@ -125,15 +128,11 @@ df_wajeeha_clean <-
 
 
 # joins
-df_seth %>%
-  left_join(df_wajeeha_clean, by = "domain") %>% 
-  relocate(county, score) %>% 
-  mutate(score = if_else(is.na(score), 100, score)) %>% 
+df_seth %>% 
+  left_join(df_wajeeha_clean, by = "domain") %>%
+  mutate(score = if_else(is.na(score), 0, score)) %>% 
+  select(id = county_fips, county, domain, score) %>% 
   write_csv(here::here("data/misinformation_dashboard.csv"))
-
-  
-
-200/365
 ```
 
 
