@@ -22,7 +22,7 @@ def draw_bar(df_summary):
     st.altair_chart(plot_summary, use_container_width=True)
 
 
-st.write("## 🎬 Dashboard")
+st.write("## 🔬 Misinformation Dashboard")
 st.write("&nbsp;")
 
 counties = alt.topo_feature(data.us_10m.url, 'counties')
@@ -48,14 +48,14 @@ us_map = alt.Chart(counties).mark_geoshape().encode(
 ).project(
     type='albersUsa'
 ).properties(
-    width=1200,
-    height=600
+    width=1600,
+    height=900
 ).configure_mark(
     strokeOpacity=0,
     strokeWidth=0,
   )
 
-st.write("## Nationwide Trust Scores")
+st.write("### Nationwide Trust Scores")
 st.write("_Updated: 04-21-2022_")
 st.write("&nbsp;")
 
@@ -66,7 +66,7 @@ county_list.insert(0, "")
 
 st.write("&nbsp;")
 
-st.write("## County-level Statistics")
+st.write("### County-level Statistics")
 st.write("&nbsp;")
 
 county = st.selectbox("Choose a county", county_list)
@@ -80,9 +80,9 @@ if county != "":
     col_a, col_b = st.columns([1.618, 1])
     
     with col_a:
-        st.write("### Low Trust Sites")
+        st.write("#### Low Trust Sites")
         draw_bar(df_temp[['Website', 'Trust Score']])
 
     with col_b:
-        st.write("### Overall Trust Score")
-        st.metric(label="", value = str(round(df_temp['Trust Score'].mean(), 2)) + "/100")
+        st.write("#### Overall Trust Score")
+        st.metric(label="", value = str(round(df_temp['Trust Score'].mean(), 2)) + "/100", delta="15.14")

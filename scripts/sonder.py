@@ -32,7 +32,7 @@ navigate_sidebar = st.sidebar.radio(
     [
         "🎈 Home",
         "🚲 Demo",
-        "🎬 Dashboard",
+        "🔬 Dashboard",
         "🔧 Learn more",
     ],
     0,
@@ -63,7 +63,7 @@ if navigate_sidebar == "🚲 Demo":
     exec(open("scripts/demo.py").read())
 
 # Misinformation dashboard
-if navigate_sidebar == "🎬 Dashboard":
+if navigate_sidebar == "🔬 Dashboard":
     exec(open("scripts/dashboard.py").read())
 
 # About Us

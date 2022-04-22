@@ -110,7 +110,7 @@ rm(df)
 df_wajeeha <-
   read_csv(here::here("data/newsguard_data.csv")) %>% 
   clean_names() %>%
-  transmute(
+  mutate(
     domain = str_replace(domain, "^www.", ""),
     parent_domain = str_replace(parent_domain, "^www.", ""),
     score
@@ -187,6 +187,27 @@ bind_cols(
   ) %>% 
   select(domain, n, bias_label, bias_rating) %>% count(bias_label)
   #writexl::write_xlsx(here::here("data/space_flights/space_flight_data_domains_v2.xlsx"))
+```
+
+
+```{r, eval=F}
+readxl::read_excel(here::here("data/space_flights/space_flight_data_domains_v2.xlsx")) %>% 
+  select(1:3) %>% 
+  remove_empty() %>% 
+  left_join(df_wajeeha %>% distinct(domain, .keep_all = T), by = "domain") %>% 
+  mutate(
+    orientation = case_when(
+      orientation == "N/A" ~ "N",
+      orientation == "Far Left" ~ "L",
+      orientation == "Slightly Left" ~ "LC",
+      orientation == "Far Right" ~ "R",
+      orientation == "Slightly Right" ~ "RC",
+      TRUE ~ NA_character_
+    ),
+    bias_label = if_else(is.na(bias_label), orientation, bias_label)
+  ) %>% 
+  select(1:3) %>% 
+  writexl::write_xlsx(here::here("data/space_flights/space_flight_data_domains_v2.xlsx"))
 ```
 
 
