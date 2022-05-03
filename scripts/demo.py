@@ -24,7 +24,7 @@ def overlap_calc(df, i):
 st.write("## 🚲 demo")
 st.write("&nbsp;")
 
-with st.expander("Equations"):
+with st.expander("Equations", expanded = True):
     st.latex(
         r"""
     V_{q,d} =\int_{R_n, q} min\left[ f_n(d), f_N(d)\right] \,\mathrm{d}d"""
@@ -36,7 +36,7 @@ with st.expander("Equations"):
 
 case = st.radio(
     "Choose case",
-    ["Random Results", "Polarized Results"],
+    ["Polarized Results", "Random Results"],
     0,
 )
 
@@ -187,5 +187,5 @@ with col2:
     )
     st.altair_chart(plot_dist_all, use_container_width=True)
 
-    st.metric(label="Visibility", value=str(vis_present) + "%")
-    st.metric(label="Efficiency", value=str(effic_present) + "%")
+    st.metric(label="Visibility (V_q,d)", value=str(vis_present) + "%")
+    st.metric(label="Efficiency (E_q,d)", value=str(effic_present) + "%")

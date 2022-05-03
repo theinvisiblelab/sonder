@@ -35,7 +35,7 @@ navigate_sidebar = st.sidebar.radio(
         "🔬 Dashboard",
         "🔧 Learn more",
     ],
-    0,
+    1,
 )
 st.sidebar.markdown("---")
 
@@ -46,7 +46,7 @@ st.sidebar.info(
 
 st.sidebar.markdown("**🏅 Awards**")
 st.sidebar.info(
-    "🏆 Design Challenge Research Award, Stanford University \n\n 🏆 Karr Fellowship, Stanford University \n\n 🏆 Digital Learning Design Challenge Grant, Stanford University"
+    "🏆 Stanford Data Science Scholarship \n\n 🏆 Design Challenge Research Award, Stanford University \n\n 🏆 Karr Fellowship, Stanford University \n\n 🏆 Digital Learning Design Challenge Grant, Stanford University"
 )
 
 st.sidebar.markdown("**👾 Maitainer**")
