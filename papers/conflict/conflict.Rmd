@@ -1,0 +1,50 @@
+---
+title: "Conflict"
+author: "Saurabh Khanna"
+date: "Updated: `r format(Sys.Date(), format='%B %d %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 5
+---
+
+---
+
+```{r setup, include=FALSE}
+# knitr options
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+
+```{r message=FALSE, warning=FALSE, fig.retina=4}
+# Libraries
+pacman::p_load(tidyverse, countrycode, sf, state, htmltools, htmlwidgets, janitor, RColorBrewer, ussf, arrow, hrbrthemes, lubridate, estimatr, texreg, readxl, corrr, multidplyr)
+```
+
+```{r}
+read_csv("conflict_queries_eng.csv") %>%
+  arrange(date, country, query_eng) %>% 
+  select(date, country, query_eng) %>% 
+  mutate(query_eng = str_to_lower(query_eng)) %>% 
+  filter(str_detect(query_eng, "russia"), country == "ukraine") %>% 
+  ggplot(aes(date)) +
+  geom_bar() +
+  coord_flip()
+
+read_csv("conflict_queries_eng.csv") %>% 
+  arrange(date, country, query_eng) %>% 
+  select(date, country, query_eng) %>% 
+  mutate(query_eng = str_to_lower(query_eng)) %>% 
+  filter(str_detect(query_eng, "ukraine"), country == "russia") %>% 
+  ggplot(aes(date)) +
+  geom_bar() +
+  coord_flip()
+
+
+read_csv("conflict_queries_eng.csv") %>% 
+  arrange(date, country, query_eng) %>% 
+  select(date, country, query_eng) %>% 
+  distinct()
+```
+
+
