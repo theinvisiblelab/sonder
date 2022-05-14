@@ -35,7 +35,7 @@ read_csv("conflict_queries_eng.csv") %>%
   arrange(date, country, query_eng) %>% 
   select(date, country, query_eng) %>% 
   mutate(query_eng = str_to_lower(query_eng)) %>% 
-  filter(str_detect(query_eng, "ukraine"), country == "russia") %>% 
+  filter(str_detect(query_eng, "ukraine"), country == "russia") %>%
   ggplot(aes(date)) +
   geom_bar() +
   coord_flip()
