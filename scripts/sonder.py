@@ -46,7 +46,7 @@ st.sidebar.info(
 
 st.sidebar.markdown("**🏅 Awards**")
 st.sidebar.info(
-    "🏆 Stanford Data Science Scholarship \n\n 🏆 Design Challenge Research Award, Stanford University \n\n 🏆 Karr Fellowship, Stanford University \n\n 🏆 Digital Learning Design Challenge Grant, Stanford University"
+    "🏆 Stanford Institute for Human-Centered Artificial Intelligence Fellowship \n\n 🏆 Stanford Data Science Scholarship \n\n 🏆 Design Challenge Research Award, Stanford University \n\n 🏆 Karr Fellowship, Stanford University \n\n 🏆 Digital Learning Design Challenge Grant, Stanford University"
 )
 
 st.sidebar.markdown("**👾 Maitainer**")
