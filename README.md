@@ -88,6 +88,8 @@ Details [here](https://raw.githubusercontent.com/sonder-labs/sonder/main/slides_
 
 ## 🏆 Awards
 
+-   Stanford Institute for Human-Centered Artificial Intelligence Fellowship
+-   Stanford Data Science Scholarship
 -   Design Challenge Research Award, Stanford University
 -   Karr Fellowship, Stanford University
 -   Digital Learning Design Challenge Grant, Stanford University
