@@ -10,16 +10,10 @@ from dotenv import load_dotenv
 from client import RestClient
 import os
 
-import rpy2.robjects as ro
-from rpy2.robjects.packages import importr
-
-overlapping = importr("overlapping")
-
 from textblob import TextBlob
 import altair as alt
 
 from transformers import pipeline
-
 
 @st.cache(allow_output_mutation=True, show_spinner=False)
 def fetch_data(query):
@@ -33,54 +27,6 @@ def fetch_data(query):
     df.dropna(subset=["title", "description"], inplace=True)
     return df
 
-
-def subjectivity_calc(text):
-    try:
-        return TextBlob(text).sentiment.subjectivity
-    except:
-        return None
-
-
-def sentiment_calc(text):
-    try:
-        if subjectivity_calc(text) == 0:
-            return 0
-        else:
-            result = classifier(text)[0]
-            if result["label"] == "POSITIVE":
-                return round(result["score"], 4)
-            elif result["label"] == "NEGATIVE":
-                return -result["score"]
-            else:
-                return 0
-    except:
-        return None
-
-
-@st.cache(allow_output_mutation=True, show_spinner=False)
-def sentiment_all(text):
-    try:
-        sent_list = []
-        for sent in tokenize.sent_tokenize(text):
-            sent_list.append(sentiment_calc(sent))
-        return mean(sent_list)
-    except:
-        return None
-
-
-# Calculate distribution overlap
-def overlap_calc(df, n_top=10):
-    if n_top <= 1:
-        return 0
-    else:
-        df = df[df["sentiment"].notna()]
-        v1 = ro.vectors.FloatVector(df["sentiment"])
-        v2 = ro.vectors.FloatVector(df.head(n_top)["sentiment"])
-        ovl = overlapping.overlap([v1, v2])
-        return np.array(ovl.rx("OV"))[0][0]
-    # return 1-ks_2samp(df["sentiment"], df.head(n_top)["sentiment"])[0]
-
-
 # Remove domain prefix
 def remove_prefix(text, prefix="www."):
     if text.startswith(prefix):
@@ -92,7 +38,7 @@ def remove_prefix(text, prefix="www."):
 ## CONTENT ##
 #############
 
-# st.markdown(Path("markdown/bias.md").read_text(), unsafe_allow_html=True)
+
 with st.expander("🎈 Why Sonder?"):
     st.info(
         """
@@ -119,7 +65,7 @@ with st.expander("🎈 Why Sonder?"):
 
 st.markdown("&nbsp;")
 
-st.write("Evaluate invisible information as you search the web in _3 steps_:")
+st.write("Balance relevance and diversity as you search the web in _3 steps_:")
 
 col_a, col_b = st.columns([1, 1.618])
 
