@@ -35,7 +35,7 @@ navigate_sidebar = st.sidebar.radio(
         "🔬 Dashboard",
         "🔧 Learn more",
     ],
-    1,
+    0,
 )
 st.sidebar.markdown("---")
 
@@ -56,7 +56,7 @@ st.sidebar.info("[Saurabh Khanna](mailto:saurabhkhanna@stanford.edu)")
 
 # Balance
 if navigate_sidebar == "🎈 Home":
-    exec(open("scripts/old/balance.py").read())
+    exec(open("scripts/balance.py").read())
 
 # Metrics
 if navigate_sidebar == "🚲 Demo":
