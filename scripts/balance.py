@@ -2,18 +2,19 @@
 # from glob import escape
 # from altair.vegalite.v4.schema.channels import Tooltip
 # import socket
+from flask import copy_current_request_context
 import numpy as np
 import pandas as pd
-from statistics import mean
 from dotenv import load_dotenv
 from client import RestClient
 import os
-
 import altair as alt
+from sentence_transformers import SentenceTransformer, util
+from plotnine import *
 
-
-@st.cache(allow_output_mutation=True, show_spinner=False)
-def fetch_data(query):
+@st.cache(show_spinner=False, suppress_st_warning=True)
+def fetch_data(query, model):
+    st.info("fetch_data running...")
     post_data = dict()
     post_data[len(post_data)] = dict(
         language_code="en", location_code=2840, keyword=query
@@ -22,7 +23,31 @@ def fetch_data(query):
     df = pd.DataFrame(response["tasks"][0]["result"][0]["items"])
     df.rename(columns={"content": "description"}, inplace=True)
     df.dropna(subset=["title", "description"], inplace=True)
-    return df
+    df.drop_duplicates(inplace=True)
+
+    # clean domain
+    df["domain"] = df.apply(lambda row: remove_prefix(str(row["domain"])), axis=1)
+    # merge in pageranks
+    df = df.merge(
+        pd.read_csv(Path("data/opr_top10milliondomains.csv"))[['domain', 'open_page_rank']], 
+        on=["domain"], how="left"
+    )
+    df['open_page_rank'] = df['open_page_rank'].fillna(0)
+    
+    # all text for embeddings
+    df["all_text"] = df["title"] + ". " + df["description"]
+    
+    query_embedding = model.encode(query)
+    df["result_embedding"] = df.apply(lambda row: model.encode(row["all_text"]), axis=1)
+    corpus_embedding = np.average(df["result_embedding"], weights=df["open_page_rank"])
+    
+    df["relevance"] = df.apply(lambda row: util.cos_sim(row["result_embedding"], query_embedding).item(), axis=1)
+    df["representation"] = df.apply(lambda row: util.cos_sim(row["result_embedding"], corpus_embedding).item(), axis=1)
+    metric = round(util.cos_sim(corpus_embedding, query_embedding).item(), 2)
+
+    df = df[["url", "title", "description", "relevance", "representation"]]
+    
+    return (df, metric)
 
 
 # Remove domain prefix
@@ -30,6 +55,11 @@ def remove_prefix(text, prefix="www."):
     if text.startswith(prefix):
         return text[len(prefix) :]
     return text
+
+@st.cache(allow_output_mutation=True, show_spinner=False, suppress_st_warning=True)
+def load_model():
+    st.info("load_model running...")
+    return SentenceTransformer('all-MiniLM-L6-v2')
 
 
 #############
@@ -63,41 +93,49 @@ with st.expander("🎈 Why Sonder?"):
 
 st.markdown("&nbsp;")
 
-col_a, col_b = st.columns([1, 1.618])
+# col_a, col_b = st.columns([1, 1.618])
 
-col_a.write("&nbsp;")
-col_a.write("1. Pick search query")
-col_a.write("&nbsp;")
-col_a.write("2. Balance relevance and representation")
+# st.write("&nbsp;")
+# st.write("1. Pick search query")
+# st.write("&nbsp;")
+# st.write("2. Balance relevance and representation")
 
-query = col_b.text_input("").lower().strip()
+query = st.text_input("1. Pick search query").lower().strip()
 
-if query != "":
-    with st.spinner("Assessing visibility for your knowledge search..."):
-        load_dotenv()
-        client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
-        # demo
-        if query in ["climate change"]:
-            df = pd.read_csv(Path("demo/" + query + ".csv"))
-        # default
-        else:
-            df = fetch_data(query)
-            df["search_rank"] = df.reset_index().index + 1
-        df_size = len(df.index)
-
-
-lamda = col_b.slider("", min_value = 0.0, max_value = 1.0, value = 0.5)
+lamda = st.slider("2. Balance relevance and representation", min_value = 0.0, max_value = 1.0, value = 0.5)
 
 st.markdown("&nbsp;")
 
 if query != "":
+    
+    with st.spinner("Fetching your search results..."):
+        
+        model = load_model()
+        
+        load_dotenv()
+        client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
+        
+        # demo
+        if query in ["climate change"]:
+            df = pd.read_csv(Path("demo/" + query + ".csv"))
+            metric = 0.5
+        # default
+        else:
+            response = fetch_data(query, model)
+            df = response[0]
+            metric = response[1]
 
-    col1, col2 = st.columns([1, 1])
+    col2, col1 = st.columns([1, 1])
+    df_print = df.copy()
+    
+    df_print["final_score"] = (1 - lamda) * df_print["relevance"] + lamda * df_print["representation"]
+    df_print = df_print.sort_values("final_score", ascending=False)
+    df_print["final_rank"] = df_print.reset_index().index + 1
 
     with col1:
         st.markdown("### Search results")
         st.markdown("---")
-        for index, row in df.iterrows():
+        for index, row in df_print.iterrows():
             with st.container():
                 if row["description"] == row["description"]:
                     st.markdown(
@@ -116,7 +154,19 @@ if query != "":
                     )
                 st.markdown("---")
 
-    col2.markdown("### Visibility")
+    col2.markdown("### Metrics")
     col2.markdown("---")
 
-    
+    with col2:
+        st.metric("Distance", metric)
+        
+        p1 = ggplot(df_print, aes("final_rank", "relevance")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Relevance")
+        st.pyplot(ggplot.draw(p1))
+
+        p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Representation")
+        st.pyplot(ggplot.draw(p2))
+
+    # st.markdown("---")
+    # st.dataframe(df)
+
+# How much more time?
