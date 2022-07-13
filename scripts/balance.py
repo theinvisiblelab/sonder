@@ -14,7 +14,7 @@ from plotnine import *
 
 @st.cache(show_spinner=False, suppress_st_warning=True)
 def fetch_data(query, model):
-    st.info("fetch_data running...")
+    # st.info("fetch_data running...")
     post_data = dict()
     post_data[len(post_data)] = dict(
         language_code="en", location_code=2840, keyword=query
@@ -58,7 +58,7 @@ def remove_prefix(text, prefix="www."):
 
 @st.cache(allow_output_mutation=True, show_spinner=False, suppress_st_warning=True)
 def load_model():
-    st.info("load_model running...")
+    # st.info("load_model running...")
     return SentenceTransformer('all-MiniLM-L6-v2')
 
 
@@ -77,14 +77,9 @@ with st.expander("🎈 Why Sonder?"):
     )
     st.markdown(
         """
-    Internet search shows you what you consume. Sonder shows you what you miss out on. We assess the opportunity cost of internet search.
+    Internet search shows you what you consume. Sonder shows you what you miss out on by balancing relevance and representation.
 
     Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~representation~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
-
-    We are working along two dimensions (view 👈 sidebar):
-
-    + ⚖️ *Balance*: Assess invisible knowledge as you search the web. Balance relevance with diversity.
-    + 📣 *Trends*: Highlight fairness in web, news, wiki, and social media trends.
 
     &nbsp;
     """
@@ -100,14 +95,83 @@ st.markdown("&nbsp;")
 # st.write("&nbsp;")
 # st.write("2. Balance relevance and representation")
 
-query = st.text_input("1. Pick search query").lower().strip()
+query = st.text_input("Pick search query").lower().strip()
 
-lamda = st.slider("2. Balance relevance and representation", min_value = 0.0, max_value = 1.0, value = 0.5)
+choice = st.radio(
+    "",
+    [
+        "🔦 Default result order",
+        "⚖️ Balance relevance and representation",
+    ],
+    0,
+)
 
-st.markdown("&nbsp;")
-
-if query != "":
+if query != "" and choice == "🔦 Default result order":
     
+    st.markdown("&nbsp;")
+    
+    with st.spinner("Fetching your search results..."):
+        
+        model = load_model()
+        
+        load_dotenv()
+        client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
+        
+        # demo
+        if query in ["climate change"]:
+            df = pd.read_csv(Path("demo/" + query + ".csv"))
+            metric = 0.5
+        # default
+        else:
+            response = fetch_data(query, model)
+            df = response[0]
+            metric = response[1]
+
+    col2, col1 = st.columns([1, 1])
+    df_print = df.copy()
+    
+    # df_print["final_score"] = (1 - lamda) * df_print["relevance"] + lamda * df_print["representation"]
+    # df_print = df_print.sort_values("final_score", ascending=False)
+    df_print["final_rank"] = df_print.reset_index().index + 1
+
+    with col1:
+        st.markdown("### Search results")
+        st.markdown("---")
+        for index, row in df_print.iterrows():
+            with st.container():
+                if row["description"] == row["description"]:
+                    st.markdown(
+                        "> "
+                        + row["url"]
+                        + "<br/><br/><i>"
+                        + row["title"]
+                        + ".</i> "
+                        + row["description"],
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.markdown(
+                        "> " + row["url"] + "<br/><br/>" + row["title"],
+                        unsafe_allow_html=True,
+                    )
+                st.markdown("---")
+
+    col2.markdown("### Metrics")
+    col2.markdown("---")
+
+    with col2:
+        st.metric("Distance", metric)
+        
+        p1 = ggplot(df_print, aes("final_rank", "relevance")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Relevance")
+        st.pyplot(ggplot.draw(p1))
+
+        p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Representation")
+        st.pyplot(ggplot.draw(p2))
+
+if query != "" and choice == "⚖️ Balance relevance and representation":
+    
+    lamda = st.slider("2. Balance relevance and representation", min_value = 0.0, max_value = 1.0, value = 0.5)
+
     with st.spinner("Fetching your search results..."):
         
         model = load_model()
@@ -165,8 +229,3 @@ if query != "":
 
         p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Representation")
         st.pyplot(ggplot.draw(p2))
-
-    # st.markdown("---")
-    # st.dataframe(df)
-
-# How much more time?
