@@ -118,7 +118,7 @@ if query != "" and choice == "🔦 Default result order":
         client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
         
         # demo
-        if query in ["climate change"]:
+        if query in ["climate changez"]:
             df = pd.read_csv(Path("demo/" + query + ".csv"))
             metric = 0.5
         # default
@@ -133,6 +133,8 @@ if query != "" and choice == "🔦 Default result order":
     # df_print["final_score"] = (1 - lamda) * df_print["relevance"] + lamda * df_print["representation"]
     # df_print = df_print.sort_values("final_score", ascending=False)
     df_print["final_rank"] = df_print.reset_index().index + 1
+    metric_corr_relevance = round(df_print['final_rank'].corr(df_print['relevance']), 2)
+    metric_corr_rep = round(df_print['final_rank'].corr(df_print['representation']), 2)
 
     with col1:
         st.markdown("### Search results")
@@ -160,10 +162,12 @@ if query != "" and choice == "🔦 Default result order":
     col2.markdown("---")
 
     with col2:
-        st.metric("Distance", metric)
+        st.metric("Relevance Correlation", metric_corr_relevance)
         
         p1 = ggplot(df_print, aes("final_rank", "relevance")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Relevance")
         st.pyplot(ggplot.draw(p1))
+
+        st.metric("Representation Correlation", metric_corr_rep)
 
         p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Representation")
         st.pyplot(ggplot.draw(p2))
@@ -180,7 +184,7 @@ if query != "" and choice == "⚖️ Balance relevance and representation":
         client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
         
         # demo
-        if query in ["climate change"]:
+        if query in ["climate changez"]:
             df = pd.read_csv(Path("demo/" + query + ".csv"))
             metric = 0.5
         # default
@@ -195,7 +199,9 @@ if query != "" and choice == "⚖️ Balance relevance and representation":
     df_print["final_score"] = (1 - lamda) * df_print["relevance"] + lamda * df_print["representation"]
     df_print = df_print.sort_values("final_score", ascending=False)
     df_print["final_rank"] = df_print.reset_index().index + 1
-
+    metric_corr_relevance = round(df_print['final_rank'].corr(df_print['relevance']), 2)
+    metric_corr_rep = round(df_print['final_rank'].corr(df_print['representation']), 2)
+    
     with col1:
         st.markdown("### Search results")
         st.markdown("---")
@@ -222,10 +228,13 @@ if query != "" and choice == "⚖️ Balance relevance and representation":
     col2.markdown("---")
 
     with col2:
-        st.metric("Distance", metric)
+        # st.metric("Distance", metric)
+        st.metric("Relevance Correlation", metric_corr_relevance)
         
         p1 = ggplot(df_print, aes("final_rank", "relevance")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Relevance")
         st.pyplot(ggplot.draw(p1))
+
+        st.metric("Representation Correlation", metric_corr_rep)
 
         p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Representation")
         st.pyplot(ggplot.draw(p2))
