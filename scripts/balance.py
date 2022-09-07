@@ -77,9 +77,9 @@ with st.expander("🎈 Why Sonder?"):
     )
     st.markdown(
         """
-    Internet search shows you what you consume. Sonder shows you what you miss out on by balancing relevance and representation.
+    Internet search shows you what you consume. Sonder shows you what you miss out on by balancing relevance and visibility.
 
-    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~representation~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
+    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~visibility~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
 
     &nbsp;
     """
@@ -93,7 +93,7 @@ st.markdown("&nbsp;")
 # st.write("&nbsp;")
 # st.write("1. Pick search query")
 # st.write("&nbsp;")
-# st.write("2. Balance relevance and representation")
+# st.write("2. Balance relevance and visibility")
 
 query = st.text_input("Pick search query").lower().strip()
 
@@ -101,7 +101,7 @@ choice = st.radio(
     "",
     [
         "🔦 Default result order",
-        "⚖️ Balance relevance and representation",
+        "⚖️ Balance relevance and visibility",
     ],
     0,
 )
@@ -148,7 +148,11 @@ if query != "" and choice == "🔦 Default result order":
                         + "<br/><br/><i>"
                         + row["title"]
                         + ".</i> "
-                        + row["description"],
+                        + row["description"]
+                        + "<br/><br/>"
+                        + "Visibility: `"
+                        + str(round(row["representation"], 2))
+                        + "`",
                         unsafe_allow_html=True,
                     )
                 else:
@@ -162,19 +166,19 @@ if query != "" and choice == "🔦 Default result order":
     col2.markdown("---")
 
     with col2:
-        st.metric("Relevance Correlation", metric_corr_relevance)
+        # st.metric("Relevance Correlation", metric_corr_relevance)
         
-        p1 = ggplot(df_print, aes("final_rank", "relevance")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Relevance")
+        p1 = ggplot(df_print, aes("final_rank", "relevance")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Search Result Rank", y = "Relevance")
         st.pyplot(ggplot.draw(p1))
 
-        st.metric("Representation Correlation", metric_corr_rep)
+        # st.metric("Visibility Correlation", metric_corr_rep)
 
-        p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Representation")
+        p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Search Result Rank", y = "Visibility")
         st.pyplot(ggplot.draw(p2))
 
-if query != "" and choice == "⚖️ Balance relevance and representation":
+if query != "" and choice == "⚖️ Balance relevance and visibility":
     
-    lamda = st.slider("2. Balance relevance and representation", min_value = 0.0, max_value = 1.0, value = 0.5)
+    lamda = st.slider("2. Balance relevance and visibility", min_value = 0.0, max_value = 1.0, value = 0.5)
 
     with st.spinner("Fetching your search results..."):
         
@@ -214,7 +218,11 @@ if query != "" and choice == "⚖️ Balance relevance and representation":
                         + "<br/><br/><i>"
                         + row["title"]
                         + ".</i> "
-                        + row["description"],
+                        + row["description"]
+                        + "<br/><br/>"
+                        + "Visibility: `"
+                        + str(round(row["representation"], 2))
+                        + "`",
                         unsafe_allow_html=True,
                     )
                 else:
@@ -229,12 +237,12 @@ if query != "" and choice == "⚖️ Balance relevance and representation":
 
     with col2:
         # st.metric("Distance", metric)
-        st.metric("Relevance Correlation", metric_corr_relevance)
+        # st.metric("Relevance Correlation", metric_corr_relevance)
         
-        p1 = ggplot(df_print, aes("final_rank", "relevance")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Relevance")
+        p1 = ggplot(df_print, aes("final_rank", "relevance")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Search Result Rank", y = "Relevance")
         st.pyplot(ggplot.draw(p1))
 
-        st.metric("Representation Correlation", metric_corr_rep)
+        # st.metric("Visibility Correlation", metric_corr_rep)
 
-        p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Rank", y = "Representation")
+        p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Search Result Rank", y = "Visibility")
         st.pyplot(ggplot.draw(p2))
