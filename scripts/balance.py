@@ -12,6 +12,7 @@ import altair as alt
 from sentence_transformers import SentenceTransformer, util
 from plotnine import *
 
+
 @st.cache(show_spinner=False, suppress_st_warning=True)
 def fetch_data(query, model):
     # st.info("fetch_data running...")
@@ -29,24 +30,33 @@ def fetch_data(query, model):
     df["domain"] = df.apply(lambda row: remove_prefix(str(row["domain"])), axis=1)
     # merge in pageranks
     df = df.merge(
-        pd.read_csv(Path("data/opr_top10milliondomains.csv"))[['domain', 'open_page_rank']], 
-        on=["domain"], how="left"
+        pd.read_csv(Path("data/opr_top10milliondomains.csv"))[
+            ["domain", "open_page_rank"]
+        ],
+        on=["domain"],
+        how="left",
     )
-    df['open_page_rank'] = df['open_page_rank'].fillna(0)
-    
+    df["open_page_rank"] = df["open_page_rank"].fillna(0)
+
     # all text for embeddings
     df["all_text"] = df["title"] + ". " + df["description"]
-    
+
     query_embedding = model.encode(query)
     df["result_embedding"] = df.apply(lambda row: model.encode(row["all_text"]), axis=1)
     corpus_embedding = np.average(df["result_embedding"], weights=df["open_page_rank"])
-    
-    df["relevance"] = df.apply(lambda row: util.cos_sim(row["result_embedding"], query_embedding).item(), axis=1)
-    df["representation"] = df.apply(lambda row: util.cos_sim(row["result_embedding"], corpus_embedding).item(), axis=1)
+
+    df["relevance"] = df.apply(
+        lambda row: util.cos_sim(row["result_embedding"], query_embedding).item(),
+        axis=1,
+    )
+    df["representation"] = df.apply(
+        lambda row: util.cos_sim(row["result_embedding"], corpus_embedding).item(),
+        axis=1,
+    )
     metric = round(util.cos_sim(corpus_embedding, query_embedding).item(), 2)
 
     df = df[["url", "title", "description", "relevance", "representation"]]
-    
+
     return (df, metric)
 
 
@@ -56,10 +66,11 @@ def remove_prefix(text, prefix="www."):
         return text[len(prefix) :]
     return text
 
+
 @st.cache(allow_output_mutation=True, show_spinner=False, suppress_st_warning=True)
 def load_model():
     # st.info("load_model running...")
-    return SentenceTransformer('all-MiniLM-L6-v2')
+    return SentenceTransformer("all-MiniLM-L6-v2")
 
 
 #############
@@ -107,16 +118,16 @@ choice = st.radio(
 )
 
 if query != "" and choice == "🔦 Default result order":
-    
+
     st.markdown("&nbsp;")
-    
+
     with st.spinner("Fetching your search results..."):
-        
+
         model = load_model()
-        
+
         load_dotenv()
         client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
-        
+
         # demo
         if query in ["climate changez"]:
             df = pd.read_csv(Path("demo/" + query + ".csv"))
@@ -129,12 +140,12 @@ if query != "" and choice == "🔦 Default result order":
 
     col2, col1 = st.columns([1, 1])
     df_print = df.copy()
-    
+
     # df_print["final_score"] = (1 - lamda) * df_print["relevance"] + lamda * df_print["representation"]
     # df_print = df_print.sort_values("final_score", ascending=False)
     df_print["final_rank"] = df_print.reset_index().index + 1
-    metric_corr_relevance = round(df_print['final_rank'].corr(df_print['relevance']), 2)
-    metric_corr_rep = round(df_print['final_rank'].corr(df_print['representation']), 2)
+    metric_corr_relevance = round(df_print["final_rank"].corr(df_print["relevance"]), 2)
+    metric_corr_rep = round(df_print["final_rank"].corr(df_print["representation"]), 2)
 
     with col1:
         st.markdown("### Search results")
@@ -167,26 +178,40 @@ if query != "" and choice == "🔦 Default result order":
 
     with col2:
         # st.metric("Relevance Correlation", metric_corr_relevance)
-        
-        p1 = ggplot(df_print, aes("final_rank", "relevance")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Search Result Rank", y = "Relevance")
+
+        p1 = (
+            ggplot(df_print, aes("final_rank", "relevance"))
+            + geom_point()
+            + geom_smooth()
+            + theme_xkcd()
+            + labs(x="Search Result Rank", y="Relevance")
+        )
         st.pyplot(ggplot.draw(p1))
 
         # st.metric("Visibility Correlation", metric_corr_rep)
 
-        p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Search Result Rank", y = "Visibility")
+        p2 = (
+            ggplot(df_print, aes("final_rank", "representation"))
+            + geom_point()
+            + geom_smooth()
+            + theme_xkcd()
+            + labs(x="Search Result Rank", y="Visibility")
+        )
         st.pyplot(ggplot.draw(p2))
 
 if query != "" and choice == "⚖️ Balance relevance and visibility":
-    
-    lamda = st.slider("2. Balance relevance and visibility", min_value = 0.0, max_value = 1.0, value = 0.5)
+
+    lamda = st.slider(
+        "2. Balance relevance and visibility", min_value=0.0, max_value=1.0, value=0.5
+    )
 
     with st.spinner("Fetching your search results..."):
-        
+
         model = load_model()
-        
+
         load_dotenv()
         client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
-        
+
         # demo
         if query in ["climate changez"]:
             df = pd.read_csv(Path("demo/" + query + ".csv"))
@@ -199,13 +224,15 @@ if query != "" and choice == "⚖️ Balance relevance and visibility":
 
     col2, col1 = st.columns([1, 1])
     df_print = df.copy()
-    
-    df_print["final_score"] = (1 - lamda) * df_print["relevance"] + lamda * df_print["representation"]
+
+    df_print["final_score"] = (1 - lamda) * df_print["relevance"] + lamda * df_print[
+        "representation"
+    ]
     df_print = df_print.sort_values("final_score", ascending=False)
     df_print["final_rank"] = df_print.reset_index().index + 1
-    metric_corr_relevance = round(df_print['final_rank'].corr(df_print['relevance']), 2)
-    metric_corr_rep = round(df_print['final_rank'].corr(df_print['representation']), 2)
-    
+    metric_corr_relevance = round(df_print["final_rank"].corr(df_print["relevance"]), 2)
+    metric_corr_rep = round(df_print["final_rank"].corr(df_print["representation"]), 2)
+
     with col1:
         st.markdown("### Search results")
         st.markdown("---")
@@ -238,11 +265,23 @@ if query != "" and choice == "⚖️ Balance relevance and visibility":
     with col2:
         # st.metric("Distance", metric)
         # st.metric("Relevance Correlation", metric_corr_relevance)
-        
-        p1 = ggplot(df_print, aes("final_rank", "relevance")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Search Result Rank", y = "Relevance")
+
+        p1 = (
+            ggplot(df_print, aes("final_rank", "relevance"))
+            + geom_point()
+            + geom_smooth()
+            + theme_xkcd()
+            + labs(x="Search Result Rank", y="Relevance")
+        )
         st.pyplot(ggplot.draw(p1))
 
         # st.metric("Visibility Correlation", metric_corr_rep)
 
-        p2 = ggplot(df_print, aes("final_rank", "representation")) + geom_point() + geom_smooth() + theme_xkcd() + labs(x = "Search Result Rank", y = "Visibility")
+        p2 = (
+            ggplot(df_print, aes("final_rank", "representation"))
+            + geom_point()
+            + geom_smooth()
+            + theme_xkcd()
+            + labs(x="Search Result Rank", y="Visibility")
+        )
         st.pyplot(ggplot.draw(p2))

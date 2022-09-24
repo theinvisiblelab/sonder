@@ -24,7 +24,7 @@ def overlap_calc(df, i):
 st.write("## 🚲 demo")
 st.write("&nbsp;")
 
-with st.expander("Equations", expanded = True):
+with st.expander("Equations", expanded=True):
     st.latex(
         r"""
     V_{q,d} =\int_{R_n, q} min\left[ f_n(d), f_N(d)\right] \,\mathrm{d}d"""

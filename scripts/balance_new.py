@@ -15,6 +15,7 @@ import altair as alt
 
 from transformers import pipeline
 
+
 @st.cache(allow_output_mutation=True, show_spinner=False)
 def fetch_data(query):
     post_data = dict()
@@ -26,6 +27,7 @@ def fetch_data(query):
     df.rename(columns={"content": "description"}, inplace=True)
     df.dropna(subset=["title", "description"], inplace=True)
     return df
+
 
 # Remove domain prefix
 def remove_prefix(text, prefix="www."):
