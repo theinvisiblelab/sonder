@@ -1,5 +1,5 @@
 ---
-title: "Carbon Costs of the Internet"
+title: "The Impact of State-Affiliated Media Outlets on the Online Information Environment"
 #author: "Saurabh Khanna"
 date: "Updated: `r format(Sys.Date(), format='%B %d %Y')`"
 output:
@@ -12,133 +12,181 @@ output:
 
 ```{r setup, include=FALSE}
 # knitr options
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.retina = 4)
 ```
 
 
 ```{r message=FALSE, warning=FALSE, fig.retina=4}
 # Libraries
-pacman::p_load(tidyverse, countrycode, sf, state, htmltools, htmlwidgets, janitor, RColorBrewer, ussf, arrow, hrbrthemes, lubridate, estimatr, texreg, readxl, corrr, multidplyr)
+pacman::p_load(tidyverse, countrycode, sf, state, htmltools, htmlwidgets, janitor, RColorBrewer, ussf, arrow, hrbrthemes, lubridate, estimatr, texreg, readxl, corrr)
+
+options(arrow.skip_nul = TRUE)
 ```
-
-
-```{r, eval=F}
-# read all parquets
-file_list <- list.files(here::here("database/files/"), pattern = glob2rx("trends_02*2022_*.parquet"), full.names = TRUE)
-
-names(file_list) <- fs::path_ext_remove(list.files(here::here("database/files/"), pattern = glob2rx("trends_02*2022_*.parquet")))
-
-df <- map_dfr(file_list, read_parquet)
-
-df
-```
-
-
 
 
 
 ```{r}
 # Load data
 
-shapefile <- read_sf(here::here("data/shapefile/TM_WORLD_BORDERS_SIMPL-0.3.shp"))
+df_yandex <- read_parquet(here::here("data/shared/webconf2023/yandex/yandex_trends_page1.parquet"))
 
-nations <- 
-  read_csv(here::here("data/nations.csv")) %>% 
-  mutate(country = country %>% str_to_lower() %>% str_replace(" ", "_")) %>% 
-  arrange(country, desc(year)) %>% 
-  group_by(country) %>% 
-  slice(1) %>% 
-  left_join(read_csv(here::here("data/press_freedom.csv")), by = "iso3c")
-
-df_ecothreat <-
-  read_xlsx(here::here("data/eco_threat_scores.xlsx"), sheet = "Overall Scores") %>% 
-  remove_empty() %>% 
-  clean_names() %>% 
-  mutate(country = country %>% str_to_lower() %>% str_replace(" ", "_"))
-
-df_internet <-
-  read_csv(here::here("data/internet_users_by_country.csv")) %>% 
-  mutate(country = country %>% str_to_lower() %>% str_replace(" ", "_")) %>% 
-  arrange(desc(internet_users))
-
-
-df <-
-  read_parquet(here::here("database/trends_consolidated.parquet")) %>%
-  mutate(date = date(date)) %>% 
-  left_join(nations, by = "country") %>%
-  select(type, rank_group, query, date, country, weight, is_green, gdp_percap, life_expect, population, birth_rate, neonat_mortal_rate, region, income, rank2021, underlying_sit_score, abuse_score, global_score, progress_rank, rank2020, score2020, zone) %>% 
-  left_join(df_ecothreat, by = "country") %>% 
-  left_join(df_internet, by = "country")
-```
-
-
-```{r}
-## CARBON COST ##
-df_carbon <-
-  df %>%
-  filter(type != "news_search") %>%
-  group_by(date, country, query) %>%
-  mutate(
-    p_open = rank_group ^ (-2.4),
-    p_open = p_open / sum(p_open, na.rm = T),
-    extra_co2_per_result = if_else(is_green == 0, p_open * (0.1584), 0)
-  ) %>% 
-  ungroup() %>% 
-  relocate(date, country, query, p_open, weight, extra_co2_per_result, is_green)
-
-df_carbon_by_country <-
-  df_carbon %>%
-  group_by(date, country, query) %>% 
-  summarize(
-    extra_co2_per_query = sum(extra_co2_per_result, na.rm = T),
-    is_green = mean(is_green, na.rm = T)
-  ) %>% 
-  ungroup() %>%
-  group_by(country) %>%
-  summarize(
-    extra_co2_per_query_by_country = mean(extra_co2_per_query, na.rm = T),
-    is_green = mean(is_green, na.rm = T),
-  ) %>%
-  ungroup() %>% 
-  arrange(desc(extra_co2_per_query_by_country))
-
-# cor(df_carbon_by_country$is_green, df_carbon_by_country$extra_co2_per_query_by_country)
-
-rm(df, df_carbon)
-```
-
-
-## Descriptives
-
-### CO<sub>2</sub> (in grams) per search query by country
-
-```{r, fig.retina=4, out.width="100%"}
-shapefile %>% 
-  clean_names() %>%
-  rename(country = name) %>%
-  mutate(
-    country = if_else(country == "Viet Nam", "Vietnam", country),
-    country = if_else(str_detect(country, "Korea, Republic of"), "South Korea", country),
-    country = country %>% str_to_lower() %>% str_replace(" ", "_")
-  ) %>%
-  inner_join(
-    df_carbon_by_country, 
-    by = "country"
-  ) %>%
-  ggplot() +
-  geom_sf(aes(fill = extra_co2_per_query_by_country), size = 0.3) +
-  scale_fill_gradientn(
-    colors = RColorBrewer::brewer.pal(n = 9, name = "Reds"),
-  ) +
-  theme_void() +
-  theme(legend.key.width = unit(3, 'cm'), legend.key.height = unit(0.3, 'cm'), legend.position = "bottom") +
-  labs(
-    fill = ""
+df_google <- 
+  bind_rows(
+    read_parquet(here::here("data/shared/webconf2023/russia.parquet")),
+    read_parquet(here::here("data/shared/webconf2023/ukraine.parquet")), 
+    read_parquet(here::here("data/shared/webconf2023/united_kingdom.parquet")),
+    read_parquet(here::here("data/shared/webconf2023/united_states.parquet"))
   )
 ```
 
 
+# Russian State Media
+
+## Yandex Only
+
+```{r}
+df_yandex %>% 
+  mutate(
+    rsm_domain = str_detect(domain, "rt.com|ria.ru|tass.com|tass.ru|lenta.ru|sputnik|tvzvezda.ru|redfish.media|gazeta.ru|ruptly.tv"),
+  ) %>%
+  group_by(date_clean) %>% 
+  summarize(
+    prop_rsm = mean(rsm_domain, na.rm = T)
+  ) %>% 
+  filter(year(date_clean) > 2021) %>% 
+  ggplot(aes(date_clean, prop_rsm)) +
+  geom_smooth(method = "loess", se = T, span = 0.1) +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-04-07")), linetype = "dashed", color = "red") +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-09-05")), linetype = "dashed", color = "red") +
+  scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
+  labs(
+    x = "", y = "% Russian State Media Results on First Results Page"
+  )
+```
+
+## Yandex vs Google Web
+
+```{r}
+bind_rows(
+  "Yandex Web Russia" = df_yandex,
+  "Google Web Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "organic"),
+  "Google Web Ukraine" = df_google %>% filter(country == "ukraine", rank_group <= 14, type == "organic"),
+  "Google Web US" = df_google %>% filter(country == "united_states", rank_group <= 14, type == "organic"),
+  "Google Web UK" = df_google %>% filter(country == "united_kingdom", rank_group <= 14, type == "organic"),
+  .id = "dataset"
+) %>%
+  mutate(
+    rsm_domain = str_detect(domain, "rt.com|ria.ru|tass.com|tass.ru|lenta.ru|sputnik|tvzvezda.ru|redfish.media|gazeta.ru|ruptly.tv"),
+  ) %>%
+  group_by(date_clean, dataset) %>% 
+  summarize(
+    prop_rsm = mean(rsm_domain, na.rm = T)
+  ) %>% 
+  filter(year(date_clean) > 2021) %>% 
+  ggplot(aes(date_clean, prop_rsm)) +
+  geom_smooth(method = "loess", se = F, span = 0.1, aes(color = dataset)) +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-04-07")), linetype = "dashed", color = "red") +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-09-05")), linetype = "dashed", color = "red") +
+  scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
+  labs(
+    x = "", y = "% Russian State Media Results on First Results Page", color = ""
+  )
+```
+
+## Yandex vs Google News
+
+```{r}
+bind_rows(
+  "Yandex Web Russia" = df_yandex,
+  "Google News Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "news_search"),
+  "Google News Ukraine" = df_google %>% filter(country == "ukraine", rank_group <= 14, type == "news_search"),
+  "Google News US" = df_google %>% filter(country == "united_states", rank_group <= 14, type == "news_search"),
+  "Google News UK" = df_google %>% filter(country == "united_kingdom", rank_group <= 14, type == "news_search"),
+  .id = "dataset"
+) %>%
+  mutate(
+    rsm_domain = str_detect(domain, "rt.com|ria.ru|tass.com|tass.ru|lenta.ru|sputnik|tvzvezda.ru|redfish.media|gazeta.ru|ruptly.tv"),
+  ) %>%
+  group_by(date_clean, dataset) %>% 
+  summarize(
+    prop_rsm = mean(rsm_domain, na.rm = T)
+  ) %>% 
+  filter(year(date_clean) > 2021) %>% 
+  ggplot(aes(date_clean, prop_rsm)) +
+  geom_smooth(method = "loess", se = F, span = 0.1, aes(color = dataset)) +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-04-07")), linetype = "dashed", color = "red") +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-09-05")), linetype = "dashed", color = "red") +
+  scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
+  labs(
+    x = "", y = "% Russian State Media Results on First Results Page", color = ""
+  )
+```
 
 
+# Variation with Search Rank
+
+## Google web search
+
+```{r}
+bind_rows(
+  "Google Web Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "organic"),
+  "Google Web Ukraine" = df_google %>% filter(country == "ukraine", rank_group <= 14, type == "organic"),
+  "Google Web US" = df_google %>% filter(country == "united_states", rank_group <= 14, type == "organic"),
+  "Google Web UK" = df_google %>% filter(country == "united_kingdom", rank_group <= 14, type == "organic"),
+  .id = "dataset"
+) %>%
+  mutate(
+    rsm_domain = str_detect(domain, "rt.com|ria.ru|tass.com|tass.ru|lenta.ru|sputnik|tvzvezda.ru|redfish.media|gazeta.ru|ruptly.tv"),
+  ) %>% 
+  group_by(country, rsm_domain) %>% 
+  summarize(mean_result_rank = mean(rank_group, na.rm = T)) %>% 
+  ggplot(aes(country, mean_result_rank)) +
+  geom_col(aes(fill = rsm_domain), position = "dodge", alpha = 0.85) +
+  scale_y_continuous(breaks = scales::breaks_width(1)) +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  labs(
+    x = "", y = "Mean Result Rank", fill = "RSM Domain"
+  )
+```
+
+
+## Google news search
+
+```{r}
+bind_rows(
+  "Google News Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "news_search"),
+  "Google News Ukraine" = df_google %>% filter(country == "ukraine", rank_group <= 14, type == "news_search"),
+  "Google News US" = df_google %>% filter(country == "united_states", rank_group <= 14, type == "news_search"),
+  "Google News UK" = df_google %>% filter(country == "united_kingdom", rank_group <= 14, type == "news_search"),
+  .id = "dataset"
+) %>%
+  mutate(
+    rsm_domain = str_detect(domain, "rt.com|ria.ru|tass.com|tass.ru|lenta.ru|sputnik|tvzvezda.ru|redfish.media|gazeta.ru|ruptly.tv"),
+  ) %>% 
+  group_by(country, rsm_domain) %>% 
+  summarize(mean_result_rank = mean(rank_group, na.rm = T)) %>% 
+  mutate(country = str_replace_all(country, "_", " ") %>% str_to_title()) %>% 
+  ggplot(aes(country, mean_result_rank)) +
+  geom_col(aes(fill = rsm_domain), position = "dodge", alpha = 0.85) +
+  scale_y_continuous(breaks = scales::breaks_width(1)) +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  labs(
+    x = "", y = "Mean Result Rank", fill = "RSM Domain"
+  )
+```
 
 

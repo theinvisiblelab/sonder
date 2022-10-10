@@ -45,19 +45,14 @@ def fetch_data(query, model):
     df["result_embedding"] = df.apply(lambda row: model.encode(row["all_text"]), axis=1)
     corpus_embedding = np.average(df["result_embedding"], weights=df["open_page_rank"])
 
-    df["relevance"] = df.apply(
-        lambda row: util.cos_sim(row["result_embedding"], query_embedding).item(),
-        axis=1,
-    )
     df["representation"] = df.apply(
         lambda row: util.cos_sim(row["result_embedding"], corpus_embedding).item(),
         axis=1,
     )
-    metric = round(util.cos_sim(corpus_embedding, query_embedding).item(), 2)
 
-    df = df[["url", "title", "description", "relevance", "representation"]]
+    df = df[["url", "title", "description", "representation"]]
 
-    return (df, metric)
+    return df
 
 
 # Remove domain prefix
@@ -108,16 +103,7 @@ st.markdown("&nbsp;")
 
 query = st.text_input("Pick search query").lower().strip()
 
-choice = st.radio(
-    "",
-    [
-        "🔦 Default result order",
-        "⚖️ Balance relevance and visibility",
-    ],
-    0,
-)
-
-if query != "" and choice == "🔦 Default result order":
+if query != "":
 
     st.markdown("&nbsp;")
 
@@ -135,17 +121,12 @@ if query != "" and choice == "🔦 Default result order":
         # default
         else:
             response = fetch_data(query, model)
-            df = response[0]
-            metric = response[1]
+            df = response
 
     col2, col1 = st.columns([1, 1])
     df_print = df.copy()
 
-    # df_print["final_score"] = (1 - lamda) * df_print["relevance"] + lamda * df_print["representation"]
-    # df_print = df_print.sort_values("final_score", ascending=False)
     df_print["final_rank"] = df_print.reset_index().index + 1
-    metric_corr_relevance = round(df_print["final_rank"].corr(df_print["relevance"]), 2)
-    metric_corr_rep = round(df_print["final_rank"].corr(df_print["representation"]), 2)
 
     with col1:
         st.markdown("### Search results")
@@ -175,113 +156,3 @@ if query != "" and choice == "🔦 Default result order":
 
     col2.markdown("### Metrics")
     col2.markdown("---")
-
-    with col2:
-        # st.metric("Relevance Correlation", metric_corr_relevance)
-
-        p1 = (
-            ggplot(df_print, aes("final_rank", "relevance"))
-            + geom_point()
-            + geom_smooth()
-            + theme_xkcd()
-            + labs(x="Search Result Rank", y="Relevance")
-        )
-        st.pyplot(ggplot.draw(p1))
-
-        # st.metric("Visibility Correlation", metric_corr_rep)
-
-        p2 = (
-            ggplot(df_print, aes("final_rank", "representation"))
-            + geom_point()
-            + geom_smooth()
-            + theme_xkcd()
-            + labs(x="Search Result Rank", y="Visibility")
-        )
-        st.pyplot(ggplot.draw(p2))
-
-if query != "" and choice == "⚖️ Balance relevance and visibility":
-
-    lamda = st.slider(
-        "2. Balance relevance and visibility", min_value=0.0, max_value=1.0, value=0.5
-    )
-
-    with st.spinner("Fetching your search results..."):
-
-        model = load_model()
-
-        load_dotenv()
-        client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
-
-        # demo
-        if query in ["climate changez"]:
-            df = pd.read_csv(Path("demo/" + query + ".csv"))
-            metric = 0.5
-        # default
-        else:
-            response = fetch_data(query, model)
-            df = response[0]
-            metric = response[1]
-
-    col2, col1 = st.columns([1, 1])
-    df_print = df.copy()
-
-    df_print["final_score"] = (1 - lamda) * df_print["relevance"] + lamda * df_print[
-        "representation"
-    ]
-    df_print = df_print.sort_values("final_score", ascending=False)
-    df_print["final_rank"] = df_print.reset_index().index + 1
-    metric_corr_relevance = round(df_print["final_rank"].corr(df_print["relevance"]), 2)
-    metric_corr_rep = round(df_print["final_rank"].corr(df_print["representation"]), 2)
-
-    with col1:
-        st.markdown("### Search results")
-        st.markdown("---")
-        for index, row in df_print.iterrows():
-            with st.container():
-                if row["description"] == row["description"]:
-                    st.markdown(
-                        "> "
-                        + row["url"]
-                        + "<br/><br/><i>"
-                        + row["title"]
-                        + ".</i> "
-                        + row["description"]
-                        + "<br/><br/>"
-                        + "Visibility: `"
-                        + str(round(row["representation"], 2))
-                        + "`",
-                        unsafe_allow_html=True,
-                    )
-                else:
-                    st.markdown(
-                        "> " + row["url"] + "<br/><br/>" + row["title"],
-                        unsafe_allow_html=True,
-                    )
-                st.markdown("---")
-
-    col2.markdown("### Metrics")
-    col2.markdown("---")
-
-    with col2:
-        # st.metric("Distance", metric)
-        # st.metric("Relevance Correlation", metric_corr_relevance)
-
-        p1 = (
-            ggplot(df_print, aes("final_rank", "relevance"))
-            + geom_point()
-            + geom_smooth()
-            + theme_xkcd()
-            + labs(x="Search Result Rank", y="Relevance")
-        )
-        st.pyplot(ggplot.draw(p1))
-
-        # st.metric("Visibility Correlation", metric_corr_rep)
-
-        p2 = (
-            ggplot(df_print, aes("final_rank", "representation"))
-            + geom_point()
-            + geom_smooth()
-            + theme_xkcd()
-            + labs(x="Search Result Rank", y="Visibility")
-        )
-        st.pyplot(ggplot.draw(p2))
