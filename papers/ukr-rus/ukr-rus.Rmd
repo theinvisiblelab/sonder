@@ -4,21 +4,27 @@ title: "The Impact of State-Affiliated Media Outlets on the Online Information E
 date: "Updated: `r format(Sys.Date(), format='%B %d %Y')`"
 output:
   html_document:
+    df_print: paged
+    code_folding: hide
     toc: true
-    toc_depth: 5
+    toc_depth: 6
+    highlight: haddock
+    theme: journal
+    number_sections: yes
+    toc_float: yes
 ---
 
 ---
 
 ```{r setup, include=FALSE}
 # knitr options
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.retina = 4)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, error = TRUE, fig.retina = 4, out.width = "100%", knitr.duplicate.label = "allow")
 ```
 
 
 ```{r message=FALSE, warning=FALSE, fig.retina=4}
 # Libraries
-pacman::p_load(tidyverse, countrycode, sf, state, htmltools, htmlwidgets, janitor, RColorBrewer, ussf, arrow, hrbrthemes, lubridate, estimatr, texreg, readxl, corrr)
+pacman::p_load(tidyverse, countrycode, sf, state, htmltools, urltools, htmlwidgets, janitor, RColorBrewer, ussf, arrow, hrbrthemes, lubridate, estimatr, texreg, readxl, corrr, wordcloud, tm, topicmodels, ldatuning, lda)
 
 options(arrow.skip_nul = TRUE)
 ```
@@ -30,6 +36,15 @@ options(arrow.skip_nul = TRUE)
 
 df_yandex <- read_parquet(here::here("data/shared/webconf2023/yandex/yandex_trends_page1.parquet"))
 
+df_yandex <-
+  df_yandex %>% 
+  bind_cols(
+    suffix_extract(df_yandex$domain) %>% transmute(domain_clean = domain)
+  ) %>% 
+  mutate(
+    rsm_domain = str_detect(domain_clean, "^rt$|^ria$|^tass$|^lenta$|^sputniknews$|^tvzvezda$|^redfish$|^gazeta$|^ruptly$"),
+  )
+
 df_google <- 
   bind_rows(
     read_parquet(here::here("data/shared/webconf2023/russia.parquet")),
@@ -37,18 +52,42 @@ df_google <-
     read_parquet(here::here("data/shared/webconf2023/united_kingdom.parquet")),
     read_parquet(here::here("data/shared/webconf2023/united_states.parquet"))
   )
+
+# getting domain root
+df_google <-
+  df_google %>% 
+  bind_cols(
+    suffix_extract(df_google$domain) %>% transmute(domain_clean = domain)
+  ) %>% 
+  mutate(
+    rsm_domain = str_detect(domain_clean, "^rt$|^ria$|^tass$|^lenta$|^sputniknews$|^tvzvezda$|^redfish$|^gazeta$|^ruptly$"),
+  )
 ```
 
 
-# Russian State Media
 
-## Yandex Only
+# Friction
+
+## Russian State Media Presence
+
+### Yandex Only
+
+Most popular RSM domains:
 
 ```{r}
 df_yandex %>% 
-  mutate(
-    rsm_domain = str_detect(domain, "rt.com|ria.ru|tass.com|tass.ru|lenta.ru|sputnik|tvzvezda.ru|redfish.media|gazeta.ru|ruptly.tv"),
-  ) %>%
+  filter(rsm_domain) %>% 
+  count(domain) %>% 
+  arrange(-n) %>%
+  mutate(domain = str_c('<a href="http://', domain, '" target="_blank">', domain, '</a>')) %>%
+  DT::datatable(escape = F, options = list(pageLength = 10))
+```
+
+
+Variation with time:
+
+```{r}
+df_yandex %>% 
   group_by(date_clean) %>% 
   summarize(
     prop_rsm = mean(rsm_domain, na.rm = T)
@@ -57,8 +96,6 @@ df_yandex %>%
   ggplot(aes(date_clean, prop_rsm)) +
   geom_smooth(method = "loess", se = T, span = 0.1) +
   geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
-  geom_vline(xintercept = as.POSIXct(as.Date("2022-04-07")), linetype = "dashed", color = "red") +
-  geom_vline(xintercept = as.POSIXct(as.Date("2022-09-05")), linetype = "dashed", color = "red") +
   scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   theme_minimal() +
@@ -68,20 +105,40 @@ df_yandex %>%
   )
 ```
 
-## Yandex vs Google Web
+### Yandex vs Google Web
+
+
+Most popular RSM domains on first web results page by country/search engine are seen below. Negligible results from US/UK as RSM results are down-weighted and hence occur on later pages.
 
 ```{r}
 bind_rows(
-  "Yandex Web Russia" = df_yandex,
+  "Yandex Web" = df_yandex %>% mutate(country = "russia_yandex"),
   "Google Web Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "organic"),
   "Google Web Ukraine" = df_google %>% filter(country == "ukraine", rank_group <= 14, type == "organic"),
   "Google Web US" = df_google %>% filter(country == "united_states", rank_group <= 14, type == "organic"),
   "Google Web UK" = df_google %>% filter(country == "united_kingdom", rank_group <= 14, type == "organic"),
   .id = "dataset"
 ) %>%
-  mutate(
-    rsm_domain = str_detect(domain, "rt.com|ria.ru|tass.com|tass.ru|lenta.ru|sputnik|tvzvezda.ru|redfish.media|gazeta.ru|ruptly.tv"),
-  ) %>%
+  filter(rsm_domain) %>% 
+  tabyl(domain, country) %>% 
+  as_tibble() %>% 
+  arrange(-russia) %>% 
+  transmute(domain = str_c('<a href="http://', domain, '" target="_blank">', domain, '</a>'),
+            russia_google = russia, russia_yandex, ukraine_google = ukraine, uk_google = united_kingdom, us_google = united_states) %>%
+  DT::datatable(escape = F, options = list(pageLength = 10))
+```
+
+Variation with time:
+
+```{r}
+bind_rows(
+  "Yandex Web" = df_yandex,
+  "Google Web Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "organic"),
+  "Google Web Ukraine" = df_google %>% filter(country == "ukraine", rank_group <= 14, type == "organic"),
+  "Google Web US" = df_google %>% filter(country == "united_states", rank_group <= 14, type == "organic"),
+  "Google Web UK" = df_google %>% filter(country == "united_kingdom", rank_group <= 14, type == "organic"),
+  .id = "dataset"
+) %>%
   group_by(date_clean, dataset) %>% 
   summarize(
     prop_rsm = mean(rsm_domain, na.rm = T)
@@ -90,31 +147,52 @@ bind_rows(
   ggplot(aes(date_clean, prop_rsm)) +
   geom_smooth(method = "loess", se = F, span = 0.1, aes(color = dataset)) +
   geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
-  geom_vline(xintercept = as.POSIXct(as.Date("2022-04-07")), linetype = "dashed", color = "red") +
-  geom_vline(xintercept = as.POSIXct(as.Date("2022-09-05")), linetype = "dashed", color = "red") +
   scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
   labs(
-    x = "", y = "% Russian State Media Results on First Results Page", color = ""
+    x = "", y = "% Russian State Media Results on First Page", color = ""
   )
 ```
 
-## Yandex vs Google News
+
+
+
+### Yandex vs Google News
+
+Most popular RSM domains on first news results page by country/search engine are seen below. Negligible results from US/UK as RSM results are down-weighted and hence occur on later pages.
 
 ```{r}
 bind_rows(
-  "Yandex Web Russia" = df_yandex,
+  "Yandex Web" = df_yandex %>% mutate(country = "russia_yandex_web"),
+  "Google Web Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "news_search"),
+  "Google Web Ukraine" = df_google %>% filter(country == "ukraine", rank_group <= 14, type == "news_search"),
+  "Google Web US" = df_google %>% filter(country == "united_states", rank_group <= 14, type == "news_search"),
+  "Google Web UK" = df_google %>% filter(country == "united_kingdom", rank_group <= 14, type == "news_search"),
+  .id = "dataset"
+) %>%
+  filter(rsm_domain) %>% 
+  tabyl(domain, country) %>% 
+  as_tibble() %>% 
+  arrange(-russia) %>% 
+  transmute(domain = str_c('<a href="http://', domain, '" target="_blank">', domain, '</a>'),
+            russia_gnews = russia, russia_yandex_web, ukraine_gnews = ukraine, uk_gnews = united_kingdom, us_gnews = united_states) %>%
+  DT::datatable(escape = F, options = list(pageLength = 10))
+```
+
+
+Variation with time:
+
+```{r}
+bind_rows(
+  "Yandex Web" = df_yandex,
   "Google News Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "news_search"),
   "Google News Ukraine" = df_google %>% filter(country == "ukraine", rank_group <= 14, type == "news_search"),
   "Google News US" = df_google %>% filter(country == "united_states", rank_group <= 14, type == "news_search"),
   "Google News UK" = df_google %>% filter(country == "united_kingdom", rank_group <= 14, type == "news_search"),
   .id = "dataset"
 ) %>%
-  mutate(
-    rsm_domain = str_detect(domain, "rt.com|ria.ru|tass.com|tass.ru|lenta.ru|sputnik|tvzvezda.ru|redfish.media|gazeta.ru|ruptly.tv"),
-  ) %>%
   group_by(date_clean, dataset) %>% 
   summarize(
     prop_rsm = mean(rsm_domain, na.rm = T)
@@ -123,38 +201,37 @@ bind_rows(
   ggplot(aes(date_clean, prop_rsm)) +
   geom_smooth(method = "loess", se = F, span = 0.1, aes(color = dataset)) +
   geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
-  geom_vline(xintercept = as.POSIXct(as.Date("2022-04-07")), linetype = "dashed", color = "red") +
-  geom_vline(xintercept = as.POSIXct(as.Date("2022-09-05")), linetype = "dashed", color = "red") +
   scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
   labs(
-    x = "", y = "% Russian State Media Results on First Results Page", color = ""
+    x = "", y = "% Russian State Media Results on First Page", color = ""
   )
 ```
 
 
-# Variation with Search Rank
+## Variation of RSM Presence with Google Search Rank (Exhausting All Pages)
 
-## Google web search
+### Google web search
+
+Web search upweights RSM in Russia and Ukraine, and downweights RSM in US and UK.
 
 ```{r}
 bind_rows(
-  "Google Web Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "organic"),
-  "Google Web Ukraine" = df_google %>% filter(country == "ukraine", rank_group <= 14, type == "organic"),
-  "Google Web US" = df_google %>% filter(country == "united_states", rank_group <= 14, type == "organic"),
-  "Google Web UK" = df_google %>% filter(country == "united_kingdom", rank_group <= 14, type == "organic"),
+  "Google Web Russia" = df_google %>% filter(country == "russia", type == "organic"),
+  "Google Web Ukraine" = df_google %>% filter(country == "ukraine", type == "organic"),
+  "Google Web US" = df_google %>% filter(country == "united_states", type == "organic"),
+  "Google Web UK" = df_google %>% filter(country == "united_kingdom", type == "organic"),
   .id = "dataset"
 ) %>%
-  mutate(
-    rsm_domain = str_detect(domain, "rt.com|ria.ru|tass.com|tass.ru|lenta.ru|sputnik|tvzvezda.ru|redfish.media|gazeta.ru|ruptly.tv"),
-  ) %>% 
+  drop_na(domain_clean) %>% 
   group_by(country, rsm_domain) %>% 
   summarize(mean_result_rank = mean(rank_group, na.rm = T)) %>% 
+  mutate(country = str_replace_all(country, "_", " ") %>% str_to_title()) %>%
   ggplot(aes(country, mean_result_rank)) +
   geom_col(aes(fill = rsm_domain), position = "dodge", alpha = 0.85) +
-  scale_y_continuous(breaks = scales::breaks_width(1)) +
+  scale_y_continuous(breaks = scales::breaks_width(10)) +
   scale_fill_brewer(palette = "Set1") +
   theme_minimal() +
   labs(
@@ -163,25 +240,25 @@ bind_rows(
 ```
 
 
-## Google news search
+### Google news search
+
+No such relative weighting patterns visible across nations.
 
 ```{r}
 bind_rows(
-  "Google News Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "news_search"),
-  "Google News Ukraine" = df_google %>% filter(country == "ukraine", rank_group <= 14, type == "news_search"),
-  "Google News US" = df_google %>% filter(country == "united_states", rank_group <= 14, type == "news_search"),
-  "Google News UK" = df_google %>% filter(country == "united_kingdom", rank_group <= 14, type == "news_search"),
+  "Google News Russia" = df_google %>% filter(country == "russia", type == "news_search"),
+  "Google News Ukraine" = df_google %>% filter(country == "ukraine", type == "news_search"),
+  "Google News US" = df_google %>% filter(country == "united_states", type == "news_search"),
+  "Google News UK" = df_google %>% filter(country == "united_kingdom", type == "news_search"),
   .id = "dataset"
 ) %>%
-  mutate(
-    rsm_domain = str_detect(domain, "rt.com|ria.ru|tass.com|tass.ru|lenta.ru|sputnik|tvzvezda.ru|redfish.media|gazeta.ru|ruptly.tv"),
-  ) %>% 
+  drop_na(domain_clean) %>% 
   group_by(country, rsm_domain) %>% 
   summarize(mean_result_rank = mean(rank_group, na.rm = T)) %>% 
   mutate(country = str_replace_all(country, "_", " ") %>% str_to_title()) %>% 
   ggplot(aes(country, mean_result_rank)) +
   geom_col(aes(fill = rsm_domain), position = "dodge", alpha = 0.85) +
-  scale_y_continuous(breaks = scales::breaks_width(1)) +
+  scale_y_continuous(breaks = scales::breaks_width(10)) +
   scale_fill_brewer(palette = "Set1") +
   theme_minimal() +
   labs(
@@ -190,3 +267,758 @@ bind_rows(
 ```
 
 
+# Flooding
+
+What is RSM talking about?
+
+## Topic Models
+
+### US
+
+```{r}
+data_vector <-
+  df_google %>%
+  filter(country == "united_states") %>% 
+  filter(rsm_domain) %>%
+  transmute(title, description = str_remove_all(description, "N/A")) %>% 
+  unite("text", c(title, description), na.rm = T, remove = T, sep = ". ") %>%
+  # mutate(text = str_to_lower(text) %>% str_remove_all("russia|russian|ukraine|ukrainian")) %>% 
+  pull(text)
+
+# Create corpus
+corpus <- Corpus(VectorSource(data_vector))
+
+# Clean corpus
+docs <-
+  corpus %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("english"))
+
+# Create doc-term matrix
+matrix <- as.matrix(TermDocumentMatrix(docs))
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df_freetext <- data.frame(word = names(words), freq = words)
+
+
+minimumFrequency <- 5
+DTM <- DocumentTermMatrix(docs, control = list(bounds = list(global = c(minimumFrequency, Inf))))
+
+sel_idx <- slam::row_sums(DTM) > 0
+DTM <- DTM[sel_idx, ]
+```
+
+
+We move to inspect the number of topics. In this case, we use two methods CaoJuan2009 and Griffith2004. The best number of topics shows low values for CaoJuan2009 and high values for Griffith2004.
+
+```{r}
+result <- 
+  ldatuning::FindTopicsNumber(
+    DTM,
+    topics = seq(from = 2, to = 10, by = 1),
+    metrics = c("CaoJuan2009",  "Deveaud2014"),
+    method = "Gibbs",
+    control = list(seed = 77),
+    verbose = TRUE
+  )
+
+ldatuning::FindTopicsNumber_plot(result)
+```
+
+Based on the plots above, `3` seems to be a decent number of topics to start with, as it has low CaoJuan2009 value and high Deveaud2014 value.
+
+```{r}
+K <- 3
+
+# set random number generator seed
+set.seed(94305)
+
+# compute the LDA model, inference via 1000 iterations of Gibbs sampling
+topicModel <- LDA(DTM, K, method = "Gibbs", control = list(iter = 1000, verbose = 25))
+
+# have a look a some of the results (posterior distributions)
+tmResult <- posterior(topicModel)
+
+# format of the resulting object
+# attributes(tmResult)
+# nTerms(DTM)
+
+# topics are probability distributions over the entire vocabulary
+beta <- tmResult$terms   # get beta from results
+
+# for every document we have a probability distribution of its contained topics
+theta <- tmResult$topics
+
+# Top 10 terms per topic
+#terms(topicModel, 10)
+```
+
+
+Word cloud for topic 1:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 1 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+Word cloud for topic 2:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 2 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+Word cloud for topic 3:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 3 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+---
+
+
+### UK
+
+```{r}
+data_vector <-
+  df_google %>%
+  filter(country == "united_kingdom") %>% 
+  filter(rsm_domain) %>%
+  transmute(title, description = str_remove_all(description, "N/A")) %>% 
+  unite("text", c(title, description), na.rm = T, remove = T, sep = ". ") %>%
+  # mutate(text = str_to_lower(text) %>% str_remove_all("russia|russian|ukraine|ukrainian")) %>% 
+  pull(text)
+
+# Create corpus
+corpus <- Corpus(VectorSource(data_vector))
+
+# Clean corpus
+docs <-
+  corpus %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("english"))
+
+# Create doc-term matrix
+matrix <- as.matrix(TermDocumentMatrix(docs))
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df_freetext <- data.frame(word = names(words), freq = words)
+
+
+minimumFrequency <- 5
+DTM <- DocumentTermMatrix(docs, control = list(bounds = list(global = c(minimumFrequency, Inf))))
+
+sel_idx <- slam::row_sums(DTM) > 0
+DTM <- DTM[sel_idx, ]
+```
+
+
+We move to inspect the number of topics. In this case, we use two methods CaoJuan2009 and Griffith2004. The best number of topics shows low values for CaoJuan2009 and high values for Griffith2004.
+
+```{r}
+result <- 
+  ldatuning::FindTopicsNumber(
+    DTM,
+    topics = seq(from = 2, to = 10, by = 1),
+    metrics = c("CaoJuan2009",  "Deveaud2014"),
+    method = "Gibbs",
+    control = list(seed = 77),
+    verbose = TRUE
+  )
+
+ldatuning::FindTopicsNumber_plot(result)
+```
+
+Based on the plots above, `4` seems to be a decent number of topics to start with, as it has low CaoJuan2009 value and high Deveaud2014 value.
+
+```{r}
+K <- 4
+
+# set random number generator seed
+set.seed(94305)
+
+# compute the LDA model, inference via 1000 iterations of Gibbs sampling
+topicModel <- LDA(DTM, K, method = "Gibbs", control = list(iter = 1000, verbose = 25))
+
+# have a look a some of the results (posterior distributions)
+tmResult <- posterior(topicModel)
+
+# format of the resulting object
+# attributes(tmResult)
+# nTerms(DTM)
+
+# topics are probability distributions over the entire vocabulary
+beta <- tmResult$terms   # get beta from results
+
+# for every document we have a probability distribution of its contained topics
+theta <- tmResult$topics
+
+# Top 10 terms per topic
+#terms(topicModel, 10)
+```
+
+
+Word cloud for topic 1:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 1 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+Word cloud for topic 2:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 2 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+Word cloud for topic 3:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 3 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+Word cloud for topic 4:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 4 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+---
+
+### Ukraine
+
+```{r}
+data_vector <-
+  df_google %>%
+  filter(country == "ukraine", rsm_domain) %>%
+  transmute(title, description = str_remove_all(description, "N/A")) %>% 
+  unite("text", c(title, description), na.rm = T, remove = T, sep = ". ") %>% 
+  pull(text)
+
+# Create corpus
+corpus <- Corpus(VectorSource(data_vector))
+
+# Clean corpus
+docs <-
+  corpus %>% 
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("russian"))
+
+rm(data_vector, corpus, df_yandex)
+gc()
+
+# Create doc-term matrix
+matrix <- as.matrix(TermDocumentMatrix(docs))
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df_freetext <- data.frame(word = names(words), freq = words)
+
+
+minimumFrequency <- 5
+DTM <- DocumentTermMatrix(docs, control = list(bounds = list(global = c(minimumFrequency, Inf))))
+
+sel_idx <- slam::row_sums(DTM) > 0
+DTM <- DTM[sel_idx, ]
+```
+
+
+We move to inspect the number of topics. In this case, we use two methods CaoJuan2009 and Griffith2004. The best number of topics shows low values for CaoJuan2009 and high values for Griffith2004.
+
+```{r}
+result <- 
+  ldatuning::FindTopicsNumber(
+    DTM,
+    topics = seq(from = 2, to = 10, by = 1),
+    metrics = c("CaoJuan2009",  "Deveaud2014"),
+    method = "Gibbs",
+    control = list(seed = 77),
+    verbose = TRUE
+  )
+
+ldatuning::FindTopicsNumber_plot(result)
+```
+
+Based on the plots above, `2` seems to be a decent number of topics to start with, as it has low CaoJuan2009 value and high Deveaud2014 value.
+
+```{r}
+K <- 2
+
+# set random number generator seed
+set.seed(94305)
+
+# compute the LDA model, inference via 1000 iterations of Gibbs sampling
+topicModel <- LDA(DTM, K, method = "Gibbs", control = list(iter = 1000, verbose = 25))
+
+# have a look a some of the results (posterior distributions)
+tmResult <- posterior(topicModel)
+
+# format of the resulting object
+# attributes(tmResult)
+# nTerms(DTM)
+
+# topics are probability distributions over the entire vocabulary
+beta <- tmResult$terms   # get beta from results
+
+# for every document we have a probability distribution of its contained topics
+theta <- tmResult$topics
+
+# Top 10 terms per topic
+# terms(topicModel, 20)
+```
+
+
+Word cloud for topic 1:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 1 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+Word cloud for topic 2:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 2 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+
+### Russia
+
+```{r}
+data_vector <-
+  df_google %>%
+  filter(country == "russia", rsm_domain) %>%
+  transmute(title, description = str_remove_all(description, "N/A")) %>% 
+  unite("text", c(title, description), na.rm = T, remove = T, sep = ". ") %>% 
+  pull(text)
+
+# Create corpus
+corpus <- Corpus(VectorSource(data_vector))
+
+# Clean corpus
+docs <-
+  corpus %>% 
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("russian"))
+
+rm(data_vector, corpus, df_yandex)
+gc()
+
+# Create doc-term matrix
+matrix <- as.matrix(TermDocumentMatrix(docs))
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df_freetext <- data.frame(word = names(words), freq = words)
+
+
+minimumFrequency <- 5
+DTM <- DocumentTermMatrix(docs, control = list(bounds = list(global = c(minimumFrequency, Inf))))
+
+sel_idx <- slam::row_sums(DTM) > 0
+DTM <- DTM[sel_idx, ]
+```
+
+
+We move to inspect the number of topics. In this case, we use two methods CaoJuan2009 and Griffith2004. The best number of topics shows low values for CaoJuan2009 and high values for Griffith2004.
+
+```{r}
+result <- 
+  ldatuning::FindTopicsNumber(
+    DTM,
+    topics = seq(from = 2, to = 10, by = 1),
+    metrics = c("CaoJuan2009",  "Deveaud2014"),
+    method = "Gibbs",
+    control = list(seed = 77),
+    verbose = TRUE
+  )
+
+ldatuning::FindTopicsNumber_plot(result)
+```
+
+Based on the plots above, `6` seems to be a decent number of topics to start with, as it has low CaoJuan2009 value and high Deveaud2014 value.
+
+```{r}
+K <- 6
+
+# set random number generator seed
+set.seed(94305)
+
+# compute the LDA model, inference via 1000 iterations of Gibbs sampling
+topicModel <- LDA(DTM, K, method = "Gibbs", control = list(iter = 1000, verbose = 25))
+
+# have a look a some of the results (posterior distributions)
+tmResult <- posterior(topicModel)
+
+# format of the resulting object
+# attributes(tmResult)
+# nTerms(DTM)
+
+# topics are probability distributions over the entire vocabulary
+beta <- tmResult$terms   # get beta from results
+
+# for every document we have a probability distribution of its contained topics
+theta <- tmResult$topics
+
+# Top 10 terms per topic
+# terms(topicModel, 20)
+```
+
+
+Word cloud for topic 1:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 1 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+Word cloud for topic 2:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 2 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+Word cloud for topic 3:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 3 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+Word cloud for topic 4:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 4 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+Word cloud for topic 5:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 5 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+Word cloud for topic 6:
+
+```{r, out.width="100%"}
+# visualize topics as word cloud
+
+topicToViz <- 6 # change for your own topic of interest
+
+# select to 100 most probable terms from the topic by sorting the term-topic-probability vector in decreasing order
+top100terms <- sort(tmResult$terms[topicToViz,], decreasing = TRUE)[1:100]
+words <- names(top100terms)
+
+# extract the probabilites of each of the 100 terms
+probabilities <- sort(tmResult$terms[topicToViz,], decreasing=TRUE)[1:100]
+
+# visualize the terms as wordcloud
+mycolors <- brewer.pal(8, "Dark2")
+
+wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
+```
+
+
+## Descriptive Wordclouds
+
+### US
+
+```{r}
+vector_wc <-
+  df_google %>%
+  filter(country == "united_states", rsm_domain) %>%
+  transmute(title, description = str_remove_all(description, "N/A")) %>% 
+  unite("text", c(title, description), na.rm = T, remove = T, sep = ". ") %>%
+  mutate(text = str_to_lower(text) %>% str_remove_all("russia|russian|ukraine|ukrainian")) %>% 
+  pull(text)
+
+# Create corpus 
+docs <- Corpus(VectorSource(vector_wc))
+
+# Clean corpus
+docs <-
+  docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("english"))
+
+# Create doc-term matrix
+matrix <- as.matrix(TermDocumentMatrix(docs))
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df_freetext <- data.frame(word = names(words), freq = words)
+
+# Create wordcloud
+wordcloud(words = df_freetext$word, freq = df_freetext$freq, min.freq = 1, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = brewer.pal(8, "Dark2"))
+```
+
+
+### UK
+
+```{r}
+vector_wc <-
+  df_google %>%
+  filter(country == "united_kingdom", rsm_domain) %>%
+  transmute(title, description = str_remove_all(description, "N/A")) %>% 
+  unite("text", c(title, description), na.rm = T, remove = T, sep = ". ") %>%
+  mutate(text = str_to_lower(text) %>% str_remove_all("russia|russian|ukraine|ukrainian")) %>% 
+  pull(text)
+
+# Create corpus 
+docs <- Corpus(VectorSource(vector_wc))
+
+# Clean corpus
+docs <-
+  docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("english"))
+
+# Create doc-term matrix
+matrix <- as.matrix(TermDocumentMatrix(docs))
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df_freetext <- data.frame(word = names(words), freq = words)
+
+# Create wordcloud
+wordcloud(words = df_freetext$word, freq = df_freetext$freq, min.freq = 1, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = brewer.pal(8, "Dark2"))
+```
+
+
+### Ukraine
+
+```{r}
+vector_wc <-
+  df_google %>%
+  filter(country == "ukraine", rsm_domain) %>%
+  transmute(title, description = str_remove_all(description, "N/A")) %>% 
+  unite("text", c(title, description), na.rm = T, remove = T, sep = ". ") %>%
+  pull(text)
+
+# Create corpus 
+docs <- Corpus(VectorSource(vector_wc))
+
+# Clean corpus
+docs <-
+  docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("russian"))
+
+# Create doc-term matrix
+matrix <- as.matrix(TermDocumentMatrix(docs))
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df_freetext <- data.frame(word = names(words), freq = words)
+
+# Create wordcloud
+wordcloud(words = df_freetext$word, freq = df_freetext$freq, min.freq = 1, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = brewer.pal(8, "Dark2"))
+```
