@@ -24,10 +24,104 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, error = TRU
 
 ```{r message=FALSE, warning=FALSE, fig.retina=4}
 # Libraries
-pacman::p_load(tidyverse, countrycode, sf, state, htmltools, urltools, htmlwidgets, janitor, RColorBrewer, ussf, arrow, hrbrthemes, lubridate, estimatr, texreg, readxl, corrr, wordcloud, tm, topicmodels, ldatuning, lda)
+pacman::p_load(tidyverse, countrycode, sf, state, htmltools, urltools, htmlwidgets, janitor, RColorBrewer, ussf, arrow, hrbrthemes, lubridate, estimatr, texreg, readxl, corrr, wordcloud, tm, topicmodels, ldatuning, lda, ggforce, waffle)
 
 options(arrow.skip_nul = TRUE)
 ```
+
+```{r, eval=F, fig.retina=4}
+read_csv("war_rsm_sample - world wars (1).csv") %>% count(annotation) %>% arrange(-n) %>% mutate(annotation = str_to_title(annotation))
+
+x <- c(
+  "World Wars" = 31,
+  "Quotation Of World Leader" = 14,
+  "Blaming Ukraine For War" = 12,
+  "Other Wars" = 9,
+  "Blaming West For War" = 8,
+  "Donbas War" = 8,
+  "Information War" = 6,
+  "Nuclear War" = 5,
+  "World War III" = 4,
+  "Cold War" = 3
+)
+
+waffle(x, colors = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00", "#FFFF33", "#A65628", "#F781BF", "#999999", "cyan"))
+
+ggsave("war_mentions_fig.png")
+```
+
+
+```{r, eval=F, fig.retina=4, out.width="100%"}
+#read_csv("war_rsm_sample - world wars.csv") %>% count(annotation)
+#fig3 <- read_csv("plot_term_df.csv")
+
+fig2 <- 
+  read_csv("topics_over_time_plot.csv") %>%
+  filter(topic %in% c("COVID", "US", "political", "propaganda", "Ukraine conflict", "other", "social media")) %>% 
+  mutate(
+    topic = case_when(
+      topic == "COVID" ~ "COVID-19",
+      topic == "US" ~ "US Politics",
+      topic == "political" ~ "Russia Domestic Issues",
+      topic == "propaganda" ~ "Propaganda & Conspiracies",
+      topic == "Ukraine conflict" ~ "Ukraine Conflict",
+      topic == "social media" ~ "Social Media",
+      topic == "other" ~ "Other",
+      topic == "Ukraine conflict" ~ "Ukraine Conflict",
+      TRUE ~ NA_character_
+    ),
+    lang = case_when(
+      lang == "en" ~ "English Posts",
+      lang == "ru" ~ "Russian Posts",
+      TRUE ~ NA_character_
+    ),
+    date = as.POSIXct(date)
+  )
+
+fig2 %>%
+  group_by(lang, date) %>% 
+  mutate(count = count/sum(count)) %>% 
+  ungroup() %>% 
+  filter(year(date) > 2021) %>% 
+  ggplot(aes(date, count, color = topic)) +
+  geom_smooth(se = F, span = 0.1, method = "loess", formula = "y ~ x") +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
+  scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  facet_wrap(vars(lang), ncol = 1) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
+  labs(
+    x = "", y = "Proportion of social media posts by topic", color = ""
+  )
+
+ggsave("figure2.png")
+```
+
+
+
+```{r, eval = F, fig.retina=4, out.width="100%"}
+read_csv("plot_term_df.csv") %>% 
+  mutate(keyword = str_to_title(keyword)) %>% 
+  group_by(date, keyword) %>% 
+  summarize(count = sum(count, na.rm = T)) %>% 
+  mutate(count = count/sum(count)) %>% 
+  filter(year(date) > 2021) %>% 
+  drop_na() %>% 
+  ggplot(aes(date, count, color = keyword)) +
+  geom_smooth(se = T, method = "loess", formula = "y ~ x", span = 0.4) +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
+  scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
+  labs(
+    x = "", y = "Proportion of posts by war-related terms", color = ""
+  )
+
+ggsave("figure3.png")
+```
+
 
 
 
@@ -64,6 +158,13 @@ df_google <-
   )
 ```
 
+```{r, eval=F}
+df_google %>% 
+  filter(country == "russia", rsm_domain) %>% 
+  transmute(date_clean, title, description = str_remove_all(description, "N/A")) %>% 
+  unite("text", c(title, description), na.rm = T, remove = T, sep = ". ") %>% 
+  write_csv(here::here("data/shared/webconf2023/russia_rsm_only.csv"))
+```
 
 
 # Friction
@@ -86,15 +187,15 @@ df_yandex %>%
 
 Variation with time:
 
-```{r}
+```{r, fig.retina=4}
 df_yandex %>% 
   group_by(date_clean) %>% 
   summarize(
     prop_rsm = mean(rsm_domain, na.rm = T)
   ) %>% 
-  filter(year(date_clean) > 2021) %>% 
+  filter(year(date_clean) > 2021) %>%
   ggplot(aes(date_clean, prop_rsm)) +
-  geom_smooth(method = "loess", se = T, span = 0.1) +
+  geom_smooth(method = "loess", se = T, span = 0.1, formula = "y ~ x") +
   geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
   scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
@@ -103,6 +204,8 @@ df_yandex %>%
   labs(
     x = "", y = "% Russian State Media Results on First Results Page"
   )
+
+ggsave("yandex.png")
 ```
 
 ### Yandex vs Google Web
@@ -130,7 +233,7 @@ bind_rows(
 
 Variation with time:
 
-```{r}
+```{r, fig.retina=4}
 bind_rows(
   "Yandex Web" = df_yandex,
   "Google Web Russia" = df_google %>% filter(country == "russia", rank_group <= 14, type == "organic"),
@@ -145,7 +248,7 @@ bind_rows(
   ) %>% 
   filter(year(date_clean) > 2021) %>% 
   ggplot(aes(date_clean, prop_rsm)) +
-  geom_smooth(method = "loess", se = F, span = 0.1, aes(color = dataset)) +
+  geom_smooth(method = "loess", se = F, span = 0.1, aes(color = dataset), formula = "y ~ x") +
   geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
   scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
@@ -154,6 +257,8 @@ bind_rows(
   labs(
     x = "", y = "% Russian State Media Results on First Page", color = ""
   )
+
+ggsave("web-rsm-percent.png")
 ```
 
 
@@ -926,7 +1031,7 @@ wordcloud(words, probabilities, random.order = FALSE, color = mycolors)
 
 ## Descriptive Wordclouds
 
-### US
+### Google US
 
 ```{r}
 vector_wc <-
@@ -959,7 +1064,7 @@ wordcloud(words = df_freetext$word, freq = df_freetext$freq, min.freq = 1, max.w
 ```
 
 
-### UK
+### Google UK
 
 ```{r}
 vector_wc <-
@@ -992,7 +1097,7 @@ wordcloud(words = df_freetext$word, freq = df_freetext$freq, min.freq = 1, max.w
 ```
 
 
-### Ukraine
+### Google Ukraine
 
 ```{r}
 vector_wc <-
@@ -1022,3 +1127,106 @@ df_freetext <- data.frame(word = names(words), freq = words)
 # Create wordcloud
 wordcloud(words = df_freetext$word, freq = df_freetext$freq, min.freq = 1, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = brewer.pal(8, "Dark2"))
 ```
+
+
+
+### Google Russia
+
+```{r}
+vector_wc <-
+  df_google %>%
+  filter(country == "russia", rsm_domain) %>%
+  transmute(title, description = str_remove_all(description, "N/A")) %>% 
+  unite("text", c(title, description), na.rm = T, remove = T, sep = ". ") %>%
+  pull(text)
+
+# Create corpus 
+docs <- Corpus(VectorSource(vector_wc))
+
+# Clean corpus
+docs <-
+  docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("russian"))
+
+# Create doc-term matrix
+matrix <- as.matrix(TermDocumentMatrix(docs))
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df_freetext <- data.frame(word = names(words), freq = words)
+
+# Create wordcloud
+wordcloud(words = df_freetext$word, freq = df_freetext$freq, min.freq = 1, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = brewer.pal(8, "Dark2"))
+```
+
+
+### Yandex Russia
+
+```{r}
+vector_wc <-
+  df_yandex %>%
+  filter(rsm_domain) %>%
+  transmute(title, description = str_remove_all(description, "N/A")) %>% 
+  unite("text", c(title, description), na.rm = T, remove = T, sep = ". ") %>%
+  pull(text)
+
+# Create corpus 
+docs <- Corpus(VectorSource(vector_wc))
+
+# Clean corpus
+docs <-
+  docs %>%
+  tm_map(removeNumbers) %>%
+  tm_map(removePunctuation) %>%
+  tm_map(stripWhitespace) %>%
+  tm_map(content_transformer(tolower)) %>%
+  tm_map(removeWords, stopwords("russian"))
+
+# Create doc-term matrix
+matrix <- as.matrix(TermDocumentMatrix(docs))
+words <- sort(rowSums(matrix), decreasing = TRUE)
+df_freetext <- data.frame(word = names(words), freq = words)
+
+# Create wordcloud
+wordcloud(words = df_freetext$word, freq = df_freetext$freq, min.freq = 1, max.words = 200, random.order = FALSE, rot.per = 0.35, colors = brewer.pal(8, "Dark2"))
+```
+
+
+----
+
+<br/><br/>
+
+# Fear (Russia data only)
+
+## Sentiment Assessed using RuSentiment model
+
+```{r}
+bind_rows(
+  "Yandex Russia" = read_csv(here::here("data/shared/webconf2023/yandex/yandex_rsm_only.csv")),
+  "Google Russia" = read_csv(here::here("data/shared/webconf2023/russia_rsm_only.csv")),
+  .id = "dataset"
+) %>% 
+  filter(sentiment %in% c("positive", "negative", "neutral")) %>% 
+  filter(year(date_clean) > 2021) %>%
+  transmute(dataset, date_clean, sentiment) %>%
+  arrange(date_clean, dataset, sentiment) %>% 
+  group_by(dataset, date_clean) %>% 
+  summarize(
+    prop_negative = mean(sentiment == "negative", na.rm = T)
+  ) %>% 
+  ggplot(aes(date_clean, prop_negative, color = dataset)) +
+  geom_jitter() +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
+  scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
+  labs(
+    x = "", y = "% Negative State Media Results", color = ""
+  )
+```
+
+
+
