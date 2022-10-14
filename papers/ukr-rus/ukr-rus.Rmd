@@ -89,13 +89,13 @@ fig2 %>%
   scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   facet_wrap(vars(lang), ncol = 1) +
-  theme_minimal() +
+  theme_bw() +
   theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
   labs(
     x = "", y = "Proportion of social media posts by topic", color = ""
   )
 
-ggsave("figure2.png")
+#ggsave("figure2.png")
 ```
 
 
@@ -105,14 +105,15 @@ read_csv("plot_term_df.csv") %>%
   mutate(keyword = str_to_title(keyword)) %>% 
   group_by(date, keyword) %>% 
   summarize(count = sum(count, na.rm = T)) %>% 
-  mutate(count = count/sum(count)) %>% 
+  #mutate(count = count/sum(count)) %>% 
+  ungroup() %>% 
   filter(year(date) > 2021) %>% 
   drop_na() %>% 
   ggplot(aes(date, count, color = keyword)) +
-  geom_smooth(se = T, method = "loess", formula = "y ~ x", span = 0.4) +
+  geom_smooth(se = T, method = "loess", formula = "y ~ x") +
   geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
   scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
-  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  #scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
   labs(
@@ -121,6 +122,54 @@ read_csv("plot_term_df.csv") %>%
 
 ggsave("figure3.png")
 ```
+
+
+```{r, fig.retina=4}
+read_csv("avg_post_engagement.csv") %>%
+  clean_names() %>% 
+  mutate(date = as.POSIXct(x_post_time)) %>% 
+  select(date, platform = x_platform, engagement = x_avg_engagement, account = x_account) %>%
+  mutate(
+    account = str_replace_all(account, "\\_", " "),
+    account = str_replace_all(account, "\\-", " "),
+    account = str_replace_all(account, "\\.", " "),
+    account = str_to_title(account),
+    account = str_replace_all(account, "Rt ", "RT "),
+    account = if_else(account == "Actualidadrt", "RT en Español", account),
+    account = if_else(account == "De RT Com" | account == "Rtde", "RT Deutsch", account),
+    account = if_else(account == "Rt", "RT.com", account),
+    account = if_else(account == "RT Com", "RT.com", account),
+    account = if_else(account == "Rtamerica", "RT America", account),
+    account = if_else(str_detect(account, "Rtarabic"), "RT Arabic", account),
+    account = if_else(str_detect(account, "franc"), "RT en français", account),
+    account = if_else(account == "Rtnews", "RT.com", account),
+    account = if_else(account == "Rtrussian", "RT Russian", account),
+    account = if_else(account == "Rtuknews", "RT UK News", account),
+    account = if_else(account == "Sputniknews", "Sputnik News", account),
+    account = if_else(account == "Sputnikint", "Sputnik News", account),
+  ) %>% 
+  arrange(date, platform, account) %>%
+  filter(!(account %in% c("RT UK News"))) %>% 
+  ggplot(aes(date, engagement, color = account)) +
+  geom_smooth(se = F, span = 0.1, method = "loess", formula = "y ~ x") +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-02-24")), linetype = "dashed", color = "red") +
+  geom_vline(xintercept = as.POSIXct(as.Date("2022-03-03")), linetype = "dashed", color = "blue") +
+  scale_x_datetime(breaks = "1 month", labels = scales::date_format("%B")) +
+  #scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  facet_wrap(vars(platform), ncol = 1, scales = "free_y") +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1") +
+  theme(axis.text.x = element_text(angle = -45), legend.position = "bottom") +
+  labs(
+    x = "", y = "Engagement by RSM outlet", color = ""
+  )
+
+ggsave("friction_engagement.png")
+```
+
+
+
+
 
 
 
@@ -258,7 +307,7 @@ bind_rows(
     x = "", y = "% Russian State Media Results on First Page", color = ""
   )
 
-ggsave("web-rsm-percent.png")
+#ggsave("web-rsm-percent.png")
 ```
 
 
