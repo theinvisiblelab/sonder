@@ -15,14 +15,14 @@
 
 ## ⚡ TL;DR
 
-Internet search shows you what you consume. Sonder shows you what you miss out on. We assess the opportunity cost of internet search.
+Internet search shows us what we consume. Sonder shows you what we miss out on. We assess the opportunity cost of internet search.
 
 Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~representation~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
 
 Our work spans two dimensions:
 
--   ⚖️ *Balance*: Assess latent/invisible knowledge as you search the web. Balance relevance with diversity.
--   📣 *Trends*: Highlight fairness in global web, news, wiki, and social media trends.
+-   ⚖️ *Balance*: Assess (in)completeness in knowledge as we search the web. Balance relevance with diversity.
+-   📣 *Trends*: Highlight (in)completeness in global web, news, wiki, and social media trends.
 
 <br/>
 
