@@ -5,7 +5,7 @@
 from flask import copy_current_request_context
 import numpy as np
 import pandas as pd
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from client import RestClient
 import os
 import altair as alt
@@ -111,8 +111,8 @@ if query != "":
 
         model = load_model()
 
-        load_dotenv()
-        client = RestClient(os.environ.get("D4S_LOGIN"), os.environ.get("D4S_PWD"))
+        # load_dotenv()
+        client = RestClient("sauromania@gmail.com", "8205e48514a8cacf")
 
         # demo
         if query in ["climate changez"]:
@@ -123,7 +123,7 @@ if query != "":
             response = fetch_data(query, model)
             df = response
 
-    col2, col1 = st.columns([1, 1])
+    col2, col1 = st.columns([1, 4])
     df_print = df.copy()
 
     df_print["final_rank"] = df_print.reset_index().index + 1
@@ -154,5 +154,10 @@ if query != "":
                     )
                 st.markdown("---")
 
-    col2.markdown("### Metrics")
+    col2.markdown("### Visibility")
     col2.markdown("---")
+
+    with col2:
+        # st.dataframe(df_print)
+        avg = round(np.average(df_print["representation"], weights = 1/df_print["final_rank"]) * 100, 2)
+        st.metric(label="", value=str(avg) + "%")

@@ -44,9 +44,9 @@ st.sidebar.info(
     "Contributions welcome through comments, issues, and pull requests to the open-source [code base](https://github.com/sonder-labs/sonder)."
 )
 
-st.sidebar.markdown("**🏅 Awards**")
+st.sidebar.markdown("**🎋 Support**")
 st.sidebar.info(
-    "🏆 Stanford Data Science Scholarship \n\n 🏆 Stanford Institute for Human-Centered Artificial Intelligence Fellowship \n\n 🏆 Design Challenge Research Award, Stanford University \n\n 🏆 Karr Fellowship, Stanford University \n\n 🏆 Digital Learning Design Challenge Grant, Stanford University"
+    "🌱 Stanford Data Science Scholarship \n\n 🌱 Stanford Institute for Human-Centered Artificial Intelligence Fellowship \n\n 🌱 Design Challenge Research Award, Stanford University \n\n 🌱 Karr Fellowship, Stanford University \n\n 🌱 Digital Learning Design Challenge Grant, Stanford University"
 )
 
 st.sidebar.markdown("**👾 Maitainer**")
