@@ -1,0 +1,173 @@
+---
+title: "How we care about conflicts?"
+author: "Saurabh Khanna"
+date: "Updated: `r format(Sys.Date(), format='%B %d %Y')`"
+output:
+  html_document:
+    df_print: paged
+    code_folding: hide
+    toc: true
+    toc_depth: 6
+    highlight: haddock
+    theme: journal
+    number_sections: yes
+    toc_float: yes
+---
+
+---
+
+```{r setup, include=FALSE}
+# knitr options
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, error = TRUE, fig.retina = 4, out.width = "100%", knitr.duplicate.label = "allow")
+```
+
+
+```{r message=FALSE, warning=FALSE, fig.retina=4}
+# Libraries
+pacman::p_load(tidyverse, janitor, RColorBrewer, lubridate, estimatr, texreg, skimr)
+
+df_acled <- 
+  bind_rows(
+    read_csv(here::here("data/compare-conflicts/acled-by-country/acled-afghanistan.csv")),
+    read_csv(here::here("data/compare-conflicts/acled-by-country/acled-ethiopia.csv")),
+    read_csv(here::here("data/compare-conflicts/acled-by-country/acled-mexico.csv")),
+    read_csv(here::here("data/compare-conflicts/acled-by-country/acled-myanmar.csv")),
+    read_csv(here::here("data/compare-conflicts/acled-by-country/acled-ukraine.csv")),
+    read_csv(here::here("data/compare-conflicts/acled-by-country/acled-yemen.csv"))
+  ) %>% 
+  mutate(
+    date_utc = lubridate::date(as_datetime(timestamp)),
+    year_month = str_c(lubridate::year(date_utc), lubridate::month(date_utc), sep = "-"),
+    year_week = str_c(lubridate::year(date_utc), lubridate::week(date_utc), sep = "-")
+  ) %>% 
+  rename(query_country = country) %>% 
+  filter(lubridate::year(date_utc) >= 2021)
+
+df_conflicts <- 
+  read_csv(here::here("data/compare-conflicts/conflict_trends.csv")) %>%
+  mutate(
+    year_month = str_c(lubridate::year(date_utc), lubridate::month(date_utc), sep = "-"),
+    year_week = str_c(lubridate::year(date_utc), lubridate::week(date_utc), sep = "-"),
+    query_country = word(query) %>% str_to_title()
+  ) %>% 
+  filter(lubridate::year(date_utc) >= 2021)
+```
+
+
+```{r}
+df_conflicts %>% glimpse()
+df_acled %>% glimpse()
+```
+
+
+```{r}
+# How much death data per query
+df_acled %>%
+  mutate(year_month = fast_strptime(year_month, "%Y-%m") %>% as_date()) %>% 
+  tabyl(year_month, query_country)
+```
+
+
+
+```{r}
+# World Interest vs Fatalities
+
+df_acled %>%
+  group_by(query_country, year_week) %>% 
+  summarize(fatalities = sum(fatalities, na.rm = T)) %>% 
+  ungroup() %>% 
+  inner_join(
+    df_conflicts %>%
+      filter(country_name == "world", type == "Web") %>%
+      group_by(query_country, year_week) %>% 
+      summarize(interest = mean(popularity_std, na.rm = T)) %>% 
+      ungroup(),
+    by = c("query_country", "year_week")
+  ) %>% 
+  group_by(query_country) %>% 
+  summarize(cor = cor(fatalities, interest)) %>%
+  mutate(source = "Web Search") %>%
+  bind_rows(
+    df_acled %>%
+      group_by(query_country, year_week) %>% 
+      summarize(fatalities = sum(fatalities, na.rm = T)) %>% 
+      ungroup() %>% 
+      inner_join(
+        df_conflicts %>%
+          filter(country_name == "world", type == "YouTube") %>%
+          group_by(query_country, year_week) %>% 
+          summarize(interest = mean(popularity_std, na.rm = T)) %>% 
+          ungroup(),
+        by = c("query_country", "year_week")
+      ) %>% 
+      group_by(query_country) %>% 
+      summarize(cor = cor(fatalities, interest)) %>% 
+      mutate(source = "YouTube")
+  ) %>% 
+  ggplot(aes(query_country, cor, fill = source)) +
+  geom_col(position = "dodge", alpha = 0.8) +
+  scale_y_continuous(breaks = scales::breaks_width(0.1)) +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  labs(
+    x = "", 
+    y = "Correlation (Interest vs Fatalities)",
+    fill = ""
+  )
+```
+
+
+
+
+```{r, fig.asp=0.8}
+# World Interest vs Fatalities
+
+df_acled %>%
+  group_by(query_country, year_month, year_week) %>% 
+  summarize(fatalities = sum(fatalities, na.rm = T)) %>% 
+  ungroup() %>% 
+  inner_join(
+    df_conflicts %>%
+      filter(country_name == "world", type == "Web") %>%
+      group_by(query_country, year_month, year_week) %>% 
+      summarize(interest = mean(popularity_std, na.rm = T)) %>% 
+      ungroup(),
+    by = c("query_country", "year_week", "year_month")
+  ) %>% 
+  group_by(query_country, year_month) %>% 
+  summarize(cor = cor(fatalities, interest)) %>%
+  mutate(source = "Web Search") %>%
+  ungroup() %>% 
+  bind_rows(
+    df_acled %>%
+      group_by(query_country, year_month, year_week) %>% 
+      summarize(fatalities = sum(fatalities, na.rm = T)) %>% 
+      ungroup() %>% 
+      inner_join(
+        df_conflicts %>%
+          filter(country_name == "world", type == "YouTube") %>%
+          group_by(query_country, year_month, year_week) %>% 
+          summarize(interest = mean(popularity_std, na.rm = T)) %>% 
+          ungroup(),
+        by = c("query_country", "year_week", "year_month")
+      ) %>% 
+      group_by(query_country, year_month) %>% 
+      summarize(cor = cor(fatalities, interest)) %>%
+      mutate(source = "YouTube") %>% 
+      ungroup()
+  ) %>% 
+  drop_na(cor) %>% 
+  mutate(year_month = fast_strptime(year_month, "%Y-%m") %>% as_date()) %>%
+  ggplot(aes(year_month, cor)) +
+  geom_smooth(se = F) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_grid(query_country ~ source) +
+  theme_bw() +
+  ylim(-1, 1) +
+  labs(
+    x = "",
+    y = "Correlation between search volume and on-ground fatalities"
+  )
+```
+

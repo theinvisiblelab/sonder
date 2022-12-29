@@ -4,26 +4,27 @@ from vega_datasets import data
 
 
 def draw_bar(df_summary):
+    df_summary = df_summary[df_summary["Trust Score"] < 50]
     plot_summary = (
         alt.Chart(df_summary.head(10))
         .mark_bar(opacity=0.80)
         .encode(
             x=alt.X("Trust Score", title="Trust Score"),
             y=alt.Y("Website", title="", sort="x"),
-            tooltip=["Trust Score"],
+            tooltip=["Website", "Trust Score"],
             color=alt.condition(
-                alt.datum["Trust Score"] < 50,
+                alt.datum["Trust Score"] < 25,
                 alt.value("#ff1717"),  # The negative color
                 alt.value("#ebb113"),  # The positive color
             ),
         )
         .configure_title(fontSize=18)
-        .configure_axis(labelFontSize=15, titleFontSize=15)
+        .configure_axis(titleFontSize=15)
     ).interactive()
     st.altair_chart(plot_summary, use_container_width=True)
 
 
-st.write("## 🔬 Misinformation Dashboard")
+st.write("## 🔬 Information Trust Dashboard")
 st.write("&nbsp;")
 
 counties = alt.topo_feature(data.us_10m.url, "counties")
@@ -60,7 +61,7 @@ us_map = (
 )
 
 st.write("### Nationwide Trust Scores")
-st.write("_Updated: 04-21-2022_")
+st.write("_Updated: 22-12-2022_")
 st.write("&nbsp;")
 
 st.altair_chart(us_map, use_container_width=True)

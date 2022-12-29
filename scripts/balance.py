@@ -143,8 +143,8 @@ if query != "":
                         + row["description"]
                         + "<br/><br/>"
                         + "Visibility: `"
-                        + str(round(row["representation"], 2))
-                        + "`",
+                        + str(round(row["representation"] * 100, 2))
+                        + "%`",
                         unsafe_allow_html=True,
                     )
                 else:
@@ -154,10 +154,10 @@ if query != "":
                     )
                 st.markdown("---")
 
-    col2.markdown("### Visibility")
+    col2.markdown("### Invisibility")
     col2.markdown("---")
 
     with col2:
         # st.dataframe(df_print)
-        avg = round(np.average(df_print["representation"], weights = 1/df_print["final_rank"]) * 100, 2)
-        st.metric(label="", value=str(avg) + "%")
+        avg = round((1 - np.average(df_print["representation"], weights = 1/df_print["final_rank"])) * 100, 2)
+        st.metric(label="How much am I not seeing?", value=str(avg) + "%")
