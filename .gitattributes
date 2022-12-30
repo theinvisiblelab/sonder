@@ -1,0 +1,4 @@
+*.html linguist-detectable=false
+*.svg linguist-detectable=false
+*.Rmd linguist-detectable=false
+*.sh linguist-detectable=false
