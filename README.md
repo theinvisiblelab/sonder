@@ -15,7 +15,7 @@
 
 ## ⚡ TL;DR
 
-Internet search shows us what we consume. Sonder shows us what we miss out on. We assess the opportunity cost of the status-quo in internet search.
+Internet search shows us what we consume. Sonder shows us what we miss out on. We assess the opportunity cost of (the status-quo in) internet search.
 
 Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~representation~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
 
