@@ -62,6 +62,12 @@ Current work on Sonder spans two dimensions:
 
 <br/>
 
+#### Experimental Analysis of Behavior Changes Induced
+
+<p align="center">
+  <img src="images/sonder_treatment.png" />
+</p>
+
 ### 📣 Trends
 
 #### Global sentiment trends (Web search)
@@ -76,14 +82,6 @@ Current work on Sonder spans two dimensions:
 
 <p align="center">
   <img src="images/6.png" />
-</p>
-
-<br/>
-
-#### Experimental Analysis of Behavior Changes Induced
-
-<p align="center">
-  <img src="images/sonder_treatment.png" />
 </p>
 
 <br/>
