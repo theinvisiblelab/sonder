@@ -83,9 +83,9 @@ with st.expander("🎈 Why Sonder?"):
     )
     st.markdown(
         """
-    Internet search shows you what you consume. Sonder shows you what you miss out on by balancing relevance and visibility.
+    Internet search shows you what you consume. Sonder shows you what you miss out on by balancing relevance and completeness.
 
-    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~visibility~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
+    Our access to knowledge is biased by ~~public~~ private algorithms, trained on ~~diverse~~ mainstream data, intended to maximize ~~completeness~~ consumption. This robs us of the choice to understand those who think and learn differently. Sonder is an attempt to make our lack of choice explicit. To at least be mindful of our filter bubbles, if not break them.
 
     &nbsp;
     """
@@ -99,9 +99,13 @@ st.markdown("&nbsp;")
 # st.write("&nbsp;")
 # st.write("1. Pick search query")
 # st.write("&nbsp;")
-# st.write("2. Balance relevance and visibility")
+# st.write("2. Balance relevance and completeness")
 
-query = st.text_input("Pick search query").lower().strip()
+query = st.text_input("Enter search query").lower().strip()
+
+st.markdown("&nbsp;")
+
+# n_results = st.slider('Choose how many search results you want to see', 0, 100, 1)
 
 if query != "":
 
@@ -140,11 +144,11 @@ if query != "":
                         + "<br/><br/><i>"
                         + row["title"]
                         + ".</i> "
-                        + row["description"]
-                        + "<br/><br/>"
-                        + "Visibility: `"
-                        + str(round(row["representation"] * 100, 2))
-                        + "%`",
+                        + row["description"],
+                        # + "<br/><br/>"
+                        # + "Completeness: `"
+                        # + str(round(row["representation"] * 100, 2))
+                        # + "%`",
                         unsafe_allow_html=True,
                     )
                 else:
@@ -154,10 +158,10 @@ if query != "":
                     )
                 st.markdown("---")
 
-    col2.markdown("### Invisibility")
+    col2.markdown("### Completeness")
     col2.markdown("---")
 
     with col2:
         # st.dataframe(df_print)
-        avg = round((1 - np.average(df_print["representation"], weights = 1/df_print["final_rank"])) * 100, 2)
-        st.metric(label="How much am I not seeing?", value=str(avg) + "%")
+        avg = round((np.average(df_print["representation"], weights = 1/df_print["final_rank"])) * 100, 2)
+        st.metric(label="How much am I seeing?", value=str(avg) + "%")

@@ -18,6 +18,7 @@ database/
 R/
 data/
 scripts/old/
+papers/
 
 # Data files
 *.csv

@@ -80,9 +80,17 @@ Our work spans two dimensions:
 
 <br/>
 
+#### Experimental Analysis of Behavior Changes Induced
+
+<p align="center">
+  <img src="images/sonder_treatment.png" />
+</p>
+
+<br/>
+
 ## 🧮 Algorithms
 
-Details [here](https://raw.githubusercontent.com/sonder-labs/sonder/main/slides_sonder.pdf).
+Preliminary details [here](https://raw.githubusercontent.com/sonder-labs/sonder/main/slides_sonder.pdf).
 
 <br/>
 
